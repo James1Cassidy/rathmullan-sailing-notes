@@ -39,9 +39,13 @@
         },
 
         "privateMessages": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
         "$messageId": {
-            ".read": "auth != null && (data.child('senderId').val() === auth.uid || data.child('recipientId').val() === auth.uid)",
-            ".write": "auth != null && newData.child('senderId').val() === auth.uid"
+            // Allow read if requester is sender or recipient. Support legacy field names 'from'/'to' as well.
+            ".read": "auth != null && (data.child('senderId').val() === auth.uid || data.child('recipientId').val() === auth.uid || data.child('from').val() === auth.uid || data.child('to').val() === auth.uid)",
+            // Allow create/update only when the new data's sender matches the caller (support senderId or legacy 'from').
+            // Allow delete when the existing data's sender matches the caller (newData does not exist on delete).
+            ".write": "auth != null && ( (newData.exists() && (newData.child('senderId').val() === auth.uid || newData.child('from').val() === auth.uid)) || (!newData.exists() && (data.child('senderId').val() === auth.uid || data.child('from').val() === auth.uid)) )"
         }
         },
 

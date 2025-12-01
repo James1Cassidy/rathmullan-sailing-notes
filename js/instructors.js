@@ -2233,9 +2233,9 @@ function renderMessageInner(id, msg, tsDisplay) {
     const editedTag = msg.editedAt ? `<span class="text-[10px] text-gray-400 ml-1">(edited)</span>` : '';
     // Allow delete for all owner messages including images
     const actionsHtml = isOwner
-        ? `<div class="flex gap-2 ml-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150">
-                ${canEdit ? `<button data-action="edit" title="Edit (20 min window)" class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 transition text-[10px] font-medium">Edit</button>` : ''}
-                <button data-action="delete" title="Delete message" class="px-2 py-0.5 rounded bg-red-100 text-red-700 hover:bg-red-200 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-300 transition text-[10px] font-medium">Delete</button>
+        ? `<div class="flex gap-2 ml-2 transition-opacity duration-150">
+                ${canEdit ? `<button data-action="edit" title="Edit (20 min window)" class="px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition text-[10px] font-medium">Edit</button>` : ''}
+                <button data-action="delete" title="Delete message" class="px-2 py-0.5 rounded bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 transition text-[10px] font-medium">Delete</button>
            </div>`
         : '';
 
@@ -3678,6 +3678,11 @@ function clearAllWeeklyActivities() {
 let currentChatView = 'general';
 let selectedPrivateRecipient = null;
 
+// Private messages realtime helpers
+const privateMessagesRef = db.ref('privateMessages');
+let _privateHandlersAttachedFor = null;
+const _privateHandlers = { child_added: null, child_changed: null, child_removed: null };
+
 function toggleChatView(view) {
     currentChatView = view;
 
@@ -3787,55 +3792,127 @@ function selectPrivateRecipient(recipientId, recipientName) {
 
     if (header) header.textContent = `Chat with ${recipientName}`;
     if (form) form.classList.remove('hidden');
-    if (messagesDiv) loadPrivateMessages(recipientId);
+    if (messagesDiv) attachPrivateListeners(recipientId);
 }
 
 function loadPrivateMessages(recipientId) {
+    // Backwards-compatible alias: attach realtime listeners and populate initial messages
+    attachPrivateListeners(recipientId);
+}
+
+function attachPrivateListeners(recipientId) {
     const messagesDiv = document.getElementById('private-messages');
     if (!messagesDiv) return;
-
     const user = auth.currentUser;
     if (!user) return;
 
-    // Get messages where user is sender or recipient
-    db.ref('privateMessages').orderByChild('timestamp').once('value').then(snap => {
-        messagesDiv.innerHTML = '';
+    // If already attached for this recipient, do nothing
+    if (_privateHandlersAttachedFor === recipientId) return;
+
+    // Detach any existing handlers
+    try { privateMessagesRef.off(); } catch (e) {}
+
+    _privateHandlers.child_added = function (snap) {
+        const msg = snap.val();
+        const sender = msg.senderId || msg.from;
+        const recipient = msg.recipientId || msg.to;
+        if ((sender === user.uid && recipient === recipientId) || (sender === recipientId && recipient === user.uid)) {
+            appendPrivateMessage(snap.key, msg, recipientId);
+        }
+    };
+
+    _privateHandlers.child_changed = function (snap) {
+        const msg = snap.val();
+        const sender = msg.senderId || msg.from;
+        const recipient = msg.recipientId || msg.to;
+        if ((sender === user.uid && recipient === recipientId) || (sender === recipientId && recipient === user.uid)) {
+            updatePrivateMessageUI(snap.key, msg);
+        }
+    };
+
+    _privateHandlers.child_removed = function (snap) {
+        removePrivateMessageUI(snap.key);
+    };
+
+    privateMessagesRef.on('child_added', _privateHandlers.child_added);
+    privateMessagesRef.on('child_changed', _privateHandlers.child_changed);
+    privateMessagesRef.on('child_removed', _privateHandlers.child_removed);
+
+    // Clear and populate existing messages once
+    messagesDiv.innerHTML = '';
+    privateMessagesRef.orderByChild('timestamp').once('value').then(snap => {
         snap.forEach(child => {
             const msg = child.val();
-            if ((msg.from === user.uid && msg.to === recipientId) ||
-                (msg.from === recipientId && msg.to === user.uid)) {
-                const div = document.createElement('div');
-                const isSent = msg.from === user.uid;
-                const msgId = child.key;
-                const timestamp = new Date(msg.timestamp);
-                const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-                const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const editedTag = msg.editedAt ? '<span class="text-[10px] ml-1">(edited)</span>' : '';
-
-                div.className = `flex ${isSent ? 'justify-end' : 'justify-start'} mb-2 group`;
-                div.setAttribute('data-msg-id', msgId);
-
-                const actions = isSent ? `
-                    <div class="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="editPrivateMessage('${msgId}', '${recipientId}')" class="text-xs px-2 py-0.5 rounded bg-white bg-opacity-20 hover:bg-opacity-30">Edit</button>
-                        <button onclick="deletePrivateMessage('${msgId}', '${recipientId}')" class="text-xs px-2 py-0.5 rounded bg-white bg-opacity-20 hover:bg-opacity-30">Delete</button>
-                    </div>
-                ` : '';
-
-                div.innerHTML = `
-                    <div class="${isSent ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} rounded-lg px-3 py-2 max-w-xs">
-                        <p class="text-sm break-words">${escapeHtml(msg.text)}</p>
-                        <div class="flex items-center justify-between mt-1">
-                            <span class="text-[10px] opacity-75">${dateStr} ${timeStr}${editedTag}</span>
-                        </div>
-                        ${actions}
-                    </div>
-                `;
-                messagesDiv.appendChild(div);
+            const sender = msg.senderId || msg.from;
+            const recipient = msg.recipientId || msg.to;
+            if ((sender === user.uid && recipient === recipientId) || (sender === recipientId && recipient === user.uid)) {
+                appendPrivateMessage(child.key, msg, recipientId);
             }
         });
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
+
+    _privateHandlersAttachedFor = recipientId;
+}
+
+function appendPrivateMessage(msgId, msg, recipientId) {
+    const messagesDiv = document.getElementById('private-messages');
+    if (!messagesDiv) return;
+    if (messagesDiv.querySelector(`[data-msg-id="${msgId}"]`)) return; // avoid duplicates
+
+    const user = auth.currentUser;
+    const sender = msg.senderId || msg.from;
+    const isSent = sender === user.uid;
+    const timestamp = new Date(msg.timestamp);
+    const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const editedTag = msg.editedAt ? '<span class="text-[10px] ml-1">(edited)</span>' : '';
+
+    const div = document.createElement('div');
+    div.className = `flex ${isSent ? 'justify-end' : 'justify-start'} mb-2 group`;
+    div.setAttribute('data-msg-id', msgId);
+
+    const actions = isSent ? `
+        <div class="flex gap-1 mt-1">
+            <button onclick="editPrivateMessage('${msgId}', '${recipientId}')" class="text-xs px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">Edit</button>
+            <button onclick="deletePrivateMessage('${msgId}', '${recipientId}')" class="text-xs px-2 py-0.5 rounded bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">Delete</button>
+        </div>
+    ` : '';
+
+    div.innerHTML = `
+        <div class="${isSent ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} rounded-lg px-3 py-2 max-w-xs">
+            <p class="text-sm break-words">${escapeHtml(msg.text)}</p>
+            <div class="flex items-center justify-between mt-1">
+                <span class="text-[10px] opacity-75">${dateStr} ${timeStr}${editedTag}</span>
+            </div>
+            ${actions}
+        </div>
+    `;
+
+    messagesDiv.appendChild(div);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function updatePrivateMessageUI(msgId, msg) {
+    const messagesDiv = document.getElementById('private-messages');
+    if (!messagesDiv) return;
+    const el = messagesDiv.querySelector(`[data-msg-id="${msgId}"]`);
+    if (!el) return;
+    const timestamp = new Date(msg.timestamp);
+    const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const editedTag = msg.editedAt ? '<span class="text-[10px] ml-1">(edited)</span>' : '';
+    const bubble = el.querySelector('div');
+    if (bubble) {
+        bubble.innerHTML = `<p class="text-sm break-words">${escapeHtml(msg.text)}</p><div class="flex items-center justify-between mt-1"><span class="text-[10px] opacity-75">${dateStr} ${timeStr}${editedTag}</span></div>` + (bubble.innerHTML.includes('Edit') || bubble.innerHTML.includes('Delete') ? '' : '');
+    }
+}
+
+function removePrivateMessageUI(msgId) {
+    const messagesDiv = document.getElementById('private-messages');
+    if (!messagesDiv) return;
+    const el = messagesDiv.querySelector(`[data-msg-id="${msgId}"]`);
+    if (el) el.remove();
 }
 
 // Private message form handler
@@ -3851,6 +3928,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const user = auth.currentUser;
             db.ref('privateMessages').push({
+                // Use explicit fields matching DB rules: senderId / recipientId
+                senderId: user.uid,
+                recipientId: selectedPrivateRecipient,
+                // Preserve legacy names for compatibility
                 from: user.uid,
                 to: selectedPrivateRecipient,
                 text: text.slice(0, 500),
