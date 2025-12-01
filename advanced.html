@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kites & Wires - Rathmullan sailing school notes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    <style>
+        body.dark { background-color: #121212; color: #fff; }
+        body.dark a { color: #90caf9 }
+        .content-block { background: #fff; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0.5rem; border: 1px solid #e5e7eb }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+        </div>
+    </header>
+
+
+
+    <main class="container mx-auto px-4 py-12 flex-grow">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-blue-700 dark:text-blue-300 mb-4">Advanced Courses</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-8">Deepen your skills with focused notes. Choose a topic below to explore.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <a href="kites_and_wires.html" class="group block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-1 transition">
+                    <div class="flex items-start space-x-4">
+                        <svg class="w-10 h-10 text-blue-600 dark:text-blue-400 flex-none" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 12h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 7l5-4 5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 17l5 4 5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 dark:text-white group-hover:text-blue-600">Kites & Wires</h3>
+                            <p class="mt-2 text-gray-500 dark:text-gray-300 text-sm">Rigging, spinnakers and sail-control techniques for higher-performance sailing.</p>
+                            <span class="inline-block mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium">Explore →</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="advanced_boat_handling.html" class="group block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-1 transition">
+                    <div class="flex items-start space-x-4">
+                        <svg class="w-10 h-10 text-blue-600 dark:text-blue-400 flex-none" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 20c0-5 4-9 9-9s9 4 9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 13l5-9 5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 4v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 dark:text-white group-hover:text-blue-600">Advanced Boat Handling</h3>
+                            <p class="mt-2 text-gray-500 dark:text-gray-300 text-sm">Manoeuvres, docking, heavy-weather handling and crew coordination.</p>
+                            <span class="inline-block mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium">Explore →</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="start_racing.html" class="group block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-1 transition">
+                    <div class="flex items-start space-x-4">
+                        <svg class="w-10 h-10 text-blue-600 dark:text-blue-400 flex-none" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 12h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 6h6l1 6H4z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 6h6l-3 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 dark:text-white group-hover:text-blue-600">Start Racing</h3>
+                            <p class="mt-2 text-gray-500 dark:text-gray-300 text-sm">Race starts, tactics, rules basics and boat speed optimisation for club racing.</p>
+                            <span class="inline-block mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium">Explore →</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="adventure.html" class="group block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-1 transition">
+                    <div class="flex items-start space-x-4">
+                        <svg class="w-10 h-10 text-blue-600 dark:text-blue-400 flex-none" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M12 2l4 8-4 4-4-4 4-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 22h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 dark:text-white group-hover:text-blue-600">Adventure</h3>
+                            <p class="mt-2 text-gray-500 dark:text-gray-300 text-sm">Planning longer trips, expedition basics, provisioning and seamanship for cruising adventures.</p>
+                            <span class="inline-block mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium">Explore →</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="coastal_navigation.html" class="group block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transform hover:-translate-y-1 transition">
+                    <div class="flex items-start space-x-4">
+                        <svg class="w-10 h-10 text-blue-600 dark:text-blue-400 flex-none" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M12 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M5 21h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 dark:text-white group-hover:text-blue-600">Coastal Navigation for Small Boats</h3>
+                            <p class="mt-2 text-gray-500 dark:text-gray-300 text-sm">Chart work, pilotage, tide planning and small-boat navigation techniques for safe coastal passages.</p>
+                            <span class="inline-block mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium">Explore →</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+    <script>
+
+
+        // Show/hide "Back to Top" button
+        window.addEventListener('scroll', () => {
+            const button = document.getElementById('back-to-top');
+            if (window.scrollY > 200) {
+                button.classList.remove('hidden');
+            } else {
+                button.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <button id="back-to-top" onclick="scrollToTop()" class="hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-blue-700">Back to Top</button>
+
+    <footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <p class="text-lg font-semibold">&copy; 2025
+                <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+            </p>
+            <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+            <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.782 2.295 7.148 2.233 8.414 2.175 8.794 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

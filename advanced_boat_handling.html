@@ -1,0 +1,1002 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Advanced Boat Handling - Sailing School Notes</title>
+            <link rel="stylesheet" href="tailwind-ui.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
+        <!-- Firebase and Gemini API setup -->
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+            import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+            // --- Global Variables and Configuration ---
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            // Gemini calls are proxied via the local server to keep the API key server-side.
+            const geminiProxyGenerate = '/api/gemini/generate';
+            const geminiProxyTts = '/api/gemini/tts';
+
+            let db, auth, userId;
+            let isAuthReady = false;
+
+            // --- Firebase Initialization and Authentication ---
+            async function initFirebase() {
+                // Check for explicit empty config object from parsing the global variable
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.warn("Firebase config is missing or empty. Skipping database initialization.");
+                    return;
+                }
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userId = user.uid;
+                        } else {
+                            // Use a random UUID if not signed in (for private data access only)
+                            userId = crypto.randomUUID();
+                        }
+                        isAuthReady = true;
+                        console.info("Firebase Auth Ready. User ID:", userId);
+                    });
+
+                } catch (error) {
+                    console.error("Firebase initialization failed:", error);
+                }
+            }
+
+            // --- Utility Functions for TTS (PCM to WAV conversion) ---
+            function base64ToArrayBuffer(base64) {
+                const binaryString = atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            }
+
+            function writeString(view, offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+
+            function pcmToWav(pcm16, sampleRate) {
+                const numChannels = 1;
+                const bytesPerSample = 2; // 16-bit PCM
+                const blockAlign = numChannels * bytesPerSample;
+                const byteRate = sampleRate * blockAlign;
+
+                const buffer = new ArrayBuffer(44 + pcm16.length * 2);
+                const view = new DataView(buffer);
+
+                // RIFF chunk descriptor
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 36 + pcm16.length * 2, true);
+                writeString(view, 8, 'WAVE');
+                // FMT sub-chunk
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true); // Sub-chunk size
+                view.setUint16(20, 1, true); // Audio format (1 = PCM)
+                view.setUint16(22, numChannels, true); // Number of channels
+                view.setUint32(24, sampleRate, true); // Sample rate
+                view.setUint32(28, byteRate, true); // Byte rate
+                view.setUint16(32, blockAlign, true); // Block align
+                view.setUint16(34, 16, true); // Bits per sample
+                // Data sub-chunk
+                writeString(view, 36, 'data');
+                view.setUint32(40, pcm16.length * 2, true); // Data size
+
+                // Write PCM data
+                let offset = 44;
+                for (let i = 0; i < pcm16.length; i++, offset += 2) {
+                    view.setInt16(offset, pcm16[i], true);
+                }
+
+                return new Blob([view], { type: 'audio/wav' });
+            }
+
+            // --- Gemini API General Caller (LLM) ---
+            async function callGemini(systemPrompt, userQuery, isSearchGrounded = false, retries = 3) {
+                const payload = { systemPrompt, userQuery, isSearchGrounded };
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(geminiProxyGenerate, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) {
+                            const errorBody = await response.text();
+                            console.error(`Gemini proxy call failed: ${response.status}`, errorBody);
+                            if (response.status === 429 && i < retries - 1) {
+                                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                                continue;
+                            }
+                            throw new Error(`API call failed with status: ${response.status}`);
+                        }
+                        const result = await response.json();
+                        const text = (result && result.text) || '';
+                        if (!text) throw new Error('Empty response from proxy');
+                        return text.replace(/\*\*/g, '');
+                    } catch (error) {
+                        if (i === retries - 1) {
+                            console.error('Gemini proxy call failed after retries:', error);
+                            throw error;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                    }
+                }
+                throw new Error('Gemini proxy call failed after all retries.');
+            }
+
+            // --- Gemini API TTS Caller ---
+            async function callGeminiTts(text, retries = 3) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(geminiProxyTts, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text })
+                        });
+                        if (!response.ok) {
+                            const errorBody = await response.text();
+                            console.error(`TTS proxy call failed: ${response.status}`, errorBody);
+                            if (response.status === 429 && i < retries - 1) {
+                                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                                continue;
+                            }
+                            throw new Error(`TTS API call failed with status: ${response.status}`);
+                        }
+                        const result = await response.json();
+                        const audioData = result?.data;
+                        const mimeType = result?.mimeType;
+                        if (audioData && mimeType && mimeType.startsWith('audio/')) {
+                            const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                            const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
+                            const pcmData = base64ToArrayBuffer(audioData);
+                            const pcm16 = new Int16Array(pcmData);
+                            const wavBlob = pcmToWav(pcm16, sampleRate);
+                            return URL.createObjectURL(wavBlob);
+                        } else {
+                            throw new Error('No valid audio data in response.');
+                        }
+                    } catch (error) {
+                        if (i === retries - 1) {
+                            console.error('TTS proxy call failed after retries:', error);
+                            throw error;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                    }
+                }
+                throw new Error('Gemini TTS call failed after all retries.');
+            }
+
+
+            // --- Feature 1: AI Drill Generator ---
+            window.generateAdvancedDrill = async function() {
+                const outputDiv = document.getElementById('drill-output');
+                const topicSelect = document.getElementById('drill-topic');
+                const conditionSelect = document.getElementById('wind-condition');
+                const topic = topicSelect.value;
+                const condition = conditionSelect.value;
+                const button = document.getElementById('generateDrillBtn');
+                const originalButtonText = button.innerHTML;
+
+                outputDiv.innerHTML = `<div class="p-4 text-center text-blue-500 dark:text-blue-400 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">Generating a tailored ${topic} drill for ${condition}...</div>`;
+                button.disabled = true;
+                button.innerHTML = 'Generating...';
+
+                const systemPrompt = `You are a Senior Sailing Instructor. Create a focused, step-by-step training drill. The output must be a sequence of 4-6 numbered, clear, and actionable steps (no extra introduction or conclusion text). The drill must focus on the specific technique for the specified condition. Use technical sailing terms.`;
+                const userQuery = `Generate a high-performance sailing drill for: ${topic} in ${condition}. Format the output using a numbered list (1., 2., 3., etc.).`;
+
+                try {
+                    const generatedDrill = await callGemini(systemPrompt, userQuery);
+
+                    const listItems = generatedDrill.match(/\d+\. .*/g) || [generatedDrill];
+                    const htmlList = `<ol class="list-decimal list-inside space-y-2 mt-4 text-gray-700 dark:text-gray-300">${listItems.map(item => `<li>${item.replace(/^\d+\. /, '').trim()}</li>`).join('')}</ol>`;
+
+                    const htmlContent = `
+                        <h4 class="text-xl font-bold mb-2 text-green-600 dark:text-green-400">✨ Custom Drill: ${topic} in ${condition}</h4>
+                        <div class="prose dark:prose-invert max-w-none">
+                            ${htmlList}
+                        </div>
+                    `;
+                    outputDiv.innerHTML = htmlContent;
+
+                } catch (error) {
+                    console.error("Drill generation failed:", error);
+                    outputDiv.innerHTML = `<div class="p-4 text-center text-red-500 bg-red-100 dark:bg-red-900/50 rounded-lg">Error generating drill. See console for details. Please try again later.</div>`;
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = originalButtonText;
+                }
+            }
+
+            // --- Feature 2: Terminology Explainer (LLM + TTS) ---
+            // Store definitions and audio to avoid refetching
+            const termCache = {};
+            let currentAudio = null;
+
+            window.explainTerm = async function(term) {
+                const outputDiv = document.getElementById('term-output');
+                const statusSpan = document.getElementById('term-status');
+                const listenBtn = document.getElementById('term-listen-btn');
+
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+
+                listenBtn.classList.add('hidden');
+                outputDiv.textContent = `Fetching definition for '${term}'...`;
+                statusSpan.textContent = '';
+
+                try {
+                    if (termCache[term] && termCache[term].definition) {
+                        outputDiv.textContent = termCache[term].definition;
+                    } else {
+                        // 1. Generate Explanation (LLM + Grounding)
+                        const systemPrompt = `You are a concise sailing instructor. Provide a clear, single-paragraph definition of the sailing term '${term}'. Focus on its function in advanced boat handling. Do not use markdown.`;
+                        const userQuery = `What is the sailing term: ${term}? Provide the definition and explain its purpose in a single paragraph.`;
+
+                        const definition = await callGemini(systemPrompt, userQuery, true);
+                        termCache[term] = { definition: definition };
+                        outputDiv.textContent = definition;
+                    }
+
+                    // Show the listen button and attach the correct term
+                    listenBtn.classList.remove('hidden');
+                    listenBtn.onclick = () => playTermAudio(term);
+
+                } catch (error) {
+                    console.error("LLM error:", error);
+                    outputDiv.textContent = `Sorry, an error occurred while fetching the definition. See console for details.`;
+                }
+            }
+
+            async function playTermAudio(term) {
+                const statusSpan = document.getElementById('term-status');
+                const listenBtn = document.getElementById('term-listen-btn');
+
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+
+                listenBtn.disabled = true;
+                statusSpan.textContent = 'Generating audio...';
+
+                try {
+                    let audioUrl;
+                    if (termCache[term] && termCache[term].audioUrl) {
+                        audioUrl = termCache[term].audioUrl;
+                    } else {
+                        const definition = termCache[term].definition;
+                        if (!definition) {
+                            statusSpan.textContent = 'Error: No definition found to read.';
+                            return;
+                        }
+                        audioUrl = await callGeminiTts(definition);
+                        termCache[term].audioUrl = audioUrl;
+                    }
+
+                    currentAudio = new Audio(audioUrl);
+                    currentAudio.play();
+                    statusSpan.textContent = 'Playing audio...';
+
+                    currentAudio.onended = () => {
+                        statusSpan.textContent = 'Playback complete.';
+                        listenBtn.disabled = false;
+                        currentAudio = null;
+                    }
+
+                } catch (error) {
+                    console.error("TTS error:", error);
+                    statusSpan.textContent = 'Error generating audio. See console for details.';
+                    listenBtn.disabled = false;
+                }
+            }
+
+            // --- Original Page JavaScript ---
+            function scrollToSection(sectionId) {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            window.scrollToSection = scrollToSection; // Expose to global scope
+
+            function scrollToTop() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            window.scrollToTop = scrollToTop; // Expose to global scope
+
+
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark);
+                updateToggleText(isDark);
+            }
+            window.toggleDarkMode = toggleDarkMode; // Expose to global scope
+
+            function updateToggleText(isDark) {
+                const toggleButton = document.getElementById('darkModeToggle');
+                if (toggleButton) {
+                    toggleButton.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+                }
+            }
+
+            // No API key UI on this page; key is managed server-side.
+
+            window.onload = function() {
+                initFirebase(); // Initialize Firebase on load
+
+                // Force light theme for higher readability and remove any dark backgrounds
+                document.body.classList.remove('dark');
+                localStorage.setItem('darkMode', 'false');
+                updateToggleText(false);
+                // No key status needed; proxy handles authentication.
+            };
+        </script>
+
+
+    </head>
+    <body class="min-h-screen flex flex-col">
+
+        <!-- New site-wide header, full width -->
+        <header class="bg-blue-600 p-4 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-xl sm:text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+                <!-- Navigation links from user, plus the page-specific buttons -->
+                <nav>
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                    <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                    <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                    <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                    <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                    <a href="instructors.html" class="nav-link">Instructors</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main content sections updated for Advanced Boat Handling -->
+        <main class="container mx-auto px-4 py-8 flex-grow">
+
+                <!-- Overview Section -->
+                <section id="overview" class="content-block">
+                    <!-- Added a "Quick Jump" nav here to restore page navigation -->
+                    <nav class="mb-6 p-4 bg-gray-100 rounded-lg shadow-inner dark:bg-gray-700">
+                        <h2 class="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-200">Page Contents</h2>
+                        <ul class="flex flex-wrap gap-3 text-sm">
+                            <li><a href="#overview" onclick="scrollToSection('overview')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Overview</a></li>
+                            <!-- New link for AI section -->
+                            <li><a href="#ai-assistant" onclick="scrollToSection('ai-assistant')" class="px-3 py-1 bg-purple-100 text-purple-800 rounded-md hover:bg-purple-200 transition dark:bg-purple-800/70 dark:text-purple-200 dark:hover:bg-purple-700">✨ AI Assistant</a></li>
+                            <li><a href="#rigging" onclick="scrollToSection('rigging')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Rigging & Tuning</a></li>
+                            <li><a href="#sailing_theory" onclick="scrollToSection('sailing_theory')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Sailing Knowledge</a></li>
+                            <li><a href="#boat_speed" onclick="scrollToSection('boat_speed')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Boat Speed</a></li>
+                            <li><a href="#manoeuvres" onclick="scrollToSection('manoeuvres')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Practical Drills</a></li>
+                            <li><a href="#emergency" onclick="scrollToSection('emergency')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Emergency & Safety</a></li>
+                            <li><a href="#ropework" onclick="scrollToSection('ropework')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition dark:bg-blue-800/70 dark:text-blue-200 dark:hover:bg-blue-700">Ropework</a></li>
+                        </ul>
+                    </nav>
+
+                    <h2 class="section-heading">Course Objective & Pre-requisites</h2>
+                    <p class="mb-4 text-gray-800">
+                        To develop advanced boat handling and tuning skills, including a clear understanding of how sails and foils work together, preparing sailors to sail flat out in strong winds.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div class="p-3 bg-gray-100 rounded-md">
+                            <h3 class="font-medium text-lg mb-1 text-gray-800">Pre-requisites:</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li>Completed the **Improving Skills** certificate.</li>
+                                <li>At least **20 hours** logged post-Improving Skills.</li>
+                                <li>Confident sailing in strong winds.</li>
+                            </ul>
+                        </div>
+                        <div class="p-3 bg-gray-100 rounded-md">
+                            <h3 class="font-medium text-lg mb-1 text-gray-800">Evaluation Focus:</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li>Confident, controlled manoeuvres in strong winds.</li>
+                                <li>Optimised sail setup for performance.</li>
+                                <li>Application of speed and tuning techniques.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- --- New Gemini AI Assistant Section --- -->
+                <section id="ai-assistant" class="content-block">
+                    <h2 class="section-heading">AI Instructor Assistant</h2>
+                    <p class="mb-3 text-gray-800">Use these Gemini-powered tools to generate tailored drills or get instant audio definitions of key terms.</p>
+                    <!-- API key is managed server-side; no input required. -->
+
+                    <!-- AI Drill Generator -->
+                    <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-xl mb-3 text-indigo-600 dark:text-indigo-400">1. Generate Custom Performance Drill</h3>
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                            <select id="drill-topic" class="p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md text-sm flex-grow">
+                                <option value="Advanced Roll Tack">Advanced Roll Tack</option>
+                                <option value="High-Speed Planing">High-Speed Planing</option>
+                                <option value="Rudderless Upwind Sailing">Rudderless Upwind Sailing</option>
+                                <option value="Heave-to Man Overboard">Heave-to Man Overboard</option>
+                            </select>
+                            <select id="wind-condition" class="p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md text-sm flex-grow">
+                                <option value="Light Winds (0-8 knots)">Light Winds (0-8 knots)</option>
+                                <option value="Moderate Winds (9-15 knots)">Moderate Winds (9-15 knots)</option>
+                                <option value="Strong Winds (16+ knots)">Strong Winds (16+ knots)</option>
+                            </select>
+                            <button id="generateDrillBtn" onclick="generateAdvancedDrill()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition text-sm font-medium">
+                                ✨ Generate Drill
+                            </button>
+                        </div>
+                        <div id="drill-output" class="mt-4 p-4 bg-white rounded-lg min-h-20 text-sm">
+                            Select a topic and condition and click 'Generate Drill'.
+                        </div>
+                    </div>
+
+                    <!-- Terminology Explainer -->
+                    <div>
+                        <h3 class="font-semibold text-xl mb-3 text-indigo-600 dark:text-indigo-400">2. Terminology Explainer (Text & Audio)</h3>
+                        <p class="mb-3 text-sm italic text-gray-600">Click a term to get a definition, then click the 'Listen' button to hear it.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button onclick="explainTerm('Slot Effect')" class="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-medium hover:bg-green-300 transition dark:bg-green-700 dark:text-green-100 dark:hover:bg-green-600">
+                                Slot Effect
+                            </button>
+                            <button onclick="explainTerm('Mast Ram')" class="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-medium hover:bg-green-300 transition dark:bg-green-700 dark:text-green-100 dark:hover:bg-green-600">
+                                Mast Ram
+                            </button>
+                            <button onclick="explainTerm('Heave-to')" class="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-medium hover:bg-green-300 transition dark:bg-green-700 dark:text-green-100 dark:hover:bg-green-600">
+                                Heave-to
+                            </button>
+                            <button onclick="explainTerm('Leech Tension')" class="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-medium hover:bg-green-300 transition dark:bg-green-700 dark:text-green-100 dark:hover:bg-green-600">
+                                Leech Tension
+                            </button>
+                        </div>
+
+                        <div class="p-4 bg-white rounded-lg text-sm">
+                            <p id="term-output" class="text-gray-800">Click a term button above to load its explanation here.</p>
+                            <div class="flex items-center mt-3">
+                                <button id="term-listen-btn" onclick="playTermAudio()" class="hidden px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition text-xs font-medium">
+                                    ▶️ Listen
+                                </button>
+                                <span id="term-status" class="ml-3 text-xs font-semibold text-blue-600"></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- --- End New Gemini AI Assistant Section --- -->
+
+
+                <!-- Rigging & Tuning Section -->
+                <section id="rigging" class="content-block">
+                    <h2 class="section-heading">Rigging, Tuning & Controls</h2>
+                    <p class="mb-4 text-gray-800">Advanced performance starts ashore with precise setup and dynamic on-water adjustments.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">Ashore: Rigging & Static Tuning</h3>
+                            <ul class="list-disc list-inside space-y-2 text-gray-800">
+                                <li><b>Full Rigging:</b> Confidently rig any boat (dinghy, keelboat, cat) from trailer to water, including mast stepping, reefing, and furling systems.</li>
+                                <li><b>Ropework:</b> Demonstrate all prerequisite knots and splices.</li>
+                                <li><b>Spreader Adjustments:</b> Understand and explain how spreader length and angle affect mast bend and sail shape.</li>
+                                <li><b>Mast Ram/Chocks:</b> Know how to use mast ram or chocks to pre-bend the mast and position it correctly.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">Afloat: Dynamic Controls</h3>
+                            <ul class="list-disc list-inside space-y-2 text-gray-800">
+                                <li><b>Sail Camber:</b> Use Cunningham and Outhaul to change the depth and position of the sail's draft for power or depowering.</li>
+                                <li><b>Leech Tension:</b> Use the Kicker/Vang as a primary control (especially downwind) to manage leech twist and prevent overpowering.</li>
+                                <li><b>Feedback Loop:</b> Demonstrate using all primary and secondary rig controls to optimise performance in changing conditions, reading feedback from the boat.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Rig-any-Boat Checklist (Step-by-step) -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">Rig-any-Boat: Step-by-step Checklist</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-800">
+                            <li><b>Hull & Foils:</b> Fit bungs; rudder/centreboard pins secure; bailers shut.</li>
+                            <li><b>Mast Stepping:</b> Check shrouds/forestay clear; communicate “ready, lift, heel boat to you”; pin forestay/shrouds.</li>
+                            <li><b>Standing Rigging:</b> Hand-tighten bottlescrews evenly both sides; sight mast is centred at partners.</li>
+                            <li><b>Running Rigging:</b> Lead halyards, sheets, vang, cunningham, outhaul; test each to full travel.</li>
+                            <li><b>Sails:</b> Hoist main (battens in), set outhaul/cunningham nominal; hoist jib, set lead marks to class baseline.</li>
+                            <li><b>Controls Check:</b> Pull each control on/off; mark repeatable settings with tape/sharpie.</li>
+                            <li><b>Dock-Tune:</b> Final safety check (PFDs, bungs, foils leash), then launch.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">Success criteria: boat fully rigged without instructor input, all controls free-running, mast straight athwartships.</p>
+                    </div>
+
+                    <!-- Primary Controls Table -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-3 text-blue-700">Primary Controls and Their Effects</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Control</th>
+                                        <th>Function</th>
+                                        <th>When to Tension</th>
+                                        <th>When to Ease</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Cunningham / Downhaul</td>
+                                        <link rel="stylesheet" href="tailwind-ui.min.css">
+                                        <td>Strong winds: depower, move draft forward, flatten sail.</td>
+                                        <td>Light winds: maximise power, move draft aft, fuller sail.</td>
+
+                                <!-- Tuning How-To Blocks -->
+                                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                                        <h4 class="font-semibold text-blue-700 mb-2">How to Measure Mast Rake</h4>
+                                        <ol class="list-decimal list-inside space-y-1 text-gray-800">
+                                            <li>Hoist a tape on main halyard; lock at black band.</li>
+                                            <li>Measure to transom edge (or top of gudgeon). Record.</li>
+                                            <li>Target examples: Light  <span class="italic">longer rake</span>; Medium  <span class="italic">class baseline</span>; Heavy  <span class="italic">shorter rake</span>.</li>
+                                            <li>Adjust at forestay/bottle-screws in equal turns both sides; re-sight mast centre at partners.</li>
+                                        </ol>
+                                        <p class="text-sm text-gray-600 mt-2">Outcome: repeatable upwind balance (slight weather helm) across wind ranges.</p>
+                                    </div>
+                                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                                        <h4 class="font-semibold text-blue-700 mb-2">How to Set Rig Tension</h4>
+                                        <ol class="list-decimal list-inside space-y-1 text-gray-800">
+                                            <li>Use a Loos gauge (if available) on shrouds; note class guides.</li>
+                                            <li>No gauge? Pull leeward shroud on-beat: Light = goes slack; Med = just slack; Heavy = remains just firm.</li>
+                                            <li>Adjust bottlescrews equally; re-check mast straight side-to-side.</li>
+                                        </ol>
+                                        <p class="text-sm text-gray-600 mt-2">Outcome: jib luff stable, pointing improved; forestay sag controlled per conditions.</p>
+                                    </div>
+                                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                                        <h4 class="font-semibold text-blue-700 mb-2">Spreader Length & Sweep (Angle)</h4>
+                                        <ol class="list-decimal list-inside space-y-1 text-gray-800">
+                                            <li>Length: measure from mast side to shroud centre; match class baseline (± adjustments).</li>
+                                            <li>Sweep: lay a straight batten across spreader tips; measure back to back edge of mast.</li>
+                                            <li>More sweep = more prebend (flatter main); less sweep = fuller main. Change in small increments.</li>
+                                        </ol>
+                                        <p class="text-sm text-gray-600 mt-2">Outcome: mainsail luff curve matches mast bend in target wind range.</p>
+                                    </div>
+                                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                                        <h4 class="font-semibold text-blue-700 mb-2">Mast Ram / Chocks (Partners)</h4>
+                                        <ol class="list-decimal list-inside space-y-1 text-gray-800">
+                                            <li>Upwind Power: remove chocks/ram aft to allow mast to sag slightly to leeward—adds depth.</li>
+                                            <li>Depower/Pointing: push ram forward or add forward chocks to increase bend—flattens/leech opens.</li>
+                                            <li>Reaching/Running: control leech with vang; keep mast supported to avoid over-bend creases.</li>
+                                        </ol>
+                                        <p class="text-sm text-gray-600 mt-2">Outcome: quick trim range without re-rigging between races.</p>
+                                    </div>
+                                </div>
+                                    </tr>
+                                    <tr>
+                                        <td>Outhaul</td>
+                                        <td>Controls lower-third shape and foot tension.</td>
+                                        <td>Strong winds: flatten to reduce heel and depower.</td>
+                                        <td>Light winds: ease to create deeper, more powerful camber.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kicker / Vang</td>
+                                        <td>Controls leech tension and boom when mainsheet is eased.</td>
+                                        <td>Reaching/running: tighten to stop boom rise and limit twist.</td>
+                                        <td>Upwind/light winds: ease to open leech and reduce drag.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+                    <!-- Secondary Controls -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">Secondary (Standing Rigging) Controls</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-800">
+                            <li><b>Spreader Length & Angle:</b> Spreaders pre-bend and laterally support the mast. More sweep increases pre-bend to flatten the main in heavy air. Excess length risks inversion.</li>
+                            <li><b>Mast Ram / Chocks:</b> Pushing mast base forward increases bend (flattens main); allowing aft movement decreases bend (powers up main).</li>
+                            <li><b>Sail Camber (Draft):</b> Depth of curvature, controlled mainly by Cunningham and Outhaul. Aim for draft ~40% aft of luff in most conditions.</li>
+                            <li><b>Leech Tension:</b> Managed primarily by mainsheet (upwind) and vang (offwind). Too tight stalls; too loose spills power.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Rigging Competence -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">Rigging Competence</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-800">
+                            <li><b>Mast Stepping:</b> Communicate clearly. Check spreaders, shrouds, and forestay are clear and secured before lifting.</li>
+                            <li><b>Reefing Systems:</b> Practice slab (main) and roller (headsail) reefing on shore to ensure all lines run freely.</li>
+                            <li><b>Spinnaker Rigging:</b> For Kites & Wires graduates: correctly lead sheets/guys; practice hoists and douses across wind strengths.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Sailing Knowledge Section -->
+                <section id="sailing_theory" class="content-block">
+                    <h2 class="section-heading">Advanced Sailing Knowledge (Aerodynamics)</h2>
+                    <p class="mb-4 text-gray-800">Understanding why the boat is fast is key to maintaining speed. Focus on how the mainsail and jib interact to increase lift, and how trim on one affects the other.</p>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">3.1 The Slot Effect</h3>
+                            <p class="text-gray-800 mb-2">The jib accelerates air over its leeward side and feeds this faster flow through the slot between jib and main. This dramatically increases airflow over the mainsail's leeward side, boosting pressure differential and overall drive.</p>
+                            <h4 class="font-semibold text-blue-700">Maximising the Slot</h4>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li><b>Jib Lead:</b> Position so leech twist is correct; the slot should be roughly parallel top-to-bottom.</li>
+                                <li><b>Sheeting Angles:</b> Sheet so the exit flow feeds cleanly onto the main. Too tight backwinds (stalls) the main; too loose loses the benefit.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">3.2 Sail Trim Interaction</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li><b>Jib on Main:</b> A tightly sheeted jib pulls the bow down and can flatten the main by tightening airflow around the luff. In stronger winds, easing the jib slightly can power up the main by allowing cleaner cross-rig flow.</li>
+                                <li><b>Main on Jib via Mast Bend:</b> Heavy mainsheet tension (and vang) induces mast bend, flattening both sails—reducing power but maintaining control.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">3.3 Optimising Hull, Spars & Sails within Class Rules</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li><b>Hull:</b> Fair and smooth below waterline; remove nicks; polish to a satin finish. Ensure weight and fittings comply with class rules.</li>
+                                <li><b>Foils:</b> True, smooth profiles with crisp trailing edges (not knife-sharp); align rudder/board to minimise helm drag.</li>
+                                <li><b>Spars:</b> Check straightness and fitting security; spreaders equal and symmetrical; traveler/boom ends free-running.</li>
+                                <li><b>Sails:</b> Class-legal measurements; mark repeatable trim references (vang, cunningham, outhaul) and jib lead holes.</li>
+                                <li><b>Documentation:</b> Keep a trim log: wind, sea state, settings, results. Change one thing at a time.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Practical Manoeuvres Section -->
+                <section id="manoeuvres" class="content-block">
+                    <h2 class="section-heading">High-Performance Boat Handling</h2>
+                    <p class="mb-4 text-gray-800">Achieve controlled, flat-out sailing, maximising speed and minimising loss of distance during manoeuvres.</p>
+
+                    <!-- 1.1 Planing Setup and Control -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.1 Planing Setup and Control</h3>
+                        <p class="text-gray-800 mb-3">Planing occurs when the hull lifts to reduce wetted surface and drag, letting speed exceed displacement limits.</p>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Goal</th>
+                                        <th>Control Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Crew Weight</td>
+                                        <td>Fore/aft: move aft to lift bow and reduce drag. In/out: maximise leverage to keep boat flat.</td>
+                                        <td>Crew/helm move quickly and decisively with gusts and lulls.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Heel</td>
+                                        <td>Maintain slight weather heel (1–5°) to reduce rudder drag and stand mast up.</td>
+                                        <td>Helm uses small, smooth tiller inputs. Crew uses body weight/trapeze/hiking.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sail Trim</td>
+                                        <td>Main on with controlled twist; jib slot open with telltales flying 100%.</td>
+                                        <td>Constant sheeting/feathering in gusts to keep boat flat and balanced.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rudder</td>
+                                        <td>Minimal input; rudder is a brake when moved.</td>
+                                        <td>Track straight; use weight and sails for fine course changes. Feather in gusts, bear away in lulls.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mt-3 text-sm italic text-gray-700"><b>Key concept – Balanced helm:</b> Tiller pressure should be neutral or slightly weather helm, indicating efficient sail/foil balance.</p>
+                    </div>
+
+                    <!-- 1.2 Effective Roll Tacks -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.2 Effective Roll Tacks</h3>
+                        <p class="text-gray-800">Use momentum and body roll to drive the sails through the wind with minimal speed loss.</p>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li><b>Preparation (old tack):</b> Build speed; helm/crew forward and slightly to leeward with small weather heel.</li>
+                            <li><b>Initiation (head to wind):</b> Helm snaps the turn with minimal rudder; crew crosses to new leeward to roll boat flat or slightly to windward.</li>
+                            <li><b>The roll:</b> As bow passes through, crew sits out hard on new windward, forcing deep leeward roll; sheet in rapidly to pull sails onto new side.</li>
+                            <li><b>Exit (new tack):</b> Helm straightens; trim for new course and adjust weight for speed and heel. The roll provides most of the turn.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">Common errors: over-rudder (speed loss), late sheet, staying too far aft. Success: audible whoosh/acceleration on exit.</p>
+                    </div>
+
+                    <!-- 1.3 Effective Roll Gybes -->
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.3 Effective Roll Gybes</h3>
+                        <p class="text-gray-800">Control the sail switch in strong winds and induce acceleration in light winds.</p>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li><b>Preparation:</b> Weight slightly forward; sail deep. Crew holds mainsheet and takes tiller extension.</li>
+                            <li><b>Initiation:</b> Helm turns smoothly; crew hauls main to centreline (or just past).</li>
+                            <li><b>The roll:</b> As sail crosses, crew sits out hard on new windward to force sharp leeward heel—preventing rig slam and filling quickly.</li>
+                            <li><b>Exit:</b> Helm straightens; ease main to broad reach trim. The righting moment from the roll creates acceleration.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">Common errors: vang too tight (boom won’t cross), no roll on exit, bearing away too much after the flip.</p>
+                    </div>
+
+                    <!-- 1.4 Pick Up a Mooring -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.4 Picking Up a Mooring (All Wind/Tide)</h3>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li><b>Plan:</b> Identify wind and tide dominant force. Approach on a close reach to the mooring’s leeward side.</li>
+                            <li><b>Approach:</b> Control speed with sheets; feather to slow. Crew ready forward with hook/line; keep weight central.</li>
+                            <li><b>Final metres:</b> Luff to bleed speed; stop head by the pickup. Crew lifts and secures to bow cleat through the ring (no wrists in bight).</li>
+                            <li><b>Settle:</b> Ease sails, centreboard half, rudder down; double-check security.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">Cross-tide: ferry-glide across the stream; strong tide, minimal sail—use current to drift onto buoy.</p>
+                    </div>
+
+                    <!-- 1.5 Alongside / Pontoon -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.5 Approach, Come Alongside, Leave a Pier/Pontoon</h3>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li><b>Setup:</b> Fenders and lines ready; decide upwind or uptide side preferred (aim to approach into the stronger force).</li>
+                            <li><b>Approach:</b> Beam/broad reach in; ease main early to decelerate; final approach nearly head-to-wind, crew ready to step (not jump).</li>
+                            <li><b>Alongside:</b> Crew steps onto pontoon with bow line first, then stern line; secure; sails depowered immediately.</li>
+                            <li><b>Departure:</b> Spring off: hold bow line, push stern out (or reverse if needed), sheet in and steer away under control.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">In strong crosswind/tide: crab in with ferry-glide; never try to “turn in the last metre”—establish control early.</p>
+                    </div>
+
+                    <!-- 1.6 Tight Circular Course -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.6 Tight Circular Course (Moderate Conditions)</h3>
+                        <p class="text-gray-800">Drill to develop coordination, heel control and fine steering.</p>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li>Set a small radius (~2–3 boat lengths). Sail continuous circles maintaining heel 0–5°.</li>
+                            <li>Use <b>weight and sheet</b> to steer; keep rudder movement minimal and smooth.</li>
+                            <li>Target constant speed: feather in gusts, bear away in lulls; trim continuously.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">Success: wake clean, constant heel, no stalls; helm pressure stays light.</p>
+                    </div>
+
+                    <!-- 1.7 Follow the Leader -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.7 Follow the Leader (Moderate Conditions)</h3>
+                        <p class="text-gray-800">Develop anticipatory trim and steering.</p>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li>Leader makes smooth S-turns and speed changes on reach and beat.</li>
+                            <li>Followers maintain fixed gap without rudder overuse—use weight/trim to react.</li>
+                            <li>Rotate leaders every 2 minutes; debrief on wake cleanliness and control.</li>
+                        </ol>
+                    </div>
+
+                    <!-- 1.8 Rudderless Sailing Drill -->
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-700">1.8 Rudderless on All Points (Moderate)</h3>
+                        <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                            <li>Remove/secure tiller; start on beam reach.</li>
+                            <li>Turn up by sheeting in/heel leeward; turn down by easing/heel windward.</li>
+                            <li>Progress to close-hauled and broad reach; add centreboard height to amplify sail-steer.</li>
+                        </ol>
+                        <p class="text-sm text-gray-600 mt-2">Success: tack/gybe completed rudderless with control and minimal drift.</p>
+                    </div>
+                </section>
+
+                <!-- Boat Speed Section -->
+                <section id="boat_speed" class="content-block">
+                    <h2 class="section-heading">Boat Speed: Waves, Steering and the 5 Essentials</h2>
+                    <p class="mb-4 text-gray-800">Speed is technique plus consistency. Use these drills to lock in fast habits.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-4 bg-white rounded-lg border border-gray-200">
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">2.1 Maximise Speed in Waves</h3>
+                            <ul class="list-disc list-inside ml-4 space-y-1 text-gray-800">
+                                <li><b>Upwind:</b> Feather in wave faces; bear slightly and sheet for punch over crests; keep boat flat.</li>
+                                <li><b>Reach:</b> Small S-turns to surf; trim main to keep telltales flowing; crew moves aft in surf.</li>
+                                <li><b>Downwind:</b> Chase dark patches; steer to stay on wave; ease vang to open leech and prevent rolling.</li>
+                            </ul>
+                            <p class="text-sm text-gray-600 mt-2">Drill: “3-wave sets” — call trim/steer actions for each of three consecutive waves, then repeat.</p>
+                        </div>
+                        <div class="p-4 bg-white rounded-lg border border-gray-200">
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">2.2 Optimum Course & Steering Technique</h3>
+                            <ul class="list-disc list-inside ml-4 space-y-1 text-gray-800">
+                                <li><b>VMG focus:</b> Sail the angle that gives best <span class="italic">velocity made good</span>, not just closest to wind.</li>
+                                <li><b>Minimise rudder:</b> Trim and weight first; tiller last. Every degree is drag.</li>
+                                <li><b>Gust response:</b> Head up in gusts (convert power to height), bear away in lulls (protect speed).</li>
+                            </ul>
+                            <p class="text-sm text-gray-600 mt-2">Drill: “Rudder cap” — helm keeps hand on tiller extension joint; must steer primarily with trim/weight.</p>
+                        </div>
+                        <div class="p-4 bg-white rounded-lg border border-gray-200 md:col-span-2">
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">2.3 Adapting the 5 Essentials</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-800">
+                                <div>
+                                    <h4 class="font-semibold text-blue-700">Light (0–8 kn)</h4>
+                                    <ul class="list-disc list-inside ml-4 text-sm">
+                                        <li>Balance: bow down, minimal heel, smooth roll kinetics.</li>
+                                        <li>Sail set: full, draft aft; vang eased for twist.</li>
+                                        <li>Trim: constant micro-ease/trim to keep flow attached.</li>
+                                        <li>Course: sail lower for speed; avoid pinching.</li>
+                                        <li>Centreboard: slightly raised offwind.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-blue-700">Moderate (9–15 kn)</h4>
+                                    <ul class="list-disc list-inside ml-4 text-sm">
+                                        <li>Balance: flat boat; hike proactively.</li>
+                                        <li>Sail set: baseline shape; vang engages on reaches.</li>
+                                        <li>Trim: positive sheet for height; react to gusts.</li>
+                                        <li>Course: VMG angles; smooth steering.</li>
+                                        <li>Centreboard: full upwind; adjust reaching.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-blue-700">Strong (16+ kn)</h4>
+                                    <ul class="list-disc list-inside ml-4 text-sm">
+                                        <li>Balance: aggressive hike/trapeze; spill early.</li>
+                                        <li>Sail set: cunningham/outhaul on; vang to control leech.</li>
+                                        <li>Trim: ease in gusts to stay flat; quick re-trim.</li>
+                                        <li>Course: foot for speed; avoid excessive height.</li>
+                                        <li>Centreboard: slightly raised downwind to reduce trip.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Emergency & Safety Drills -->
+                <section id="emergency" class="content-block">
+                    <h2 class="section-heading">Emergency & Safety Drills</h2>
+                    <p class="mb-4 text-gray-800">Confidence and control in emergencies are essential. Practice the following until they are automatic.</p>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">4.1 Steering Without a Rudder</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li><b>Sheeting:</b> Main in hard rounds up (windward); easing bears away. Most effective on beam/broad reach.</li>
+                                <li><b>Weight:</b> Move to leeward to round up; to windward to bear away. Very effective on run/broad reach.</li>
+                                <li><b>Centreboard:</b> Raising increases sheeting effect; lowering adds stability.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">4.2 High-Speed Man-Overboard (MOB)</h3>
+                            <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                                <li><b>Stop:</b> Call "MOB" and point; execute a swift stop (crash tack or bear-away/tack) to slow the boat.</li>
+                                <li><b>Turn:</b> Set up on a close reach (~45° to wind) toward the casualty.</li>
+                                <li><b>Approach:</b> Use fill-and-spill to control speed—sheet in to move, ease to slow; aim for zero forward speed at contact.</li>
+                                <li><b>Recovery:</b> Make contact on leeward side; trim to keep boat close and avoid blowing over the casualty.</li>
+                            </ol>
+                            <p class="text-sm text-gray-600 mt-2">Figure-8 variant: reach away 4–6 boat lengths, tack, broad reach back to leeward of casualty, luff to stop with casualty at shrouds.</p>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">4.3 Capsize Recovery in High-Performance Boats</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li><b>Avoid entrapment:</b> Extra rigging increases risk—use any air pocket under hull to exit, check for crew/helm.</li>
+                                <li><b>Spinnaker up:</b> Release halyard and retrieve kite before righting to prevent drogue effect/inversion.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">4.4 Emergency Stop: Heave-To</h3>
+                            <ol class="list-decimal list-inside ml-4 space-y-1 text-gray-800">
+                                <li><b>Tack:</b> Initiate a normal tack.</li>
+                                <li><b>Back the jib:</b> Leave it sheeted on old side as you pass head to wind.</li>
+                                <li><b>Lock the helm:</b> Tiller hard to leeward once slowed.</li>
+                                <li><b>Balance forces:</b> Backed jib pushes leeward; main and rudder push windward—boat sits nearly stationary, drifting slowly.</li>
+                            </ol>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">4.5 Sailing Under Jib Only</h3>
+                            <ul class="list-disc list-inside ml-4 text-gray-800">
+                                <li><b>Purpose:</b> Simulate damaged main or heavy-wind safety mode.</li>
+                                <li><b>Control:</b> Expect heavy leeway and strong lee helm; effective on reach/run only.</li>
+                                <li><b>Execution:</b> Sit forward; use weight and jib sheeting aggressively to maintain course.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Ropework -->
+                <section id="ropework" class="content-block">
+                    <h2 class="section-heading">Ropework</h2>
+                    <p class="mb-4 text-gray-800">Demonstrate all prerequisite ropework skills from previous levels.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">Essential Knots</h3>
+                            <ul class="list-disc list-inside ml-4 space-y-1 text-gray-800">
+                                <li>Figure-of-eight (stopper)</li>
+                                <li>Bowline (non-slip loop)</li>
+                                <li>Round Turn and Two Half Hitches (mooring/fenders)</li>
+                                <li>Clove Hitch (temporary attachment, fenders)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-blue-700">Finishing & Care</h3>
+                            <ul class="list-disc list-inside ml-4 space-y-1 text-gray-800">
+                                <li><b>Splicing/Whipping:</b> Whip ends to prevent fray; understand basic splicing.</li>
+                                <li><b>Coiling:</b> Neatly coil and stow lines to prevent snags and ensure immediate use.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- What Next Section -->
+                <section id="next_steps" class="content-block">
+                    <h2 class="section-heading">What's Next?</h2>
+                    <p class="text-gray-800">
+                        You can now describe how to continue sailing and record your progress in your logbook. You are now ready to try another SBSS Advanced Module, such as **Start Racing**, **Adventure Skills**, or **Kites & Wires**.
+                    </p>
+                </section>
+
+                <!-- Assessment Checklist -->
+                <section id="assessment" class="content-block">
+                    <h2 class="section-heading">Assessment Checklist (Map to Objectives)</h2>
+                    <ul class="list-disc list-inside ml-4 text-gray-800 space-y-1">
+                        <li><b>Rigging:</b> Rig-any-Boat checklist completed without prompts; controls tested end-to-end.</li>
+                        <li><b>Tuning:</b> Demonstrates mast rake, rig tension, spreader sweep, mast ram/chocks adjustment with stated outcomes.</li>
+                        <li><b>Mooring:</b> Consistent close-reach approach, stop at pickup, secure safely in differing wind/tide.</li>
+                        <li><b>Alongside:</b> Controlled approach, correct lines order, safe departure using springs.</li>
+                        <li><b>MOB:</b> Executes quick-stop/figure-8 with leeward recovery under control.</li>
+                        <li><b>Planing:</b> Sets heel/trim for sustained planing; uses S-turns on waves.</li>
+                        <li><b>Roll Tack/Gybe:</b> Smooth, accelerated exits; minimal rudder.</li>
+                        <li><b>Tight Circles/Follow Leader:</b> Constant speed, light helm; anticipatory trim.</li>
+                        <li><b>Rudderless:</b> Steers all points using trim/weight/board; completes a tack/gybe.</li>
+                        <li><b>Boat Speed:</b> Demonstrates wave technique up/downwind and VMG steering.</li>
+                        <li><b>5 Essentials:</b> Shows adaptations across light/moderate/strong winds.</li>
+                        <li><b>Sailing Knowledge:</b> Explains optimisation of hull/spars/sails and sail interaction effects.</li>
+                    </ul>
+                </section>
+        </main>
+
+        <!-- Back to Top Button -->
+    <button id="back-to-top" onclick="scrollToTop()" class="hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-blue-700 transition z-50">Back to Top</button>
+
+        <script>
+            // Match kites_and_wires.html behavior: show button after 200px scroll
+            window.addEventListener('scroll', () => {
+                const button = document.getElementById('back-to-top');
+                if (!button) return;
+                if (window.scrollY > 200) {
+                    button.classList.remove('hidden');
+                } else {
+                    button.classList.add('hidden');
+                }
+            });
+        </script>
+
+        <!-- Exact same footer from kites_and_wires.html -->
+        <footer class="bg-gradient-to-r from-blue-700 via-blue-700 to-blue-600 text-white py-8 mt-12 shadow-inner w-full">
+            <div class="container mx-auto flex flex-col md:flex-row items-center justify-between px-4">
+                <div class="mb-4 md:mb-0 text-center md:text-left">
+                    <p class="text-lg font-semibold">&copy; 2025
+                        <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                        <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+                    </p>
+                    <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                        <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                        <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308 3.608C4.515 2.567 5.782 2.295 7.148 2.233 8.414 2.175 8.794 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+    </body>
+    </html>

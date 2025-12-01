@@ -1,0 +1,23 @@
+{
+  "name": "Rathmullan Sailing Instructors",
+  "short_name": "Sailing",
+  "description": "Instructor dashboard: announcements, weather, planning & notifications.",
+  "start_url": "/instructors.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/image.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/image.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

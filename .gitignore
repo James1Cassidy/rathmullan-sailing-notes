@@ -1,0 +1,27 @@
+# Node.js local development files (don't upload to GitHub/Cloudflare)
+node_modules/
+server.js
+package.json
+package-lock.json
+
+# Environment variables (NEVER commit API keys!)
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Service account keys and other secrets
+scripts/serviceAccountKey.json
+scripts/sailingrathmullan-firebase-adminsdk-fbsvc-1f3fe70b5c.json
+
+# Build artifacts
+dist/

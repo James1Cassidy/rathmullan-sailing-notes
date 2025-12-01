@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Racing - Rathmullan sailing school notes</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Set up global variables for Firebase and API Keys
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const apiKey = "AIzaSyAgnBYyd-SnAYJxPkeEd_j82LSv01ZvumY"; // Canvas will automatically provide the API key
+
+        // --- Correct Answers Definition ---
+        const correctAnswers = {
+            q1: 'b',  // Race Signal 'P' (Preparatory)
+            q2: 'b',  // Lifting Wind Strategy
+            q3: 'b',  // Dirty Air Tactic
+            q4: 'b',  // Right of Way (Same tack, Leeward/Windward)
+            q5: 'b',  // Lay-line definition
+            q6: 'b',  // The 5 Essentials (Boat Balance)
+            q7: 'b',  // Tides/Current Strategy
+            q8: 'a',  // Port vs Starboard
+            q9: 'c',  // Mark Rounding Technique
+            q10: 'b', // Start Line Bias
+            q11: 'b', // Hydration
+            q12: 'a', // Race Signal X Flag
+            q13: 'c', // Penalty Turn
+            q14: 'b', // Downwind Strategy
+            q15: 'a', // Pre-sailing warm-up
+            q16: 'b', // Notice of Race
+            q17: 'c', // Overtaking on reaches
+            q18: 'b', // Racing Tack technique
+            q19: 'a', // Sailing Instructions
+            q20: 'b'  // Fitness benefits
+        };
+
+        // --- Full Question and Option Text (Used to provide detailed context to the AI) ---
+        const questionOptions = {
+            q1: {
+                question: "A flag with a single blue square on a white background (Code Flag 'P') is displayed with one sound. What does this signal indicate?",
+                a: 'Individual Recall: A boat was OCS.',
+                b: 'Preparatory Signal: 5 minutes to the start.', // Correct
+                c: 'General Recall: All boats must return.',
+                d: 'Postponement: Races are delayed.'
+            },
+            q2: {
+                question: "On the upwind leg, you notice the wind has \"freed\" you (shifted aft, allowing you to head up) on your current tack. What strategic decision should you consider?",
+                a: 'Tack immediately to consolidate the gain.',
+                b: 'Continue on the current tack, as the wind is now "lifting" you closer to the mark.', // Correct
+                c: 'Bear away slightly to maintain boat speed.',
+                d: 'Ease your vang to depower the sail.'
+            },
+            q3: {
+                question: "You are sailing upwind and a competitor has established a position *just* ahead and to windward of you (creating 'cover' or 'dirty air'). Which immediate action is the primary tactic to regain 'clean air'?",
+                a: 'Ease your sheets and bear away slightly.',
+                b: 'Tack away immediately to clear your air.', // Correct
+                c: 'Heave-to and wait for them to pass further ahead.',
+                d: 'Hail them to move out of your wind shadow.'
+            },
+            q4: {
+                question: "Two boats are sailing on the same tack (Starboard). Boat A is ahead of Boat B. Boat B begins to overlap Boat A to windward. According to RRS Part 2, what is the right-of-way status?",
+                a: 'Boat A (Clear Ahead) must keep clear of Boat B (Clear Astern).',
+                b: 'Boat B (Windward) must keep clear of Boat A (Leeward).', // Correct
+                c: 'Boat A (Clear Ahead) must keep clear of Boat B (Clear Astern).',
+                d: 'Boat B (Leeward) must keep clear of Boat A (Windward).'
+            },
+            q5: {
+                question: "What is the definition of a \"lay-line\" on an upwind leg, and what is the primary risk of sailing past it?",
+                a: 'The line where the boat is fastest; the risk is sailing too slowly.',
+                b: 'The line from which a mark can be fetched on one tack; the risk is sailing extra distance ("overshooting").', // Correct
+                c: 'The line separating dirty air from clean air; the risk is getting covered by another boat.',
+                d: 'The line that minimizes current effect; the risk is being swept away by the tide.'
+            },
+            q6: {
+                question: "Which of the '5 Essentials' refers to the action of the helm and crew adjusting their weight to keep the boat level and balanced?",
+                a: 'Sail Setting',
+                b: 'Boat Balance', // Correct
+                c: 'Trim',
+                d: 'Course Made Good'
+            },
+            q7: {
+                question: "If you are racing upwind against a strong flood tide (current running towards the windward mark), where should you generally position your boat strategically?",
+                a: 'In the strongest current, as it reduces your apparent wind.',
+                b: 'Near the shore or shallow areas, where the current is often weaker.', // Correct
+                c: 'Always on the starboard tack, regardless of current.',
+                d: 'On the opposite side of the race course from the tide.'
+            },
+            q8: {
+                question: "Two boats are approaching each other. Boat A is on starboard tack, Boat B is on port tack. According to the Racing Rules, what must happen?",
+                a: 'Boat B (port tack) must keep clear of Boat A (starboard tack).', // Correct
+                b: 'Boat A (starboard tack) must keep clear of Boat B (port tack).',
+                c: 'Both boats must alter course to avoid collision.',
+                d: 'The boat that is ahead has right of way.'
+            },
+            q9: {
+                question: "When rounding a mark, what is the optimal technique to maintain speed and minimize distance?",
+                a: 'Turn tightly at the mark, then accelerate after rounding.',
+                b: 'Maintain a constant turning radius throughout.',
+                c: 'Approach wide, turn smoothly, exit tight to the mark.', // Correct
+                d: 'Approach tight, turn wide to maintain speed.'
+            },
+            q10: {
+                question: "How do you determine if there is a bias on the start line?",
+                a: 'The end closest to the first mark is always favored.',
+                b: 'The end that is further upwind (closer to the wind direction) is favored.', // Correct
+                c: 'The pin end is always favored in strong winds.',
+                d: 'Check which end has more boats starting there.'
+            },
+            q11: {
+                question: "What is the recommended hydration strategy during a race day?",
+                a: 'Only drink when you feel thirsty to avoid needing bathroom breaks.',
+                b: 'Take small sips regularly every 15-20 minutes, even if not thirsty.', // Correct
+                c: 'Drink large amounts before racing, then avoid fluids during races.',
+                d: 'Only drink caffeinated beverages for energy and alertness.'
+            },
+            q12: {
+                question: "During a start sequence, Flag X is displayed with one sound. What does this mean?",
+                a: 'Individual Recall - one or more boats were over the line early (OCS).', // Correct
+                b: 'General Recall - all boats must return and restart.',
+                c: 'The race is postponed.',
+                d: 'The course has been shortened.'
+            },
+            q13: {
+                question: "If you break a racing rule and need to take a penalty, what is the standard penalty turn?",
+                a: 'One complete 360° turn.',
+                b: 'Two tacks and one gybe.',
+                c: 'One tack and one gybe (720° total - two full circles).', // Correct
+                d: 'Return to the starting line and restart.'
+            },
+            q14: {
+                question: "On a downwind leg, what is generally the fastest strategy rather than sailing dead downwind?",
+                a: 'Sail as low as possible to minimize distance.',
+                b: 'Sail by the lee or broad reach, gybing downwind at angles for better VMG.', // Correct
+                c: 'Always sail directly toward the leeward mark.',
+                d: 'Reduce sail area to maintain control.'
+            },
+            q15: {
+                question: "Why is a pre-sailing warm-up routine important?",
+                a: 'Raises body temperature, reduces injury risk, and prepares muscles for physical demands.', // Correct
+                b: 'It is only necessary in cold weather conditions.',
+                c: 'Primarily to impress other competitors with fitness.',
+                d: 'Only required for professional sailors, not club racing.'
+            },
+            q16: {
+                question: "What key information should you identify from a Notice of Race (NOR)?",
+                a: 'Only the date and location of the regatta.',
+                b: 'Date, number of races, entry method, fees, and start times.', // Correct
+                c: 'Just the course description and wind forecast.',
+                d: 'Only the prizes and social events.'
+            },
+            q17: {
+                question: "When overtaking on a reaching leg, what is the generally preferred position to pass?",
+                a: 'Always pass to leeward for shorter distance.',
+                b: 'Wait behind the boat ahead until they make a mistake.',
+                c: 'Pass to windward to gain clear air and tactical control.', // Correct
+                d: 'Call for the boat ahead to move aside.'
+            },
+            q18: {
+                question: "What is a key element of an effective racing tack to minimize speed loss?",
+                a: 'Tack as quickly as possible with maximum rudder input.',
+                b: 'Sheet in fast on the new tack and minimize rudder use.', // Correct
+                c: 'Let the boat drift through the tack to maintain momentum.',
+                d: 'Always tack when sailing at your slowest speed.'
+            },
+            q19: {
+                question: "Where should you look to find information about the specific course, marks, and any rule modifications for a race?",
+                a: 'The Sailing Instructions (SIs) provided before the race.', // Correct
+                b: 'The Racing Rules of Sailing book.',
+                c: 'Ask other competitors during the start sequence.',
+                d: 'The Notice of Race provides all necessary details.'
+            },
+            q20: {
+                question: "How does good cardiovascular fitness benefit your racing performance?",
+                a: 'Allows you to sail faster by pulling sheets harder.',
+                b: 'Maintains concentration, quick reactions, and reduces fatigue throughout race day.', // Correct
+                c: 'Only helps with hiking in strong winds.',
+                d: 'Has minimal impact on sailing performance.'
+            }
+        };
+
+
+        // --- Utility Functions for API Calls ---
+
+        // Simple exponential backoff retry mechanism
+        const fetchWithRetry = async (url, options, retries = 3) => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        // Throw error to trigger retry for non-OK responses (like 429)
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i < retries - 1) {
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        console.info(`Retrying API call... attempt ${i + 2}`);
+                    } else {
+                        throw error; // Throw final error if all retries fail
+                    }
+                }
+            }
+        };
+
+        // LLM Call Function
+        const getAiFeedback = async (quizAnswers) => {
+            const systemPrompt = `You are a helpful and knowledgeable Irish Sailing Advanced Instructor. The user has just completed a quiz for the Start Racing course.
+            Your task is to review the user's answers and provide detailed, supportive feedback.
+            Crucially, you must compare the user's selected answer against the correct answer provided in the prompt's input.
+            For each question:
+            1. State the full question.
+            2. State the user's selected answer, the correct answer, and whether the user's choice was correct or incorrect.
+            3. Provide a brief, clear, and encouraging explanation based on the principles of the Start Racing syllabus (Race Signals, Rules, Tactics, and the 5 Essentials).
+            Start your entire response with a positive opening statement and a summary of their overall performance.`;
+
+            // --- Construct detailed query for AI with full context ---
+            let detailedFeedbackQuery = "Review the following quiz results:\n\n";
+            let correctCount = 0;
+
+            Object.keys(quizAnswers).forEach((qKey, index) => {
+                const userAnswerLetter = quizAnswers[qKey];
+                const correctAnswerLetter = correctAnswers[qKey];
+                const questionData = questionOptions[qKey];
+
+                // Safety check for incomplete data
+                if (!questionData || !questionData[userAnswerLetter] || !questionData[correctAnswerLetter]) return;
+
+                const isCorrect = userAnswerLetter === correctAnswerLetter;
+                if (isCorrect) correctCount++;
+
+                const userAnswerText = questionData[userAnswerLetter];
+                const correctAnswerText = questionData[correctAnswerLetter];
+
+                detailedFeedbackQuery += `--- Question ${index + 1} (${isCorrect ? 'Correct' : 'Incorrect'}) ---\n`;
+                detailedFeedbackQuery += `Question: ${questionData.question}\n`;
+                detailedFeedbackQuery += `User Selected (${userAnswerLetter}): ${userAnswerText}\n`;
+                detailedFeedbackQuery += `Correct Answer (${correctAnswerLetter}): ${correctAnswerText}\n\n`;
+            });
+
+            const overallScore = `${correctCount} out of ${Object.keys(quizAnswers).length}`;
+            detailedFeedbackQuery = `The user scored ${overallScore}. \n\n` + detailedFeedbackQuery;
+            // --- End detailed query construction ---
+
+            // Log the query being sent to the AI for debugging
+            // console.log("AI Query:", detailedFeedbackQuery);
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: detailedFeedbackQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const response = await fetchWithRetry(apiUrl, options);
+                const result = await response.json();
+                return result.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate feedback right now.";
+            } catch (error) {
+                console.error("AI API Error:", error);
+                return "An error occurred while connecting to the AI service. Please try again later.";
+            }
+        };
+
+        // --- Visual Feedback Function ---
+        const applyAnswerFeedback = (answers, quizForm) => {
+            // Get all question containers (the div wrapping the question and options)
+            const questions = quizForm.querySelectorAll('.quiz-question-container');
+
+            // 1. Clear previous feedback
+            questions.forEach(q => {
+                q.classList.remove('bg-green-100', 'border-green-400', 'bg-red-100', 'border-red-400', 'border');
+                q.classList.add('bg-gray-50'); // Restore default background
+            });
+
+            // 2. Apply new feedback
+            Object.keys(correctAnswers).forEach(qKey => {
+                // Find the specific question container by looking up the input name
+                const questionInput = quizForm.querySelector(`[name="${qKey}"]`);
+                if (!questionInput) return; // Skip if element not found
+
+                // Use .closest to find the designated container
+                const questionDiv = questionInput.closest('.quiz-question-container');
+                const userAnswer = answers[qKey]; // Get the user's selected value
+
+                const isCorrect = userAnswer === correctAnswers[qKey];
+
+                if (questionDiv) {
+                    questionDiv.classList.remove('bg-gray-50');
+                    if (isCorrect) {
+                        questionDiv.classList.add('bg-green-100', 'border', 'border-green-400');
+                    } else if (userAnswer) {
+                        // Only highlight red if the user actually selected an answer
+                        questionDiv.classList.add('bg-red-100', 'border', 'border-red-400');
+                    }
+                }
+            });
+        };
+
+        // --- Event Listener ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const quizForm = document.getElementById('start-racing-quiz');
+            const feedbackDiv = document.getElementById('quiz-feedback');
+            const submitButton = quizForm.querySelector('button[type="submit"]');
+
+            if (quizForm) {
+                quizForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(quizForm);
+                    const answers = {};
+                    for (const [key, value] of formData.entries()) {
+                        answers[key] = value;
+                    }
+
+                    // Simple check if all questions are answered
+                    if (Object.keys(answers).length < Object.keys(correctAnswers).length) {
+                        feedbackDiv.className = 'mt-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg';
+                        feedbackDiv.textContent = `Please answer all ${Object.keys(correctAnswers).length} questions before submitting!`;
+                        feedbackDiv.classList.remove('hidden');
+
+                        // Clear previous visual feedback if submission is incomplete
+                        applyAnswerFeedback({}, quizForm);
+                        return;
+                    }
+
+                    // --- Step: Apply visual feedback based on correctness ---
+                    applyAnswerFeedback(answers, quizForm);
+
+
+                    feedbackDiv.className = 'mt-4 p-4 bg-gray-100 border border-gray-400 text-gray-700 rounded-lg';
+                    feedbackDiv.textContent = 'Generating detailed feedback... please wait.';
+                    feedbackDiv.classList.remove('hidden');
+                    submitButton.disabled = true;
+
+                    try {
+                        const feedback = await getAiFeedback(answers);
+                        feedbackDiv.className = 'mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg whitespace-pre-wrap';
+                        feedbackDiv.innerHTML = `<strong>AI Instructor Feedback:</strong><br><br>${feedback}`;
+                    } catch (error) {
+                        feedbackDiv.className = 'mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg';
+                        feedbackDiv.textContent = 'Error: Failed to connect to the AI instructor. Check your network or try again.';
+                    } finally {
+                        submitButton.disabled = false;
+                    }
+                });
+            }
+        });
+
+        // Other functions (unchanged)
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+    </script>
+
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header/Navigation Bar (Exact copy from improving_skills.html, adapted for this page) -->
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+            <button onclick="toggleDarkMode()" class="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400">Toggle Dark Mode</button>
+        </div>
+    </header>
+
+    <!-- Dropdown for Section Navigation -->
+    <div class="container mx-auto px-4 py-4">
+        <label for="section-select" class="block text-lg font-bold mb-2">Jump to Section:</label>
+        <select id="section-select" class="w-full p-2 border rounded-md" onchange="scrollToSection(this.value)">
+            <option value="">Select a section...</option>
+            <option value="objective">Objective & Prerequisites</option>
+            <option value="preparation">Regatta & Personal Preparation</option>
+            <option value="rules-signals">Rules & Race Signals</option>
+            <option value="start-procedure">Starting Procedure & Strategy</option>
+            <option value="strategies-tactics">Strategies & Tactics</option>
+            <option value="boat-handling">Race Boat Handling</option>
+            <option value="weather-currents">Weather & Coastal Knowledge</option>
+            <option value="what-next">What Next...</option>
+            <option value="what-next-extended">Further Guidance</option>
+            <option value="logbook-requirements">Logbook Requirements</option>
+            <option value="quiz">Start Racing Quiz </option>
+        </select>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+
+        <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Start Racing</h2>
+
+        <section id="objective" class="content-block">
+            <h3 class="section-heading">Objective & Prerequisites</h3>
+            <p class="mb-4">The aim of the Start Racing course is to confidently introduce you to racing series and develop your skills and knowledge to a level where you can comfortably race at club and inter-club level in Ireland.</p>
+            <p class="mb-4">Upon successful completion of this level, sailors should be capable of competing in any club event, including the club's normal adult racing events.</p>
+
+            <h4 class="sub-section-heading">To Pass the Course:</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Previous Experience:</strong> You must have completed the Improving Skills certificate.</li>
+                <li class="list-item"><strong>Time Commitment:</strong> A minimum of 28 hours (4 days) of Instructor-led time is required to cover all skills.</li>
+                <li class="list-item"><strong>Logbook Requirement:</strong> You must record at least 20 hours in your logbook.</li>
+                <li class="list-item"><strong>Mandatory Racing Logs:</strong> To achieve certification, you must log:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Three (3) local/club races as helm.</li>
+                        <li class="list-item">Three (3) local/club races as crew.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Evaluation:</strong> Assessment is continuous, and you are expected to independently tune your boat, start and finish club-level races, and show understanding of basic rules, weather shift, tactics, and instruction from the Race Officer.</li>
+            </ul>
+
+
+        </section>
+
+        <section id="preparation" class="content-block">
+            <h3 class="section-heading">Regatta & Personal Preparation: Race Readiness</h3>
+            <p class="mb-4">Successful racing starts on shore. You must master the preparation stages for both your boat and yourself.</p>
+
+            <h4 class="sub-section-heading">Accessing Race Information</h4>
+            <p class="mb-4">Before entering any race or regatta, you need to know where and how to get the essential information:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Notice of Race (NOR):</strong> The NOR is the key document advertising the regatta. Find it on:
+                    <ul class="list-disc list-inside ml-6 mt-2">
+                        <li>The organizing club's website</li>
+                        <li>Irish Sailing's event calendar (<a href="https://www.sailing.ie" class="text-blue-600 hover:underline">www.sailing.ie</a>)</li>
+                        <li>Class association websites</li>
+                        <li>Noticeboards at sailing clubs</li>
+                        <li>Email communications from your sailing club or class association</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Interpreting the Notice of Race</h4>
+            <p class="mb-4">Once you have the NOR, you must extract key information to plan your participation:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Date of Regatta:</strong> Note the specific dates the regatta takes place, including any practice/briefing days.</li>
+                <li class="list-item"><strong>Number of Races:</strong> Check how many races are scheduled. This helps you prepare physically and mentally (e.g., "Up to 6 races over 2 days").</li>
+                <li class="list-item"><strong>How to Enter:</strong>
+                    <ul class="list-disc list-inside ml-6 mt-2">
+                        <li>Entry method: Online form, email, or in-person registration</li>
+                        <li>Entry deadline: Don't miss it!</li>
+                        <li>Late entry provisions: Some events allow late entries with additional fees</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Entry Fees:</strong> Note the cost and payment methods accepted (online payment, cash, cheque).</li>
+                <li class="list-item"><strong>Signing In:</strong> Check if on-site registration or sign-in is required on race day, and where/when this happens.</li>
+                <li class="list-item"><strong>Start Times:</strong>
+                    <ul class="list-disc list-inside ml-6 mt-2">
+                        <li>First warning signal time (when racing begins)</li>
+                        <li>Your class start time (if multiple classes racing)</li>
+                        <li>Subsequent race start times</li>
+                        <li>Latest time to start: Important for planning travel</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Other Important Details:</strong> Eligibility requirements, required safety equipment, location/venue, launching facilities, social events, and contact information.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Boat Preparation: Pre-Race Checks</h4>
+            <p class="mb-4">Proper boat preparation ensures safety, legality, and optimal performance. You must be able to conduct comprehensive checks:</p>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Hull Inspection:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item">Check for cracks, damage, or soft spots in the hull and deck</li>
+                    <li class="list-item">Inspect rudder and tiller for wear, cracks, or loose fittings</li>
+                    <li class="list-item">Ensure centreboard/daggerboard moves freely and pintles/retaining systems work properly</li>
+                    <li class="list-item">Check buoyancy tanks are intact and sealed (no water inside)</li>
+                    <li class="list-item">Ensure drain bungs are secure and self-bailers function correctly</li>
+                    <li class="list-item">Verify boat complies with class measurement rules (if applicable)</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Rigging Inspection:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Mast and Boom:</strong> Check for cracks, bends, or corrosion. Ensure all fittings are tight.</li>
+                    <li class="list-item"><strong>Standing Rigging:</strong> Inspect shrouds and forestay for broken strands, wear, or corrosion. Check all pins and shackles.</li>
+                    <li class="list-item"><strong>Running Rigging:</strong> Examine halyards, sheets, and control lines for wear, especially where they pass through blocks or cleats. Replace if frayed.</li>
+                    <li class="list-item"><strong>Blocks and Fittings:</strong> Ensure blocks spin freely, shackles are secure, and cleats hold firmly.</li>
+                    <li class="list-item"><strong>Sails:</strong> Check for tears, worn stitching, or damage to battens. Ensure sail numbers are clearly displayed and meet class rules.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Ensuring Sufficient Adjustability in Boat Controls:</p>
+                <p class="mb-2">Racing demands precise control. You must verify that all control systems have appropriate range and adjustment:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Mainsheet System:</strong> Can you ease and trim the mainsheet smoothly through its full range? Blocks should run freely, and there should be sufficient purchase (mechanical advantage) for the conditions.</li>
+                    <li class="list-item"><strong>Jib Sheet System:</strong> Check that jib sheets can be adjusted quickly and have adequate length. Ensure fairleads are positioned correctly for upwind and reaching.</li>
+                    <li class="list-item"><strong>Cunningham/Downhaul:</strong> Verify you can tension and release this control to adjust luff tension. Important for depowering in strong winds.</li>
+                    <li class="list-item"><strong>Outhaul:</strong> Ensure you can adjust foot tension on the boom. Tight for upwind, eased for downwind.</li>
+                    <li class="list-item"><strong>Vang/Kicking Strap:</strong> Check the vang has enough power to control boom height and leech tension. Must be adjustable under load.</li>
+                    <li class="list-item"><strong>Centerboard/Daggerboard Controls:</strong> Ensure the board can be raised and lowered easily and locks securely at different positions.</li>
+                    <li class="list-item"><strong>Jib Fairlead Position:</strong> Confirm fairleads can be moved fore/aft (if adjustable) and are set correctly for the conditions.</li>
+                    <li class="list-item"><strong>Traveler (if fitted):</strong> Check the traveler moves smoothly across its track and can be cleated securely.</li>
+                    <li class="list-item"><strong>Test All Systems:</strong> Before launching, pull every control through its full range to ensure it works smoothly and nothing binds or jams.</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Boat Care &amp; Maintenance: Post-Sailing Routine</h4>
+            <p class="mb-4">Proper care extends the life of your equipment and ensures it's ready for the next race. You must be able to de-rig and maintain your boat without instructor assistance:</p>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">De-Rigging Procedure:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item">Lower and remove sails carefully, avoiding dragging them on rough surfaces</li>
+                    <li class="list-item">Disconnect halyards and control lines methodically to avoid tangles</li>
+                    <li class="list-item">Lower mast (if stepped/unstepped each session) with assistance, supporting it to prevent damage</li>
+                    <li class="list-item">Remove boom and store safely</li>
+                    <li class="list-item">Coil all ropes neatly and secure them</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Sail Care:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Washing:</strong> Rinse sails with fresh water after use, especially in saltwater. This removes salt and dirt that degrade fabric.</li>
+                    <li class="list-item"><strong>Drying:</strong> Hang sails to dry completely before storing. Never store wet sails—they can develop mildew and rot.</li>
+                    <li class="list-item"><strong>Folding/Rolling:</strong> Fold or roll sails loosely along the panels (not across seams). Avoid sharp creases which weaken fabric over time.</li>
+                    <li class="list-item"><strong>Storage:</strong> Store sails in breathable sail bags in a cool, dry place. Keep away from direct sunlight and heat sources.</li>
+                    <li class="list-item"><strong>Battens:</strong> Remove battens if storing long-term to prevent permanent creases.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Hull Care:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Washing:</strong> Rinse hull with fresh water to remove salt, sand, and organic matter. Use mild soap if needed.</li>
+                    <li class="list-item"><strong>Bailing:</strong> Remove all water from the boat using bailers, sponges, or self-bailers. Check buoyancy compartments are dry.</li>
+                    <li class="list-item"><strong>Drying:</strong> Leave boat inverted or on its side to drain completely. Wipe down interior surfaces.</li>
+                    <li class="list-item"><strong>Covers:</strong> Fit boat cover or tarp to protect from UV damage, rain, and debris. Ensure cover is secure but allows ventilation to prevent condensation.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Final Checks Before Leaving:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Damage Check:</strong> Inspect hull, rigging, and fittings for any damage sustained during racing. Note any repairs needed.</li>
+                    <li class="list-item"><strong>Tidy Lines:</strong> Coil all sheets, halyards, and control lines neatly. Secure them so they don't trail or tangle.</li>
+                    <li class="list-item"><strong>Secure Equipment:</strong> Stow all loose equipment (paddle, anchor, safety gear, tools) securely in the boat or take home.</li>
+                    <li class="list-item"><strong>Lock/Secure:</strong> If leaving boat at club, ensure it's secured with covers, tied down, or locked as per club requirements.</li>
+                    <li class="list-item"><strong>Logbook Entry:</strong> Update your sailing logbook with hours sailed, conditions, and any notable experiences or skills practiced.</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Personal Preparation for Performance</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Health & Lifestyle: Describe the importance of diet, hydration, sleep, and exercise in maintaining a healthy, active lifestyle.</li>
+                <li class="list-item">Nutritional Knowledge: Be able to describe the elements of a balanced diet (food pyramid) and how to remain properly hydrated before, during, and after training and racing.</li>
+                <li class="list-item">Physical Fitness: Understand how cardiovascular fitness, strength, and flexibility can affect performance.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Hydration Strategy</h4>
+            <p class="mb-4">Proper hydration is critical for maintaining focus, reaction times, and physical performance during racing:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Before Sailing:</strong> Drink 500ml of water 2 hours before going afloat. Avoid excessive caffeine which can dehydrate you.</li>
+                <li class="list-item"><strong>During Racing:</strong> Take small sips regularly (every 15-20 minutes) even if not thirsty. Keep a water bottle secured in the boat. In hot weather, consider electrolyte drinks to replace lost salts.</li>
+                <li class="list-item"><strong>After Sailing:</strong> Rehydrate with water or sports drinks. A good indicator is urine color—pale yellow indicates good hydration.</li>
+                <li class="list-item"><strong>Signs of Dehydration:</strong> Headache, dizziness, reduced concentration, dark urine, dry mouth. These severely impact racing performance.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Fitness and Injury Prevention</h4>
+            <p class="mb-4">Understanding how different aspects of fitness affect your sailing performance:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Cardiovascular Fitness:</strong> Good aerobic fitness allows you to maintain concentration and quick reactions throughout a long race day. It helps you recover quickly between races and reduces fatigue-related errors.</li>
+                <li class="list-item"><strong>Strength:</strong> Core and leg strength help maintain hiking position and boat balance. Upper body strength assists with sheet handling and boat control in heavy winds. Strong sailors can hold better body positions for longer.</li>
+                <li class="list-item"><strong>Flexibility:</strong> Good flexibility, particularly in the lower back, hips, and shoulders, reduces injury risk during sudden movements (like quick tacks or capsize recovery) and allows more comfortable hiking positions.</li>
+                <li class="list-item"><strong>Injury Prevention:</strong> Poor fitness increases risk of strains, sprains, and overuse injuries. Regular training builds resilience and reduces injury likelihood during demanding racing conditions.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Warm-Up and Cool-Down Routines</h4>
+            <p class="mb-4">Every sailor should conduct proper warm-up and cool-down routines to prevent injury and improve performance:</p>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Pre-Sailing Warm-Up (10-15 minutes):</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Light Cardio (3-5 min):</strong> Gentle jogging, brisk walking, or jumping jacks to raise heart rate and body temperature.</li>
+                    <li class="list-item"><strong>Dynamic Stretches:</strong>
+                        <ul class="list-disc list-inside ml-6 mt-1">
+                            <li>Arm circles (forward and backward) - 10 each direction</li>
+                            <li>Leg swings (front-to-back and side-to-side) - 10 each leg</li>
+                            <li>Torso rotations - 10 each direction</li>
+                            <li>Neck rotations - gentle circles, 5 each direction</li>
+                            <li>Squats - 10-15 repetitions</li>
+                            <li>Walking lunges - 10 each leg</li>
+                        </ul>
+                    </li>
+                    <li class="list-item"><strong>Hiking-Specific Prep:</strong> Practice hiking position on shore, hold for 20-30 seconds, repeat 3 times.</li>
+                    <li class="list-item"><strong>Wrist and Finger Mobility:</strong> Rotate wrists, flex fingers - important for rope handling.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Post-Sailing Cool-Down (10-15 minutes):</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Light Movement (3-5 min):</strong> Gentle walking to gradually lower heart rate.</li>
+                    <li class="list-item"><strong>Static Stretches (hold each 20-30 seconds):</strong>
+                        <ul class="list-disc list-inside ml-6 mt-1">
+                            <li>Quadriceps stretch (hold foot behind you)</li>
+                            <li>Hamstring stretch (reach for toes, legs straight)</li>
+                            <li>Hip flexor stretch (lunge position)</li>
+                            <li>Calf stretch (push against wall)</li>
+                            <li>Shoulder and tricep stretches</li>
+                            <li>Lower back stretch (knees to chest while lying down)</li>
+                            <li>Neck stretches (gentle tilts and turns)</li>
+                        </ul>
+                    </li>
+                    <li class="list-item"><strong>Hydration and Nutrition:</strong> Rehydrate immediately and consume protein and carbohydrates within 30 minutes for optimal recovery.</li>
+                    <li class="list-item"><strong>Equipment Check:</strong> Use cool-down time to inspect equipment for damage or wear while muscles are still warm.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="rules-signals" class="content-block">
+            <h3 class="section-heading">Rules & Race Signals: Competing Fairly and Safely</h3>
+            <p class="mb-4">A fundamental part of racing is knowing the rules to avoid penalties and collisions, and understanding the signals used by the Race Committee.</p>
+
+            <h4 class="sub-section-heading">Understanding Sailing Instructions</h4>
+            <p class="mb-4">Before every race, you must be able to read and understand the Sailing Instructions (SIs). Here's how to interpret them:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Race Schedule:</strong> Look for the date, time of first warning signal, and number of races scheduled. Note any time limits.</li>
+                <li class="list-item"><strong>Course Description:</strong> Identify the course to be sailed (e.g., "Windward-Leeward twice" or "Triangular course"). Check the diagram showing mark locations and rounding order.</li>
+                <li class="list-item"><strong>Starting Procedure:</strong> Confirm the starting sequence timing and any class-specific start times.</li>
+                <li class="list-item"><strong>Marks:</strong> Note the description and color of marks to be rounded, and whether they should be left to port or starboard.</li>
+                <li class="list-item"><strong>Finishing:</strong> Understand where the finish line is and which direction to cross it.</li>
+                <li class="list-item"><strong>Special Rules:</strong> Look for any modifications to the Racing Rules of Sailing, restrictions on the sailing area, or required safety equipment.</li>
+                <li class="list-item"><strong>Protests and Penalties:</strong> Understand the protest time limit and whether alternative penalties (like turns) are in effect.</li>
+                <li class="list-item"><strong>Tip:</strong> Always read the SIs the night before and again before going afloat. Ask the race officer if anything is unclear.</li>
+            </ul>
+
+            <div class="flex justify-center my-6 px-4">
+                <figure class="w-full max-w-4xl">
+                    <div class="w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+                            <div class="text-left">
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Racing Rules (PDF)</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <a href="2025-2028-RRS-with-Changes-and-Corrections.pdf" class="text-blue-600 hover:underline text-sm" download aria-label="Download racing rules PDF">Download</a>
+                                <button onclick="window.open('2025-2028-RRS-with-Changes-and-Corrections.pdf', '_blank')" class="bg-blue-600 text-white text-sm px-3 py-1 rounded-md hover:bg-blue-700">Open in New Tab</button>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <iframe
+                                id="race-pdf-iframe"
+                                src="2025-2028-RRS-with-Changes-and-Corrections.pdf#view=FitH"
+                                class="w-full"
+                                style="border:0; height: 500px;"
+                                title="Racing Rules PDF viewer"
+                                aria-label="Racing Rules PDF viewer">
+                            </iframe>
+                        </div>
+
+                        <noscript class="p-4 text-left text-sm text-gray-600 dark:text-gray-300">
+                            Your browser has JavaScript disabled. <a href="2025-2028-RRS-with-Changes-and-Corrections.pdf" class="text-blue-600 hover:underline">Click here to download the PDF</a>.
+                        </noscript>
+                    </div>
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Race Signals and Right of Way</h4>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Common Race Signal Flags and Sounds:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Class Flag (5 minutes to start):</strong> Warning Signal - Identifies the class starting. One sound signal.</li>
+                    <li class="list-item"><strong>Flag P (Preparatory - 4 minutes):</strong> Blue flag with white square. Indicates 4 minutes to start. One sound signal.</li>
+                    <li class="list-item"><strong>Flag I (1 minute - I Flag Rule):</strong> Yellow flag with black circle. One sound. Boats OCS (On Course Side) in the last minute are disqualified.</li>
+                    <li class="list-item"><strong>Flag Z (1 minute - Z Flag Rule):</strong> Yellow and black diagonal flag. One sound. Boats in triangle area in last minute receive 20% penalty.</li>
+                    <li class="list-item"><strong>Flag U (1 minute - Black Flag Rule):</strong> Black flag with white square. One sound. Boats OCS in last minute are disqualified from that race.</li>
+                    <li class="list-item"><strong>Flags Lowered (Start - 0 minutes):</strong> Class flag and P flag removed. One sound. Race has started!</li>
+                    <li class="list-item"><strong>Flag X (Individual Recall):</strong> Blue X on white background. One sound. One or more boats were OCS at start.</li>
+                    <li class="list-item"><strong>First Substitute (General Recall):</strong> Yellow triangle on red/white/blue flag. Two sounds. All boats must return; the start sequence will be restarted.</li>
+                    <li class="list-item"><strong>Flag AP (Postponement):</strong> Red and white vertical stripes. Two sounds. Races are postponed. Race will start no sooner than 1 minute after AP is lowered (one sound).</li>
+                    <li class="list-item"><strong>Flag N over X or H (Abandonment):</strong> Three sounds. The race is abandoned.</li>
+                    <li class="list-item"><strong>Flag S (Shortened Course):</strong> Displayed at a mark with two sounds - the race is shortened, finish between nearby marks.</li>
+                </ul>
+            </div>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Identify Race Signals: You must recognise and explain the meaning of all official Race Signals (e.g., flags and sounds).</li>
+                <li class="list-item">The Racing Rules: Describe the *right of way* rules and when and how to take a penalty turn.</li>
+                <li class="list-item">Collision Avoidance: Be able to describe the correct action to take to avoid a collision on the water, even if you have right-of-way.</li>
+                <li class="list-item">Part 1 &amp; Part 2 Rules: Be able to read and understand Sailing Instructions and outline Part 1 and Part 2 of the Racing Rules of Sailing (in particular RRS rules 10–14 and 18). Understand the four main sections of Part 2: General, Meeting, Right-of-Way, and Penalties.</li>
+            </ul>
+
+            <!-- SVG Diagram: Right of Way Rules (Clear Panels) -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-4xl">
+                    <svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-white">
+                        <defs>
+                            <marker id="arrow-rw" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#1e40af" />
+                            </marker>
+                            <style>
+                                .panel{fill:#f8fafc;stroke:#d1d5db;stroke-width:1}
+                                .title{font:700 14px Arial;fill:#111827}
+                                .label{font:600 12px Arial;fill:#111827}
+                                .note{font:500 11px Arial;fill:#374151}
+                                .win{fill:#10b981;stroke:#059669;stroke-width:2}
+                                .give{fill:#dc2626;stroke:#b91c1c;stroke-width:2}
+                                .wind{stroke:#1e40af;stroke-width:3}
+                                .zone{stroke:#6b7280;stroke-dasharray:5 5;fill:none}
+                            </style>
+                        </defs>
+
+                        <!-- Header -->
+                        <text x="250" y="28" font-family="Arial" font-size="20" font-weight="bold" fill="#1e40af">Basic Right-of-Way — At a Glance</text>
+
+                        <!-- Legend -->
+                        <rect x="20" y="40" width="760" height="34" rx="6" fill="#f3f4f6" stroke="#e5e7eb" />
+                        <rect x="35" y="48" width="14" height="14" class="win" />
+                        <text x="55" y="60" class="note">Stand-on (right of way)</text>
+                        <rect x="220" y="48" width="14" height="14" class="give" />
+                        <text x="240" y="60" class="note">Keep clear (give way)</text>
+                        <line x1="420" y1="55" x2="470" y2="55" class="wind" marker-end="url(#arrow-rw)" />
+                        <text x="480" y="60" class="note">Wind direction</text>
+
+                        <!-- Grid panels: 2x2 -->
+                        <!-- Panel 1: Port vs Starboard -->
+                        <rect x="20" y="90" width="360" height="180" class="panel" rx="8" />
+                        <text x="35" y="110" class="title">1. Port vs Starboard (Rule 10)</text>
+                        <line x1="60" y1="125" x2="60" y2="165" class="wind" marker-end="url(#arrow-rw)" />
+                        <text x="70" y="147" class="label">WIND</text>
+                        <!-- Starboard (stand-on) with 'S' -->
+                        <polygon points="150,190 165,175 180,190 165,205" class="win" />
+                        <text x="161" y="194" class="label" fill="#065f46">S</text>
+                        <!-- Port (keep clear) with 'P' -->
+                        <polygon points="250,190 265,175 280,190 265,205" class="give" />
+                        <text x="261" y="194" class="label" fill="#7f1d1d">P</text>
+                        <!-- Avoid arrow for port -->
+                        <path d="M 265 205 Q 300 215 310 200" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow-rw)" />
+                        <text x="285" y="225" class="note" fill="#b91c1c">Port keeps clear</text>
+
+                        <!-- Panel 2: Windward / Leeward -->
+                        <rect x="420" y="90" width="360" height="180" class="panel" rx="8" />
+                        <text x="435" y="110" class="title">2. Windward / Leeward (Rule 11)</text>
+                        <line x1="460" y1="125" x2="460" y2="165" class="wind" marker-end="url(#arrow-rw)" />
+                        <text x="470" y="147" class="label">WIND</text>
+                        <!-- Leeward (stand-on) with 'L' -->
+                        <polygon points="520,200 535,185 550,200 535,215" class="win" />
+                        <text x="531" y="204" class="label" fill="#065f46">L</text>
+                        <!-- Windward (keep clear) with 'W' -->
+                        <polygon points="580,170 595,155 610,170 595,185" class="give" />
+                        <text x="592" y="174" class="label" fill="#7f1d1d">W</text>
+                        <text x="610" y="210" class="note" fill="#b91c1c">Windward keeps clear</text>
+
+                        <!-- Panel 3: Overtaking (Rule 12) -->
+                        <rect x="20" y="290" width="360" height="180" class="panel" rx="8" />
+                        <text x="35" y="310" class="title">3. Overtaking (Clear ahead / astern)</text>
+                        <line x1="60" y1="325" x2="60" y2="365" class="wind" marker-end="url(#arrow-rw)" />
+                        <text x="70" y="347" class="label">WIND</text>
+                        <!-- Clear ahead (stand-on) -->
+                        <polygon points="150,360 165,345 180,360 165,375" class="win" />
+                        <text x="120" y="395" class="note" fill="#065f46">Clear ahead = stand-on</text>
+                        <!-- Clear astern (give way) with avoid path -->
+                        <polygon points="210,390 225,375 240,390 225,405" class="give" />
+                        <path d="M 225 405 Q 255 410 270 395" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow-rw)" />
+                        <text x="210" y="430" class="note" fill="#b91c1c">Clear astern keeps clear</text>
+
+                        <!-- Panel 4: Mark-Room (Rule 18) -->
+                        <rect x="420" y="290" width="360" height="180" class="panel" rx="8" />
+                        <text x="435" y="310" class="title">4. Mark-Room (inside boat)</text>
+                        <line x1="460" y1="325" x2="460" y2="365" class="wind" marker-end="url(#arrow-rw)" />
+                        <text x="470" y="347" class="label">WIND</text>
+                        <!-- Zone circle -->
+                        <circle cx="620" cy="390" r="50" class="zone" />
+                        <text x="604" y="340" class="note" fill="#6b7280">Zone</text>
+                        <!-- Mark -->
+                        <circle cx="620" cy="390" r="12" fill="#f59e0b" stroke="#d97706" stroke-width="2" />
+                        <!-- Inside (stand-on for room) -->
+                        <polygon points="580,380 595,365 610,380 595,395" class="win" />
+                        <text x="548" y="370" class="label" fill="#065f46">Inside</text>
+                        <!-- Outside (must give room) -->
+                        <polygon points="580,420 595,405 610,420 595,435" class="give" />
+                        <text x="548" y="430" class="label" fill="#7f1d1d">Outside</text>
+                        <text x="640" y="430" class="note" fill="#374151">Give room at mark</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Clear 2x2 panels: Port/Starboard, Windward/Leeward, Overtaking, and Mark-Room. Green = stand-on, Red = keep clear.</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section id="start-procedure" class="content-block">
+            <h3 class="section-heading">Starting Procedure & Strategy: Winning the Start</h3>
+            <p class="mb-4">The start is critical to a good race. You must be able to execute a smooth and well-timed start.</p>
+
+            <h4 class="sub-section-heading">Mastering the Start Line</h4>
+
+            <!-- SVG Diagram: Start Line Bias -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-3xl">
+                    <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100">
+                        <!-- Wind direction arrow -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#1e40af" />
+                            </marker>
+                        </defs>
+
+                        <!-- Wind arrow -->
+                        <line x1="300" y1="50" x2="300" y2="150" stroke="#1e40af" stroke-width="3" marker-end="url(#arrowhead)" />
+                        <text x="320" y="100" font-family="Arial" font-size="18" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Start line - biased to pin end -->
+                        <line x1="150" y1="250" x2="450" y2="200" stroke="#dc2626" stroke-width="4" stroke-dasharray="10,5" />
+
+                        <!-- Committee boat -->
+                        <rect x="420" y="185" width="60" height="30" fill="#374151" stroke="#1f2937" stroke-width="2" rx="3" />
+                        <polygon points="450,185 465,175 465,185" fill="#ef4444" />
+                        <text x="435" y="235" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">Committee</text>
+                        <text x="450" y="250" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">Boat</text>
+
+                        <!-- Pin buoy -->
+                        <circle cx="150" cy="250" r="15" fill="#f59e0b" stroke="#d97706" stroke-width="2" />
+                        <text x="120" y="280" font-family="Arial" font-size="14" font-weight="bold" fill="#d97706">Pin End</text>
+                        <text x="110" y="295" font-family="Arial" font-size="12" fill="#059669">(FAVORED)</text>
+
+                        <!-- Boats at start -->
+                        <polygon points="200,240 210,230 220,240 210,250" fill="#3b82f6" stroke="#1e40af" stroke-width="2" />
+                        <polygon points="350,220 360,210 370,220 360,230" fill="#6b7280" stroke="#374151" stroke-width="2" />
+
+                        <!-- Annotations -->
+                        <text x="50" y="350" font-family="Arial" font-size="14" fill="#374151">The pin end is closer to the wind →</text>
+                        <text x="50" y="370" font-family="Arial" font-size="14" fill="#374151">Starting here gives you an advantage!</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Example of a start line with pin end bias - the pin end is upwind, making it the favored starting position</figcaption>
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading mt-8">Identifying Start Line Bias: Practical Methods & Quick Maths</h4>
+            <p class="mb-4">Start line bias means one end of the line is closer to the wind (more upwind). Starting at the upwind end lets you <strong>sail a shorter distance</strong> and often protects your lane. Here are reliable ways to detect it quickly before the 1-minute signal.</p>
+
+            <div class="ml-4 mb-6">
+                <ol class="list-decimal list-inside space-y-2">
+                    <li><strong>Compass Method:</strong> Sail head-to-wind and note the wind bearing (e.g. 000°). Then point your bow exactly along the start line and read the line bearing (e.g. 085°). Subtract the wind direction. If the line bearing is rotated <em>to the left</em> (anticlockwise) of perpendicular, the pin end is favoured; if rotated to the right, the committee boat is favoured.</li>
+                    <li><strong>Boom Angle (Head-to-Wind) Method:</strong> Stop at the middle of the line. Turn head-to-wind and sight which end looks more “ahead” of you toward the wind. The end closer to the wind is favoured.</li>
+                    <li><strong>Transit / Sight Method:</strong> Line yourself up just below the line and sight through the pin to a background object (tree, building). Repeat from the committee boat end. If one end appears slightly more upwind (closer to perpendicular to wind), that’s the favoured end.</li>
+                    <li><strong>Close-Hauled Test:</strong> Start near the middle; sheet in and sail close-hauled toward each end in turn. If you can sail <em>closer to the wind</em> toward one end without pinching, that end is favoured.</li>
+                    <li><strong>Time & Distance Feel:</strong> While practising approaches, note whether sailing a straight close-hauled course from just below the line “reaches” one end earlier. Earlier = favoured.</li>
+                    <li><strong>Quick Maths Advantage:</strong> Distance gained (metres) ≈ <code>Line Length × sin(bias angle)</code>. A 5° bias on a 150 m line gives ≈ 150 × sin(5°) ≈ 13 m (≈ 7 Laser lengths) advantage to the favoured end.</li>
+                    <li><strong>Rule of Thumb:</strong> 1–2° = mild (choose for clear air), 3–5° = strong (fight for it early), >5° = dominant (plan approach specifically for that end).</li>
+                    <li><strong>Dynamic Check:</strong> Re-check bias if the wind shifts after the 4-minute or 1-minute signals; a shift can flip favoured ends.</li>
+                    <li><strong>Caution:</strong> Don’t sacrifice a <em>clean lane</em> for a tiny (1–2°) bias if it forces you into a congested, slow start.</li>
+                </ol>
+            </div>
+
+            <!-- SVG Diagram: Calculating Start Line Bias Angle -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-xl">
+                    <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-sky-50 to-blue-100">
+                        <defs>
+                            <marker id="biasArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#1e40af" />
+                            </marker>
+                        </defs>
+                        <!-- Wind direction -->
+                        <line x1="260" y1="30" x2="260" y2="110" stroke="#1e40af" stroke-width="4" marker-end="url(#biasArrow)" />
+                        <text x="280" y="70" font-size="16" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Perpendicular (ideal neutral line) -->
+                        <line x1="260" y1="180" x2="160" y2="180" stroke="#6b7280" stroke-width="2" stroke-dasharray="6 4" />
+                        <text x="120" y="175" font-size="12" fill="#6b7280">Neutral (90°)</text>
+
+                        <!-- Actual start line (biased) -->
+                        <line x1="160" y1="200" x2="420" y2="160" stroke="#dc2626" stroke-width="4" />
+                        <circle cx="160" cy="200" r="10" fill="#f59e0b" stroke="#d97706" stroke-width="2" />
+                        <text x="125" y="220" font-size="12" font-weight="bold" fill="#d97706">Pin (Favoured)</text>
+                        <rect x="410" y="145" width="40" height="25" fill="#374151" stroke="#1f2937" stroke-width="2" rx="3" />
+                        <text x="405" y="185" font-size="12" font-weight="bold" fill="#374151">Committee</text>
+
+                        <!-- Bias angle arc -->
+                        <path d="M 160 180 A 20 20 0 0 0 170 197" fill="none" stroke="#2563eb" stroke-width="3" />
+                        <text x="150" y="165" font-size="12" font-weight="bold" fill="#2563eb">θ</text>
+                        <text x="185" y="195" font-size="12" fill="#2563eb">Bias angle</text>
+
+                        <!-- Formula box -->
+                        <rect x="300" y="200" width="190" height="70" rx="8" fill="#f3f4f6" stroke="#d1d5db" />
+                        <text x="310" y="220" font-size="13" font-weight="bold" fill="#111827">Distance Advantage</text>
+                        <text x="310" y="238" font-size="12" fill="#374151">= Line Length × sin(θ)</text>
+                        <text x="310" y="256" font-size="12" fill="#374151">Example: 150m × sin(5°)</text>
+                        <text x="310" y="272" font-size="12" fill="#374151">≈ 13 m (≈ 7 boat lengths)</text>
+
+                        <!-- Helper arrows indicating upwind -->
+                        <path d="M 160 200 Q 210 150 260 110" fill="none" stroke="#10b981" stroke-width="3" marker-end="url(#biasArrow)" />
+                        <text x="200" y="135" font-size="12" font-weight="bold" fill="#10b981">Shorter distance from pin</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Measuring start line bias: difference between neutral perpendicular and actual line angle (θ). Favoured end is more upwind; approximate gain = Line Length × sin(θ).</figcaption>
+                </figure>
+            </div>
+
+            <p class="mb-6"><strong>Decision tip:</strong> If the bias is small, prioritise a clean high-speed lane over fighting traffic at the favoured end. If it’s ≥3°, plan your final approach to claim that end early while preserving acceleration space.</p>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Starting Sequence: Correctly follow and respond to the sequence of starting signals (e.g., 5-minute, 4-minute, 1-minute, and Go signals).</li>
+                <li class="list-item">Speed and Position Control: You must be able to accurately control boat speed and position relative to the starting line and the committee boat/pin end.</li>
+                <li class="list-item">Start-Line Bias: Be able to determine if there is any bias to the start-line (i.e., whether the pin end or the committee boat end is favoured).</li>
+                <li class="list-item">Starting Area Tactics: Understand the importance of maintaining clear air and avoiding the 'pinched' position just before the start signal.</li>
+                <li class="list-item">Identify Bias on the Line: Can determine if and where the favoured end of the line is, and choose an ideal start position accordingly.</li>
+                <li class="list-item">Ideal Start Position: Know where to position yourself on the line (pin end, committee boat end, or mid-line) depending on bias and fleet pressure.</li>
+                <li class="list-item">Control at the Line: Demonstrate precise control of boat speed and angle to hit the line at full speed on the start signal while keeping clear air.</li>
+                <li class="list-item">Dirty Air Awareness: Identify when you are sailing in 'dirty air' near the start and take immediate action (e.g., tack or change position) to regain clean air.</li>
+            </ul>
+        </section>
+
+        <section id="strategies-tactics" class="content-block">
+            <h3 class="section-heading">Strategies & Tactics: Choosing the Fastest Route</h3>
+            <p class="mb-4">Tactics involve making decisions based on other boats, while strategy involves making decisions based on the race course, wind, and current.</p>
+
+            <h4 class="sub-section-heading">Common Race Course Formats</h4>
+            <p class="mb-4">Understanding the race course format helps you plan your strategy before the start:</p>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Windward-Leeward Course:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Description:</strong> A simple two-mark course with one windward mark directly upwind and one leeward mark downwind. Often sailed multiple times (e.g., "twice around").</li>
+                    <li class="list-item"><strong>Legs:</strong> Beat (upwind) to windward mark, run (downwind) to leeward mark, repeat.</li>
+                    <li class="list-item"><strong>Finish:</strong> Usually at the windward mark after completing required laps.</li>
+                    <li class="list-item"><strong>Strategy Focus:</strong> Upwind speed and tactics are critical. Downwind positioning and wind awareness matter greatly.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Triangular Course:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Description:</strong> Three marks forming a triangle, often with the windward mark at the top and two reaching marks to port and starboard.</li>
+                    <li class="list-item"><strong>Legs:</strong> Beat to windward mark, reach to wing mark, reach to leeward mark, beat back to windward mark.</li>
+                    <li class="list-item"><strong>Variations:</strong> May include multiple laps or different rounding sequences.</li>
+                    <li class="list-item"><strong>Strategy Focus:</strong> Tests all points of sail—upwind, downwind, and reaching. Requires versatility in boat handling and tactics.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Trapezoid Course:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Description:</strong> Four marks creating a trapezoid shape—windward mark, two reaching marks at different angles, and a leeward mark.</li>
+                    <li class="list-item"><strong>Legs:</strong> Beat to windward, reach to first wing mark, run or broad reach to second wing mark, reach to leeward mark, beat to finish.</li>
+                    <li class="list-item"><strong>Strategy Focus:</strong> More complex course requiring strategic decisions on each leg. Tests boat handling on different points of sail.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Coastal/Passage Race:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Description:</strong> Longer races following coastal features, headlands, or navigational marks. Can be several miles long.</li>
+                    <li class="list-item"><strong>Legs:</strong> Variable, depending on geography. May include long beats, reaches, and runs.</li>
+                    <li class="list-item"><strong>Strategy Focus:</strong> Navigation, local knowledge of tides and currents, long-term strategy, and boat speed over extended periods.</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Course Strategy and Wind Management</h4>
+
+            <!-- SVG Diagram: Dirty Air / Wind Shadow -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-3xl">
+                    <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-blue-50 to-sky-100">
+                        <!-- Wind direction -->
+                        <defs>
+                            <marker id="arrow2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#1e40af" />
+                            </marker>
+                        </defs>
+                        <line x1="50" y1="50" x2="50" y2="120" stroke="#1e40af" stroke-width="3" marker-end="url(#arrow2)" />
+                        <text x="70" y="85" font-family="Arial" font-size="16" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Windward boat (creating dirty air) -->
+                        <polygon points="200,150 210,140 220,150 210,160" fill="#ef4444" stroke="#dc2626" stroke-width="2" />
+                        <text x="165" y="135" font-family="Arial" font-size="13" font-weight="bold" fill="#dc2626">Windward Boat</text>
+
+                        <!-- Wind shadow zone (dirty air) -->
+                        <path d="M 210 160 L 150 300 L 270 300 Z" fill="#ef4444" opacity="0.2" />
+                        <path d="M 210 160 L 150 300 L 270 300 Z" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,5" />
+                        <text x="180" y="240" font-family="Arial" font-size="14" font-weight="bold" fill="#dc2626">DIRTY AIR</text>
+                        <text x="175" y="255" font-family="Arial" font-size="12" fill="#dc2626">(Wind Shadow)</text>
+
+                        <!-- Leeward boat (in dirty air) -->
+                        <polygon points="210,280 220,270 230,280 220,290" fill="#6b7280" stroke="#374151" stroke-width="2" />
+                        <text x="165" y="310" font-family="Arial" font-size="13" font-weight="bold" fill="#374151">Leeward Boat</text>
+                        <text x="175" y="325" font-family="Arial" font-size="12" fill="#dc2626">(SLOW!)</text>
+
+                        <!-- Clean air zones -->
+                        <ellipse cx="400" cy="150" rx="80" ry="60" fill="#10b981" opacity="0.15" />
+                        <polygon points="400,150 410,140 420,150 410,160" fill="#3b82f6" stroke="#1e40af" stroke-width="2" />
+                        <text x="350" y="200" font-family="Arial" font-size="13" font-weight="bold" fill="#10b981">CLEAN AIR</text>
+                        <text x="360" y="215" font-family="Arial" font-size="12" fill="#10b981">(Full speed)</text>
+
+                        <!-- Action arrow -->
+                        <path d="M 230 280 Q 300 250 380 160" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8,4" marker-end="url(#arrow2)" />
+                        <text x="280" y="230" font-family="Arial" font-size="13" font-weight="bold" fill="#f59e0b">TACK AWAY!</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Wind shadow (dirty air) created by windward boat - tack away to find clean air and full boat speed</figcaption>
+                </figure>
+            </div>
+
+            <!-- SVG Diagram: Lay-lines -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-3xl">
+                    <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-blue-50 to-sky-100">
+                        <!-- Wind direction -->
+                        <line x1="50" y1="50" x2="50" y2="120" stroke="#1e40af" stroke-width="3" marker-end="url(#arrow2)" />
+                        <text x="70" y="85" font-family="Arial" font-size="16" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Windward mark -->
+                        <circle cx="300" cy="80" r="18" fill="#ef4444" stroke="#dc2626" stroke-width="3" />
+                        <text x="260" y="65" font-family="Arial" font-size="14" font-weight="bold" fill="#dc2626">Mark</text>
+
+                        <!-- Port lay-line -->
+                        <line x1="150" y1="400" x2="300" y2="80" stroke="#10b981" stroke-width="3" stroke-dasharray="10,5" />
+                        <text x="180" y="220" font-family="Arial" font-size="13" font-weight="bold" fill="#10b981" transform="rotate(-55 180 220)">PORT LAY-LINE</text>
+
+                        <!-- Starboard lay-line -->
+                        <line x1="450" y1="400" x2="300" y2="80" stroke="#3b82f6" stroke-width="3" stroke-dasharray="10,5" />
+                        <text x="380" y="220" font-family="Arial" font-size="13" font-weight="bold" fill="#3b82f6" transform="rotate(55 380 220)">STARBOARD LAY-LINE</text>
+
+                        <!-- Boat approaching on port tack -->
+                        <polygon points="180,350 190,340 200,350 190,360" fill="#10b981" stroke="#059669" stroke-width="2" />
+                        <path d="M 190 360 Q 220 250 290 100" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrow2)" />
+                        <text x="210" y="380" font-family="Arial" font-size="12" fill="#10b981">Tack here to</text>
+                        <text x="210" y="395" font-family="Arial" font-size="12" fill="#10b981">fetch mark</text>
+
+                        <!-- Boat inside lay-line (needs another tack) -->
+                        <polygon points="260,350 270,340 280,350 270,360" fill="#f59e0b" stroke="#d97706" stroke-width="2" />
+                        <text x="225" y="435" font-family="Arial" font-size="12" fill="#f59e0b">Too early - need</text>
+                        <text x="225" y="450" font-family="Arial" font-size="12" fill="#f59e0b">another tack!</text>
+
+                        <!-- Boat overstanding (past lay-line) -->
+                        <polygon points="100,300 110,290 120,300 110,310" fill="#dc2626" stroke="#b91c1c" stroke-width="2" />
+                        <path d="M 110 310 L 290 100" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,4" />
+                        <text x="50" y="330" font-family="Arial" font-size="12" fill="#dc2626">Overstanding!</text>
+                        <text x="50" y="345" font-family="Arial" font-size="12" fill="#dc2626">Sailing extra</text>
+                        <text x="50" y="360" font-family="Arial" font-size="12" fill="#dc2626">distance</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Lay-lines show when to tack to fetch the mark - avoid overstanding (sailing past the lay-line) as you'll sail extra distance</figcaption>
+                </figure>
+            </div>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Route Planning: Apply key considerations to find the 'fastest route to the next mark' on all legs: upwind, downwind, reaching, and when approaching and rounding marks.</li>
+                <li class="list-item">Identifying Dirty Air: Be able to identify when you are sailing in "dirty air" (a wind shadow) and know what action to take to get into clear wind.</li>
+                <li class="list-item">Understanding 'Cover': Demonstrate an understanding of the concepts of clean-air and 'cover' (positioning your boat to block the wind of a competitor).</li>
+                <li class="list-item">Lay-lines: You must be able to accurately identify lay-lines, the imaginary lines that guide you to tack or gybe to fetch a mark.</li>
+                <li class="list-item">Port Tack Manoeuvres: Demonstrate the tactical manoeuvres to either tack (leebow) or duck when on port tack and encountering a starboard boat.</li>
+                <li class="list-item">Course-specific Strategy: Be able to describe and apply key considerations for the first upwind leg, subsequent upwind legs, downwind legs and reaching legs.</li>
+                <li class="list-item">Starboard Tack Advantage: Describe the advantages of being on starboard tack when approaching a mark and when to use that advantage tactically.</li>
+                <li class="list-item">Finish Line Bias: Understand how to identify bias on the finish line and the implications for approach and final tactics (even if practical identification on the water may be challenging at this level).</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Detailed Strategy for Each Race Leg</h4>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">First Upwind Leg Strategy:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Start Strategy:</strong> Get a clean start with clear air. Avoid the mid-line traffic jam where boats are bunched.</li>
+                    <li class="list-item"><strong>Favor the Favored Side:</strong> Identify which side of the course has more wind or a favorable wind shift (usually determined during pre-start reconnaissance).</li>
+                    <li class="list-item"><strong>Tack on Headers:</strong> If the wind shifts and "heads" you (forces you to bear away), tack immediately to take advantage of the shift.</li>
+                    <li class="list-item"><strong>Stay in Pressure:</strong> Sail toward areas of better wind (darker water, ripples). Avoid light patches.</li>
+                    <li class="list-item"><strong>Account for Current:</strong> Sail in weaker current when beating against tide. This often means favoring the shoreline in tidal waters.</li>
+                    <li class="list-item"><strong>Don't Overstand Lay-line:</strong> Approach the windward mark on the starboard lay-line, but don't sail past it—you'll sail extra distance.</li>
+                    <li class="list-item"><strong>Fleet Management:</strong> Avoid getting buried in large groups. Clear air and boat speed are more important than perfect positioning early on.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Subsequent Upwind Legs:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Learn from First Beat:</strong> Apply lessons about wind shifts, current, and favored side from the first upwind leg.</li>
+                    <li class="list-item"><strong>Cover if Ahead:</strong> If leading or in a good position, "cover" boats behind by staying between them and the next mark, matching their tacks.</li>
+                    <li class="list-item"><strong>Split if Behind:</strong> If behind, don't follow the leaders. Split from the fleet and gamble on a different side of the course to gain positions.</li>
+                    <li class="list-item"><strong>Wind Shifts:</strong> Continue to tack on headers and sail on lifts. Be aware if shifts are becoming more persistent or oscillating.</li>
+                    <li class="list-item"><strong>Maintain Clear Air:</strong> Avoid being pinned to leeward or blanketed. Tack away early if necessary.</li>
+                    <li class="list-item"><strong>Mark Approach:</strong> Plan your final approach to arrive at the windward mark on starboard tack with right of way and inside position if possible.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Downwind Leg Strategy:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Sail the Angles:</strong> Don't sail dead downwind. Sail by the lee or on a broad reach, gybing downwind in a series of angles (often faster VMG to the leeward mark).</li>
+                    <li class="list-item"><strong>Seek Pressure:</strong> Head toward areas of more wind. Downwind speed is all about wind pressure.</li>
+                    <li class="list-item"><strong>Avoid Blankets:</strong> Stay out of wind shadows from boats ahead. Sail to the side if necessary to find clear air.</li>
+                    <li class="list-item"><strong>Favorable Current:</strong> On downwind legs, position yourself in the strongest favorable current. This is the opposite strategy to upwind legs.</li>
+                    <li class="list-item"><strong>Use Waves:</strong> In wave conditions, surf down waves by bearing away on the wave face and pumping the sail (within rule limits).</li>
+                    <li class="list-item"><strong>Gybe on Lifts:</strong> Similar to tacking on headers upwind, gybe when the wind "lifts" you (allows you to head up) to stay on the favored gybe.</li>
+                    <li class="list-item"><strong>Leeward Mark Approach:</strong> Plan your approach to round the leeward mark smoothly. Arrive on starboard gybe if possible for right of way. Avoid overstanding the lay-line.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Reaching Leg Strategy:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Optimal Angle:</strong> Sail slightly high (closer to the wind) of the direct rhumb line to the mark. This gives you better speed and tactical options.</li>
+                    <li class="list-item"><strong>Clear Air Priority:</strong> Get to windward of the fleet early to ensure clear, undisturbed wind. Windward position also lets you control boats to leeward.</li>
+                    <li class="list-item"><strong>Speed and Trim:</strong> Focus on boat speed through optimal sail trim and balance. Small adjustments make big differences on a reach.</li>
+                    <li class="list-item"><strong>Protect Inside at Mark:</strong> As you approach the reaching mark, position yourself for an inside overlap at the two-boat-length circle.</li>
+                    <li class="list-item"><strong>Watch for Lifts/Headers:</strong> Wind shifts affect reaching legs too. Adjust your angle to take advantage of favorable shifts.</li>
+                    <li class="list-item"><strong>Traffic Management:</strong> Avoid getting boxed in to leeward or trapped behind slower boats. Use your rights under the rules but sail conservatively to avoid penalties.</li>
+                    <li class="list-item"><strong>Current Considerations:</strong> Factor in current pushing you toward or away from the mark, adjusting your course to compensate.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Starboard Tack Advantage Approaching Marks:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Right of Way:</strong> Starboard tack has right of way over port tack. This gives you priority when approaching marks or in crossing situations.</li>
+                    <li class="list-item"><strong>Windward Mark Strategy:</strong> Plan to approach the windward mark on starboard tack. Port tack boats must keep clear or tack away.</li>
+                    <li class="list-item"><strong>Timing Your Approach:</strong> Tack onto starboard at the right moment—not too early (overstand the lay-line) or too late (have to tack again).</li>
+                    <li class="list-item"><strong>Control the Fleet:</strong> Being on starboard gives you control. You can force port tack boats to alter course or tack.</li>
+                    <li class="list-item"><strong>Inside Overlap:</strong> If approaching on starboard with an inside overlap, you have both right of way AND mark-room rights.</li>
+                    <li class="list-item"><strong>Defensive Use:</strong> If ahead, approach on starboard to prevent boats behind from sneaking inside you on port.</li>
+                    <li class="list-item"><strong>When Behind:</strong> Even when behind, approaching on starboard gives you opportunities. You can force boats ahead to tack away, potentially opening gaps.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Finish Line Bias and Strategy:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>What is Finish Line Bias?:</strong> Like the start line, one end of the finish line may be closer to the final mark, making it "favored."</li>
+                    <li class="list-item"><strong>Identifying Bias (Theory):</strong> Stand at one end and sight along the line. The end that is further upwind on a windward finish (or further downwind on a leeward finish) is favored.</li>
+                    <li class="list-item"><strong>Practical Challenge:</strong> At the Start Racing level, identifying bias while racing is difficult. Focus on crossing the line at the end closest to your current position.</li>
+                    <li class="list-item"><strong>Final Approach Strategy:</strong> If finishing upwind, approach on starboard tack when possible. If finishing downwind, approach on starboard gybe.</li>
+                    <li class="list-item"><strong>Don't Overshoot:</strong> Cross the line as soon as you can. Don't sail past the favored end—you'll sail extra distance.</li>
+                    <li class="list-item"><strong>Clear Air to Finish:</strong> Ensure you have clear air in the final approach. Getting blanketed just before the finish can cost you positions.</li>
+                    <li class="list-item"><strong>Know the Line:</strong> Be certain which direction to cross the finish line (usually the opposite direction to the start). Check the Sailing Instructions!</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="boat-handling" class="content-block">
+            <h3 class="section-heading">Race Boat Handling: Efficiency and The Five Essentials</h3>
+            <p class="mb-4">All manoeuvres must be executed efficiently and with minimal loss of boat speed, maintaining control and good judgement.</p>
+
+            <h4 class="sub-section-heading">Core Skills and Manoeuvres in Moderate Winds</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">The 5 Essentials: You must consistently use 'The 5 Essentials' (Sail Setting, Boat Balance, Centreboard/Daggerboard Position, Course Made Good, and Trim) at all times.</li>
+                <li class="list-item">Manoeuvres: Demonstrate the sailing skills below in moderate winds, exercising good judgement and planning to conduct each manoeuvre in a seamanlike manner:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Reach across the wind.</li>
+                        <li class="list-item">Sail upwind.</li>
+                        <li class="list-item">Sail downwind.</li>
+                        <li class="list-item">Tack the boat.</li>
+                        <li class="list-item">Gybe the boat.</li>
+                        <li class="list-item">Heave-to.</li>
+                    </ul>
+                </li>
+                <li class="list-item">Catamaran Specific: Catamaran sailors must be confidently able to use a trapeze if the boat is equipped with one.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Racing Techniques in Detail</h4>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Mark Rounding (Wide In, Tight Out):</p>
+
+                <!-- SVG Diagram: Mark Rounding Technique -->
+                <div class="flex justify-center my-4">
+                    <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-2xl h-auto border border-gray-300 rounded-lg bg-gradient-to-br from-blue-50 to-sky-100">
+                        <!-- Mark -->
+                        <circle cx="250" cy="200" r="20" fill="#f59e0b" stroke="#d97706" stroke-width="3" />
+                        <text x="230" y="235" font-family="Arial" font-size="14" font-weight="bold" fill="#d97706">MARK</text>
+
+                        <!-- Optimal path (wide in, tight out) -->
+                        <path d="M 100 150 Q 180 120 240 180" fill="none" stroke="#10b981" stroke-width="4" />
+                        <path d="M 260 220 Q 290 250 320 280" fill="none" stroke="#10b981" stroke-width="4" marker-end="url(#arrow2)" />
+
+                        <!-- Poor path (tight in, wide out) -->
+                        <path d="M 100 250 L 230 200" fill="none" stroke="#dc2626" stroke-width="3" stroke-dasharray="5,5" />
+                        <path d="M 270 200 Q 340 190 380 220" fill="none" stroke="#dc2626" stroke-width="3" stroke-dasharray="5,5" />
+
+                        <!-- Boats -->
+                        <polygon points="150,145 160,135 170,145 160,155" fill="#10b981" stroke="#059669" stroke-width="2" />
+                        <polygon points="150,245 160,235 170,245 160,255" fill="#dc2626" stroke="#b91c1c" stroke-width="2" />
+
+                        <!-- Labels -->
+                        <text x="90" y="120" font-family="Arial" font-size="13" font-weight="bold" fill="#10b981">✓ WIDE IN</text>
+                        <text x="330" y="290" font-family="Arial" font-size="13" font-weight="bold" fill="#10b981">✓ TIGHT OUT</text>
+                        <text x="320" y="305" font-family="Arial" font-size="11" fill="#10b981">(Fast exit!)</text>
+
+                        <text x="85" y="270" font-family="Arial" font-size="13" font-weight="bold" fill="#dc2626">✗ Tight in</text>
+                        <text x="370" y="210" font-family="Arial" font-size="13" font-weight="bold" fill="#dc2626">✗ Wide out</text>
+                        <text x="360" y="225" font-family="Arial" font-size="11" fill="#dc2626">(Extra distance)</text>
+
+                        <!-- Turn radius indicator -->
+                        <circle cx="250" cy="200" r="60" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="3,3" opacity="0.5" />
+                    </svg>
+                </div>
+
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Approach Wide:</strong> Start your turn 2-3 boat lengths before the mark to give yourself room and maintain speed through the turn.</li>
+                    <li class="list-item"><strong>Turn Smoothly:</strong> Use the rudder progressively rather than harsh movements which slow the boat.</li>
+                    <li class="list-item"><strong>Exit Tight:</strong> Aim to pass as close as safely possible to the mark on exit, positioning yourself for the optimal course on the next leg.</li>
+                    <li class="list-item"><strong>Speed Through Turn:</strong> Keep the boat balanced and sails powered throughout. Ease the mainsheet slightly mid-turn if needed, but sheet in quickly as you exit.</li>
+                    <li class="list-item"><strong>Crew Coordination:</strong> Crew should move smoothly across the boat, helping maintain balance without jerky movements that slow you down.</li>
+                    <li class="list-item"><strong>Anticipate Traffic:</strong> Look ahead for boats on the new leg and plan your exit to get clear air.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Effective Racing Tack:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Before the Tack:</strong> Build speed by sailing low for 2-3 seconds. Check behind and to leeward for clear space.</li>
+                    <li class="list-item"><strong>Initiate Smoothly:</strong> Push the tiller steadily (not violently) while keeping the boat flat. Call "Ready about... lee-ho!"</li>
+                    <li class="list-item"><strong>Through the Tack:</strong> Helm moves across early while boat is head-to-wind. Crew releases jib at last moment when it starts to back, crosses quickly but smoothly.</li>
+                    <li class="list-item"><strong>Sheet In Fast:</strong> Pull both jib and main in quickly on the new tack. Delay = lost boat speed.</li>
+                    <li class="list-item"><strong>Minimize Rudder:</strong> Once through the wind, straighten the tiller quickly. Excessive rudder acts as a brake.</li>
+                    <li class="list-item"><strong>Accelerate:</strong> Bear away slightly (sail "low and fast") for 2-3 seconds after completing the tack to rebuild speed before heading up to close-hauled.</li>
+                    <li class="list-item"><strong>Common Mistakes:</strong> Tacking too slowly (boat loses speed), over-steering (too much rudder), or not sheeting in fast enough on the new tack.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Effective Racing Gybe:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Preparation:</strong> Build speed before the gybe. Check behind for boats. Call "Ready to gybe... gybe-ho!"</li>
+                    <li class="list-item"><strong>Initiate Turn:</strong> Bear away smoothly. As the boat turns dead downwind, pull the mainsheet in quickly (but controlled) to bring the boom across.</li>
+                    <li class="list-item"><strong>Cross the Boom:</strong> In light winds, physically pull the boom across. In stronger winds, sheet in most of the way and let it flip across with minimal force.</li>
+                    <li class="list-item"><strong>Control the Boom:</strong> As the boom crosses centerline, ease the mainsheet out quickly but in a controlled manner to prevent the boom slamming across.</li>
+                    <li class="list-item"><strong>Crew Movement:</strong> Crew should cross the boat smoothly, helping to keep it balanced. Avoid sudden weight shifts.</li>
+                    <li class="list-item"><strong>Exit the Gybe:</strong> Once on the new gybe, head up slightly to optimal downwind angle and adjust sail trim.</li>
+                    <li class="list-item"><strong>Safety:</strong> Keep your head low during the gybe to avoid being hit by the boom. Maintain balance throughout.</li>
+                    <li class="list-item"><strong>Common Mistakes:</strong> Letting the boom crash across (loses control and speed), turning too sharply (can cause capsize), or poor weight distribution.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Identifying Upwind Lay-lines:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>What is a Lay-line?:</strong> The lay-line is the furthest line you can sail on one tack and still fetch (reach) the windward mark without tacking again.</li>
+                    <li class="list-item"><strong>Why Important?:</strong> Sailing past the lay-line means you sail extra distance. Tacking too early means another tack is needed.</li>
+                    <li class="list-item"><strong>Visual Method:</strong> Look at the mark and imagine a line extending from it at your boat's close-hauled angle (roughly 45° from the wind). You're on the lay-line when the mark is at this angle relative to your course.</li>
+                    <li class="list-item"><strong>Practical Test:</strong> When approaching the mark, head up to close-hauled. If the mark is directly ahead or slightly to leeward, you're on or past the lay-line. If it's to windward, you need to sail further before tacking.</li>
+                    <li class="list-item"><strong>Using Other Boats:</strong> Watch boats ahead on the same tack. If they tack and easily fetch the mark, you're near the lay-line.</li>
+                    <li class="list-item"><strong>Account for:</strong> Current/tide (may push you sideways), wind shifts (can lift or head you), and boat leeway (sideways slip).</li>
+                    <li class="list-item"><strong>Strategy:</strong> Avoid overstanding (sailing past the lay-line). Tack just inside the lay-line to arrive at the mark on starboard tack with right of way.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Overtaking on Reaches:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Speed Difference:</strong> To overtake, you must sail faster than the boat ahead. This requires better boat handling, sail trim, or tactical positioning.</li>
+                    <li class="list-item"><strong>Sail High and Fast:</strong> If you're faster, sail higher (closer to the wind) than the boat ahead. This gives you clear air and a better angle.</li>
+                    <li class="list-item"><strong>Overtake to Windward:</strong> Pass to windward when possible. This gives you the tactical advantage and cleaner air. Once ahead, you can bear down and control their wind.</li>
+                    <li class="list-item"><strong>Avoid Their Wind Shadow:</strong> If overtaking to leeward, ensure you get far enough ahead quickly to avoid their wind shadow blanking your sails.</li>
+                    <li class="list-item"><strong>Use Waves:</strong> Skilled sailors can surf waves to gain extra speed bursts on reaching legs. Pump the sails (within rules) and use body movement to catch waves.</li>
+                    <li class="list-item"><strong>Optimal Sailing Angle:</strong> Experiment with sailing angle. Sometimes sailing slightly higher maintains better speed and VMG (Velocity Made Good) toward the mark.</li>
+                    <li class="list-item"><strong>Right of Way:</strong> Remember - windward boat keeps clear. If overtaking to windward, you must stay clear. If overtaking to leeward and establishing an overlap from behind, announce "water!" if approaching a mark within two boat lengths.</li>
+                    <li class="list-item"><strong>Strategic Patience:</strong> Don't force a risky overtake. Wait for an opportunity when you have clear speed advantage or the boat ahead makes a mistake.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="weather-currents" class="content-block">
+            <h3 class="section-heading">Weather & Coastal Knowledge: Environmental Factors</h3>
+            <p class="mb-4">Understanding the race area environment is crucial for strategy.</p>
+
+            <h4 class="sub-section-heading">Advanced Weather Awareness</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Forecast Sources: Identify and compare different sources for weather forecasts (e.g., online, radio, local knowledge).</li>
+                <li class="list-item">Local Effects: Describe what local weather effects (e.g., thermal breezes, land effects, funnelling) are likely to be present in the area and how these may affect your racing.</li>
+                <li class="list-item">Forecast Implications: Be able to identify the implications of the forecast weather on the race course (wind strength, direction changes, gusts, sea state) and plan tactics accordingly.</li>
+                <li class="list-item">Reading the Water: You must be able to identify wind shifts and gusts on the water by observing the surface and other boats.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Tidal Currents on the Race Course</h4>
+
+            <!-- SVG Diagram: Current Strategy -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-3xl">
+                    <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-blue-100 to-blue-50">
+                        <!-- Shore/shallow water -->
+                        <rect x="0" y="0" width="150" height="400" fill="#d4a574" opacity="0.3" />
+                        <text x="40" y="30" font-family="Arial" font-size="14" font-weight="bold" fill="#92400e">SHORE</text>
+
+                        <!-- Wind direction -->
+                        <line x1="550" y1="50" x2="550" y2="120" stroke="#1e40af" stroke-width="3" marker-end="url(#arrow2)" />
+                        <text x="510" y="90" font-family="Arial" font-size="14" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Current arrows (going upwind) -->
+                        <path d="M 200 350 L 200 250" stroke="#0891b2" stroke-width="4" marker-end="url(#arrow2)" />
+                        <path d="M 300 350 L 300 220" stroke="#0891b2" stroke-width="6" marker-end="url(#arrow2)" />
+                        <path d="M 400 350 L 400 200" stroke="#0891b2" stroke-width="8" marker-end="url(#arrow2)" />
+                        <path d="M 500 350 L 500 190" stroke="#0891b2" stroke-width="10" marker-end="url(#arrow2)" />
+
+                        <text x="170" y="380" font-family="Arial" font-size="11" fill="#0891b2">Weak</text>
+                        <text x="270" y="380" font-family="Arial" font-size="12" fill="#0891b2">Medium</text>
+                        <text x="370" y="380" font-family="Arial" font-size="13" fill="#0891b2" font-weight="bold">Strong</text>
+                        <text x="460" y="380" font-family="Arial" font-size="14" fill="#0891b2" font-weight="bold">STRONGEST</text>
+
+                        <!-- Windward mark -->
+                        <circle cx="300" cy="80" r="18" fill="#ef4444" stroke="#dc2626" stroke-width="3" />
+                        <text x="260" y="65" font-family="Arial" font-size="13" font-weight="bold" fill="#dc2626">Windward Mark</text>
+
+                        <!-- Optimal upwind path (near shore) -->
+                        <path d="M 180 350 Q 160 200 290 95" fill="none" stroke="#10b981" stroke-width="4" marker-end="url(#arrow2)" />
+                        <polygon points="180,350 190,340 200,350 190,360" fill="#10b981" stroke="#059669" stroke-width="2" />
+                        <text x="120" y="240" font-family="Arial" font-size="13" font-weight="bold" fill="#10b981">UPWIND:</text>
+                        <text x="115" y="255" font-family="Arial" font-size="12" fill="#10b981">Stay near shore</text>
+                        <text x="110" y="270" font-family="Arial" font-size="12" fill="#10b981">(weaker current)</text>
+
+                        <!-- Poor upwind path (in strong current) -->
+                        <path d="M 480 350 L 310 95" fill="none" stroke="#dc2626" stroke-width="3" stroke-dasharray="6,4" />
+                        <polygon points="480,350 490,340 500,350 490,360" fill="#dc2626" stroke="#b91c1c" stroke-width="2" />
+                        <text x="420" y="240" font-family="Arial" font-size="13" font-weight="bold" fill="#dc2626">✗ AVOID</text>
+                        <text x="410" y="255" font-family="Arial" font-size="12" fill="#dc2626">Fighting strong</text>
+                        <text x="420" y="270" font-family="Arial" font-size="12" fill="#dc2626">current!</text>
+
+                        <!-- Current label -->
+                        <text x="340" y="320" font-family="Arial" font-size="16" font-weight="bold" fill="#0891b2">CURRENT →</text>
+                        <text x="340" y="340" font-family="Arial" font-size="12" fill="#0891b2">(Flood tide toward mark)</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">When beating upwind against current, stay in weaker current near shore. On downwind legs, use the strongest current!</figcaption>
+                </figure>
+            </div>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Current Mapping: Describe where there are likely to be stronger and weaker currents on a race area.</li>
+                <li class="list-item">Current Change: Understand how these currents may change during the day due to the tidal cycle and how this affects strategy for each leg.</li>
+            </ul>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Gemini_Generated_Image_7smon97smon97smo.png" alt="">
+                    <figcaption class="text-gray-500 mt-2">Diagram illustrating the strategic effect of current on boat speed and course over ground.</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section id="what-next" class="content-block">
+            <h3 class="section-heading">What Next...</h3>
+            <p class="mb-4">Upon successful completion, you can describe how to continue sailing, record progress in your logbook, and try another SBSS Advanced Module (such as Advanced Boat Handling, Adventure Skills, or Kites & Wires).</p>
+            <p class="mb-4">Remember to use The Irish Sailing Passport (powered by Checklick) as your online skills tracking, certification, and logbook system.</p>
+        </section>
+
+
+        <!-- New Section Template (copy and edit the id, then uncomment the block below to use it)
+        <section id="new-section-template" class="content-block">
+            <h3 class="section-heading">New Section Title</h3>
+            <p class="mb-4">Add your content here. Make sure to change the <code>id</code> to something unique and add an <code>&lt;option&gt;</code> in the Jump to Section select above if you want it to appear there.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Example bullet point 1.</li>
+                <li class="list-item">Example bullet point 2.</li>
+            </ul>
+        </section>
+        -->
+
+        <section id="what-next-extended" class="content-block">
+            <h3 class="section-heading">Further Guidance &amp; Sports Knowledge</h3>
+            <p class="mb-4">As you progress beyond Start Racing, focus on consolidating skills through regular race practice, coaching and targeted modules. Keep an up-to-date logbook of your training and race participation.</p>
+
+            <h4 class="sub-section-heading">Classes of Boats Commonly Sailed in Ireland</h4>
+            <p class="mb-4">Understanding different boat classes and their characteristics helps you appreciate the sailing community and potentially explore different types of racing:</p>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Single-Handed Dinghies:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Laser/ILCA:</strong> Single-handed, single sail dinghy. Three rig sizes (4.7, Radial, Standard). Simple, responsive, and popular for youth and adult racing. Excellent for developing boat handling skills.</li>
+                    <li class="list-item"><strong>Topper:</strong> Lightweight single-hander, ideal for younger or lighter sailors. Features a single sail and is known for being user-friendly and fun.</li>
+                    <li class="list-item"><strong>RS Aero:</strong> Modern single-hander with three rig options. Lighter and faster than Laser, becoming increasingly popular in Ireland.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Double-Handed Dinghies:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>420:</strong> Two-person dinghy with mainsail, jib, and spinnaker. Popular training boat for developing crew work and advanced boat handling. Used extensively in youth racing.</li>
+                    <li class="list-item"><strong>Mirror:</strong> Traditional, stable two-person dinghy with main and jib. Great for learning and family sailing. Simple rigging makes it accessible for beginners.</li>
+                    <li class="list-item"><strong>GP14 (General Purpose 14):</strong> Versatile two-person dinghy, very popular in Irish club racing. Main and jib configuration, stable and forgiving.</li>
+                    <li class="list-item"><strong>RS200:</strong> Modern, fast two-person dinghy with asymmetric spinnaker. Excellent for developing racing skills and crew coordination.</li>
+                    <li class="list-item"><strong>Fireball:</strong> High-performance two-person dinghy requiring skill and athleticism. Main, jib, and spinnaker. Popular in competitive racing circuits.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Catamarans (Multihulls):</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Key Differences:</strong> Two hulls instead of one. Much faster than monohulls due to reduced drag. Wider beam provides stability but requires different balance techniques.</li>
+                    <li class="list-item"><strong>Handling:</strong> No heeling—catamarans stay level or lift one hull ("flying a hull"). Weight placement is critical. Capsizing results in a turnover (boat inverted) rather than a simple side capsize.</li>
+                    <li class="list-item"><strong>Common Classes:</strong> Hobie 16 (recreational and racing), Formula 18 (high-performance racing), Dart 18, Nacra 15/17.</li>
+                    <li class="list-item"><strong>Rigging Differences:</strong> Often use fully battened mainsails, rotating masts, and trapezes for both helm and crew in racing configurations.</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Keelboats and Cruiser-Racers:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>Key Differences:</strong> Fixed keel instead of centreboard, making them self-righting and more stable. Heavier and generally larger than dinghies.</li>
+                    <li class="list-item"><strong>Handling:</strong> Slower to respond to helm and sail adjustments. More momentum means better planning for manoeuvres. Often raced with larger crews (4-8 people).</li>
+                    <li class="list-item"><strong>Common Classes in Ireland:</strong> Squib (one-design keelboat), J24, Sigma 33, SB20 (modern sportsboat), and various IRC/ECHO-rated cruiser-racers.</li>
+                    <li class="list-item"><strong>Rigging Differences:</strong> More complex sail inventory (multiple jibs, spinnakers, often genoas). More controls and adjustments (backstay, checkstays, cunningham, etc.).</li>
+                </ul>
+            </div>
+
+            <div class="ml-4 mb-4">
+                <p class="font-bold mb-2">Understanding Class-Specific Features:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="list-item"><strong>One-Design Classes:</strong> All boats in the class are identical (e.g., Laser, 420, Fireball). Racing emphasizes sailor skill rather than equipment differences.</li>
+                    <li class="list-item"><strong>Handicap Racing:</strong> Different boat types race together using handicap systems (e.g., Portsmouth Yardstick, IRC, ECHO) to level performance differences.</li>
+                    <li class="list-item"><strong>Local Variations:</strong> Check with your local sailing club to learn which classes are most popular in your area and which have active racing fleets.</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Continuing Your Sailing Development</h4>
+            <p class="mb-4">After completing Start Racing, here's how to continue building your skills and experience:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Regular Race Practice:</strong> Join your local club's weekly racing series. Consistent practice is the best way to improve racing skills and confidence.</li>
+                <li class="list-item"><strong>Advanced Modules:</strong> Consider other ISA Small Boat Sailing Scheme modules such as:
+                    <ul class="list-disc list-inside ml-6 mt-2">
+                        <li><strong>Advanced Boat Handling:</strong> Refine boat handling in challenging conditions.</li>
+                        <li><strong>Kites & Wires:</strong> Learn to use spinnakers and trapezes.</li>
+                        <li><strong>Adventure Skills:</strong> Develop navigation and expedition sailing skills.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Coaching and Clinics:</strong> Attend racing clinics, coaching sessions, or training camps to receive expert feedback and accelerate improvement.</li>
+                <li class="list-item"><strong>Crew on Larger Boats:</strong> Gain experience by crewing on keelboats or larger racing yachts. This exposes you to different racing environments and team dynamics.</li>
+                <li class="list-item"><strong>Racing Roles:</strong> Volunteer as race committee crew or assist race officers. Understanding race management from the other side improves your racing awareness.</li>
+                <li class="list-item"><strong>Logbook Maintenance:</strong> Keep your logbook current in The Irish Sailing Passport. Record all racing, training hours, and skills development. This tracks your progress and is required for further certifications.</li>
+                <li class="list-item"><strong>Set Goals:</strong> Identify specific racing goals (e.g., top-3 finish in club series, compete in regional regatta, improve starts) and work systematically toward them.</li>
+                <li class="list-item"><strong>Learn from Others:</strong> Watch faster sailors, ask questions, and analyze race results. Sailing is a lifelong learning journey.</li>
+            </ul>
+        </section>
+
+        <section id="logbook-requirements" class="content-block">
+            <h3 class="section-heading">Logbook Requirements &amp; Go Racing Option</h3>
+            <p class="mb-4">Optional Go Racing log entries that support further certification and experience accumulation:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item">Assist an ISA qualified Race Officer in running two (2) club races.</li>
+                <li class="list-item">Log participation in a minimum of six (6) club races as helm.</li>
+                <li class="list-item">Log participation in a minimum of six (6) club races as crew.</li>
+                <li class="list-item">Participate in at least one (1) interclub regatta consisting of a minimum of three (3) races.</li>
+            </ul>
+        </section>
+
+        <!-- AI Feature Implementation: Start Racing Quiz -->
+        <section id="quiz" class="content-block">
+            <h3 class="section-heading">Start Racing Quiz </h3>
+            <p class="mb-4">Test your knowledge of the Racing Rules, signals, and start-line strategy with a quick quiz. Correct/incorrect answers will be highlighted instantly, and detailed AI feedback will follow.</p>
+
+            <form id="start-racing-quiz" class="space-y-6 text-left">
+                <!-- Question 1: Race Signals (Preparatory Flag) -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">1. A flag with a single blue square on a white background (Code Flag 'P') is displayed with one sound. What does this signal indicate?</label>
+                    <input type="radio" name="q1" value="a" id="q1a"> <label for="q1a">Individual Recall: A boat was OCS.</label><br>
+                    <input type="radio" name="q1" value="b" id="q1b"> <label for="q1b">Preparatory Signal: 5 minutes to the start.</label><br>
+                    <input type="radio" name="q1" value="c" id="q1c"> <label for="q1c">General Recall: All boats must return.</label><br>
+                    <input type="radio" name="q1" value="d" id="q1d"> <label for="q1d">Postponement: Races are delayed.</label><br>
+                </div>
+
+                <!-- Question 2: Starting Strategy (Bias) -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">2. On the upwind leg, you notice the wind has "freed" you (shifted aft, allowing you to head up) on your current tack. What strategic decision should you consider?</label>
+                    <input type="radio" name="q2" value="a" id="q2a"> <label for="q2a">Tack immediately to consolidate the gain.</label><br>
+                    <input type="radio" name="q2" value="b" id="q2b"> <label for="q2b">Continue on the current tack, as the wind is now "lifting" you closer to the mark.</label><br>
+                    <input type="radio" name="q2" value="c" id="q2c"> <label for="q2c">Bear away slightly to maintain boat speed.</label><br>
+                    <input type="radio" name="q2" value="d" id="q2d"> <label for="q2d">Ease your vang to depower the sail.</label><br>
+                </div>
+
+                <!-- Question 3: Tactics (Dirty Air) -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">3. You are sailing upwind and a competitor has established a position *just* ahead and to windward of you (creating 'cover' or 'dirty air'). Which immediate action is the primary tactic to regain 'clean air'?</label>
+                    <input type="radio" name="q3" value="a" id="q3a"> <label for="q3a">Ease your sheets and bear away slightly.</label><br>
+                    <input type="radio" name="q3" value="b" id="q3b"> <label for="q3b">Tack away immediately to clear your air.</label><br>
+                    <input type="radio" name="q3" value="c" id="q3c"> <label for="q3c">Heave-to and wait for them to pass further ahead.</label><br>
+                    <input type="radio" name="q3" value="d" id="q3d"> <label for="q3d">Hail them to move out of your wind shadow.</label><br>
+                </div>
+
+                <!-- Question 4: Right of Way (RRS Part 2) -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">4. Two boats are sailing on the same tack (Starboard). Boat A is ahead of Boat B. Boat B begins to overlap Boat A to windward. According to RRS Part 2, what is the right-of-way status?</label>
+                    <input type="radio" name="q4" value="a" id="q4a"> <label for="q4a">Boat A (Clear Ahead) must keep clear of Boat B (Clear Astern).</label><br>
+                    <input type="radio" name="q4" value="b" id="q4b"> <label for="q4b">Boat B (Windward) must keep clear of Boat A (Leeward).</label><br>
+                    <input type="radio" name="q4" value="c" id="q4c"> <label for="q4c">Boat A (Clear Ahead) must keep clear of Boat B (Clear Astern).</label><br>
+                    <input type="radio" name="q4" value="d" id="q4d"> <label for="q4d">Boat B (Leeward) must keep clear of Boat A (Windward).</label><br>
+                </div>
+
+                <!-- Question 5: Lay-lines -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">5. What is the definition of a "lay-line" on an upwind leg, and what is the primary risk of sailing past it?</label>
+                    <input type="radio" name="q5" value="a" id="q5a"> <label for="q5a">The line where the boat is fastest; the risk is sailing too slowly.</label><br>
+                    <input type="radio" name="q5" value="b" id="q5b"> <label for="q5b">The line from which a mark can be fetched on one tack; the risk is sailing extra distance ("overshooting").</label><br>
+                    <input type="radio" name="q5" value="c" id="q5c"> <label for="q5c">The line separating dirty air from clean air; the risk is getting covered by another boat.</label><br>
+                    <input type="radio" name="q5" value="d" id="q5d"> <label for="q5d">The line that minimizes current effect; the risk is being swept away by the tide.</label><br>
+                </div>
+
+                <!-- Question 6: The 5 Essentials -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">6. Which of the '5 Essentials' refers to the action of the helm and crew adjusting their weight to keep the boat level and balanced?</label>
+                    <input type="radio" name="q6" value="a" id="q6a"> <label for="q6a">Sail Setting</label><br>
+                    <input type="radio" name="q6" value="b" id="q6b"> <label for="q6b">Boat Balance</label><br>
+                    <input type="radio" name="q6" value="c" id="q6c"> <label for="q6c">Trim</label><br>
+                    <input type="radio" name="q6" value="d" id="q6d"> <label for="q6d">Course Made Good</label><br>
+                </div>
+
+                 <!-- Question 7: Tides and Currents -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">7. If you are racing upwind against a strong flood tide (current running towards the windward mark), where should you generally position your boat strategically?</label>
+                    <input type="radio" name="q7" value="a" id="q7a"> <label for="q7a">In the strongest current, as it reduces your apparent wind.</label><br>
+                    <input type="radio" name="q7" value="b" id="q7b"> <label for="q7b">Near the shore or shallow areas, where the current is often weaker.</label><br>
+                    <input type="radio" name="q7" value="c" id="q7c"> <label for="q7c">Always on the starboard tack, regardless of current.</label><br>
+                    <input type="radio" name="q7" value="d" id="q7d"> <label for="q7d">On the opposite side of the race course from the tide.</label><br>
+                </div>
+
+                <!-- Question 8: Port vs Starboard -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">8. Two boats are approaching each other. Boat A is on starboard tack, Boat B is on port tack. According to the Racing Rules, what must happen?</label>
+                    <input type="radio" name="q8" value="a" id="q8a"> <label for="q8a">Boat B (port tack) must keep clear of Boat A (starboard tack).</label><br>
+                    <input type="radio" name="q8" value="b" id="q8b"> <label for="q8b">Boat A (starboard tack) must keep clear of Boat B (port tack).</label><br>
+                    <input type="radio" name="q8" value="c" id="q8c"> <label for="q8c">Both boats must alter course to avoid collision.</label><br>
+                    <input type="radio" name="q8" value="d" id="q8d"> <label for="q8d">The boat that is ahead has right of way.</label><br>
+                </div>
+
+                <!-- Question 9: Mark Rounding -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">9. When rounding a mark, what is the optimal technique to maintain speed and minimize distance?</label>
+                    <input type="radio" name="q9" value="a" id="q9a"> <label for="q9a">Turn tightly at the mark, then accelerate after rounding.</label><br>
+                    <input type="radio" name="q9" value="b" id="q9b"> <label for="q9b">Maintain a constant turning radius throughout.</label><br>
+                    <input type="radio" name="q9" value="c" id="q9c"> <label for="q9c">Approach wide, turn smoothly, exit tight to the mark.</label><br>
+                    <input type="radio" name="q9" value="d" id="q9d"> <label for="q9d">Approach tight, turn wide to maintain speed.</label><br>
+                </div>
+
+                <!-- Question 10: Start Line Bias -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">10. How do you determine if there is a bias on the start line?</label>
+                    <input type="radio" name="q10" value="a" id="q10a"> <label for="q10a">The end closest to the first mark is always favored.</label><br>
+                    <input type="radio" name="q10" value="b" id="q10b"> <label for="q10b">The end that is further upwind (closer to the wind direction) is favored.</label><br>
+                    <input type="radio" name="q10" value="c" id="q10c"> <label for="q10c">The pin end is always favored in strong winds.</label><br>
+                    <input type="radio" name="q10" value="d" id="q10d"> <label for="q10d">Check which end has more boats starting there.</label><br>
+                </div>
+
+                <!-- Question 11: Hydration -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">11. What is the recommended hydration strategy during a race day?</label>
+                    <input type="radio" name="q11" value="a" id="q11a"> <label for="q11a">Only drink when you feel thirsty to avoid needing bathroom breaks.</label><br>
+                    <input type="radio" name="q11" value="b" id="q11b"> <label for="q11b">Take small sips regularly every 15-20 minutes, even if not thirsty.</label><br>
+                    <input type="radio" name="q11" value="c" id="q11c"> <label for="q11c">Drink large amounts before racing, then avoid fluids during races.</label><br>
+                    <input type="radio" name="q11" value="d" id="q11d"> <label for="q11d">Only drink caffeinated beverages for energy and alertness.</label><br>
+                </div>
+
+                <!-- Question 12: Race Signal X -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">12. During a start sequence, Flag X is displayed with one sound. What does this mean?</label>
+                    <input type="radio" name="q12" value="a" id="q12a"> <label for="q12a">Individual Recall - one or more boats were over the line early (OCS).</label><br>
+                    <input type="radio" name="q12" value="b" id="q12b"> <label for="q12b">General Recall - all boats must return and restart.</label><br>
+                    <input type="radio" name="q12" value="c" id="q12c"> <label for="q12c">The race is postponed.</label><br>
+                    <input type="radio" name="q12" value="d" id="q12d"> <label for="q12d">The course has been shortened.</label><br>
+                </div>
+
+                <!-- Question 13: Penalty Turn -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">13. If you break a racing rule and need to take a penalty, what is the standard penalty turn?</label>
+                    <input type="radio" name="q13" value="a" id="q13a"> <label for="q13a">One complete 360° turn.</label><br>
+                    <input type="radio" name="q13" value="b" id="q13b"> <label for="q13b">Two tacks and one gybe.</label><br>
+                    <input type="radio" name="q13" value="c" id="q13c"> <label for="q13c">One tack and one gybe (720° total - two full circles).</label><br>
+                    <input type="radio" name="q13" value="d" id="q13d"> <label for="q13d">Return to the starting line and restart.</label><br>
+                </div>
+
+                <!-- Question 14: Downwind Strategy -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">14. On a downwind leg, what is generally the fastest strategy rather than sailing dead downwind?</label>
+                    <input type="radio" name="q14" value="a" id="q14a"> <label for="q14a">Sail as low as possible to minimize distance.</label><br>
+                    <input type="radio" name="q14" value="b" id="q14b"> <label for="q14b">Sail by the lee or broad reach, gybing downwind at angles for better VMG.</label><br>
+                    <input type="radio" name="q14" value="c" id="q14c"> <label for="q14c">Always sail directly toward the leeward mark.</label><br>
+                    <input type="radio" name="q14" value="d" id="q14d"> <label for="q14d">Reduce sail area to maintain control.</label><br>
+                </div>
+
+                <!-- Question 15: Warm-up -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">15. Why is a pre-sailing warm-up routine important?</label>
+                    <input type="radio" name="q15" value="a" id="q15a"> <label for="q15a">Raises body temperature, reduces injury risk, and prepares muscles for physical demands.</label><br>
+                    <input type="radio" name="q15" value="b" id="q15b"> <label for="q15b">It is only necessary in cold weather conditions.</label><br>
+                    <input type="radio" name="q15" value="c" id="q15c"> <label for="q15c">Primarily to impress other competitors with fitness.</label><br>
+                    <input type="radio" name="q15" value="d" id="q15d"> <label for="q15d">Only required for professional sailors, not club racing.</label><br>
+                </div>
+
+                <!-- Question 16: Notice of Race -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">16. What key information should you identify from a Notice of Race (NOR)?</label>
+                    <input type="radio" name="q16" value="a" id="q16a"> <label for="q16a">Only the date and location of the regatta.</label><br>
+                    <input type="radio" name="q16" value="b" id="q16b"> <label for="q16b">Date, number of races, entry method, fees, and start times.</label><br>
+                    <input type="radio" name="q16" value="c" id="q16c"> <label for="q16c">Just the course description and wind forecast.</label><br>
+                    <input type="radio" name="q16" value="d" id="q16d"> <label for="q16d">Only the prizes and social events.</label><br>
+                </div>
+
+                <!-- Question 17: Overtaking -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">17. When overtaking on a reaching leg, what is the generally preferred position to pass?</label>
+                    <input type="radio" name="q17" value="a" id="q17a"> <label for="q17a">Always pass to leeward for shorter distance.</label><br>
+                    <input type="radio" name="q17" value="b" id="q17b"> <label for="q17b">Wait behind the boat ahead until they make a mistake.</label><br>
+                    <input type="radio" name="q17" value="c" id="q17c"> <label for="q17c">Pass to windward to gain clear air and tactical control.</label><br>
+                    <input type="radio" name="q17" value="d" id="q17d"> <label for="q17d">Call for the boat ahead to move aside.</label><br>
+                </div>
+
+                <!-- Question 18: Racing Tack -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">18. What is a key element of an effective racing tack to minimize speed loss?</label>
+                    <input type="radio" name="q18" value="a" id="q18a"> <label for="q18a">Tack as quickly as possible with maximum rudder input.</label><br>
+                    <input type="radio" name="q18" value="b" id="q18b"> <label for="q18b">Sheet in fast on the new tack and minimize rudder use.</label><br>
+                    <input type="radio" name="q18" value="c" id="q18c"> <label for="q18c">Let the boat drift through the tack to maintain momentum.</label><br>
+                    <input type="radio" name="q18" value="d" id="q18d"> <label for="q18d">Always tack when sailing at your slowest speed.</label><br>
+                </div>
+
+                <!-- Question 19: Sailing Instructions -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">19. Where should you look to find information about the specific course, marks, and any rule modifications for a race?</label>
+                    <input type="radio" name="q19" value="a" id="q19a"> <label for="q19a">The Sailing Instructions (SIs) provided before the race.</label><br>
+                    <input type="radio" name="q19" value="b" id="q19b"> <label for="q19b">The Racing Rules of Sailing book.</label><br>
+                    <input type="radio" name="q19" value="c" id="q19c"> <label for="q19c">Ask other competitors during the start sequence.</label><br>
+                    <input type="radio" name="q19" value="d" id="q19d"> <label for="q19d">The Notice of Race provides all necessary details.</label><br>
+                </div>
+
+                <!-- Question 20: Fitness -->
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner quiz-question-container">
+                    <label class="block font-bold">20. How does good cardiovascular fitness benefit your racing performance?</label>
+                    <input type="radio" name="q20" value="a" id="q20a"> <label for="q20a">Allows you to sail faster by pulling sheets harder.</label><br>
+                    <input type="radio" name="q20" value="b" id="q20b"> <label for="q20b">Maintains concentration, quick reactions, and reduces fatigue throughout race day.</label><br>
+                    <input type="radio" name="q20" value="c" id="q20c"> <label for="q20c">Only helps with hiking in strong winds.</label><br>
+                    <input type="radio" name="q20" value="d" id="q20d"> <label for="q20d">Has minimal impact on sailing performance.</label><br>
+                </div>
+
+
+                <!-- Placeholder for AI response -->
+                <div id="quiz-feedback" class="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg hidden whitespace-pre-wrap">
+                    <!-- AI response will be inserted here -->
+                </div>
+
+                <button type="submit" class="nice-button">Submit Answers & Get AI Feedback</button>
+            </form>
+            <div class="image-container">
+                <!-- Placeholder for AI/Code Diagram -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" onclick="scrollToTop()" class="hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-blue-700 transition z-50">Back to Top</button>
+
+    <script>
+        // Show button after 200px scroll
+        window.addEventListener('scroll', () => {
+            const button = document.getElementById('back-to-top');
+            if (!button) return;
+            if (window.scrollY > 200) {
+                button.classList.remove('hidden');
+            } else {
+                button.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <!-- Footer (Exact copy from improving_skills.html) -->
+     <footer class="bg-gradient-to-r from-blue-700 via-blue-700 to-blue-600 text-white py-8 mt-12 shadow-inner w-full">
+            <div class="container mx-auto flex flex-col md:flex-row items-center justify-between px-4">
+                <div class="mb-4 md:mb-0 text-center md:text-left">
+                    <p class="text-lg font-semibold">&copy; 2025
+                        <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                        <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+                    </p>
+                    <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                        <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                        <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308 3.608C4.515 2.567 5.782 2.295 7.148 2.233 8.414 2.175 8.794 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </footer>
+</body>
+</html>

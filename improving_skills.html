@@ -1,0 +1,953 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improving Skills - Rathmullan sailing school notes</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+    </script>
+    <style>
+        body.dark {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark a {
+            color: #90caf9;
+        }
+        body.dark header {
+            background-color: #1f1f1f;
+        }
+        body.dark footer {
+            background-color: #1f1f1f;
+        }
+        body.dark .content-block {
+            background-color: #1f1f1f;
+            border-color: #333333;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header/Navigation Bar -->
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+            <button onclick="toggleDarkMode()" class="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400">Toggle Dark Mode</button>
+        </div>
+    </header>
+
+    <!-- Dropdown for Section Navigation -->
+    <div class="container mx-auto px-4 py-4">
+        <label for="section-select" class="block text-lg font-bold mb-2">Jump to Section:</label>
+        <select id="section-select" class="w-full p-2 border rounded-md" onchange="scrollToSection(this.value)">
+            <option value="">Select a section...</option>
+            <option value="objective">Objective</option>
+            <option value="rigging">Rigging and Boat Care</option>
+            <option value="tuning">Tuning</option>
+            <option value="boat-handling">Boat Handling</option>
+            <option value="capsize-recovery">Capsize Recovery</option>
+            <option value="boat-speed">Boat Speed</option>
+            <option value="weather">Weather</option>
+            <option value="coastal-knowledge">Coastal Knowledge</option>
+            <option value="sailing-knowledge">Sailing Knowledge</option>
+            <option value="quiz">Quiz</option>
+        </select>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+
+        <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Improving Skills</h2>
+
+        <section id="objective" class="content-block">
+            <h3 class="section-heading">Objective</h3>
+            <p class="mb-4">This level is all about developing advanced skills for effective sailing in moderate conditions, preparing you for specialist courses and greater independence on the water. <a href="basic_skills.html#objective" class="text-blue-600 hover:underline">Review the Basic Skills Objective</a> to see how this builds on your previous achievements.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Students sailing confidently in moderate wind.jpeg" alt="Students sailing confidently in moderate wind" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+        </section>
+
+        <section id="rigging" class="content-block">
+            <h3 class="section-heading">Rigging and Boat Care: Independent Preparation and Maintenance</h3>
+            <p class="mb-4">You will learn to confidently and correctly rig your boat all by yourself, without supervision. <a href="basic_skills.html#rigging" class="text-blue-600 hover:underline">Review Rigging</a> from the Basic Skills course for foundational techniques.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Student independently rigging a dinghy.jpeg" alt="Student independently rigging a dinghy" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Rigging Your Own Boat</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can rig their own boats:</strong> You will learn to <strong>confidently and correctly rig your boat all by yourself</strong>, without supervision. This involves mastering the entire process from start to finish, ensuring every component is properly assembled and secured. Your rigging will not just be functional, but <strong>optimized for the specific wind and water conditions of the day</strong>. This means you'll be able to make informed decisions on:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Mast Rake:</strong> Setting the appropriate angle of the mast for desired helm balance and performance.</li>
+                        <li class="list-item"><strong>Boom Vang/Kicker Tension:</strong> Adjusting the downward pull on the boom to control mainsail shape and twist, crucial for different wind strengths.</li>
+                        <li class="list-item"><strong>Halyard and Sheet Leads:</strong> Ensuring all lines run freely through their blocks and are correctly cleated, ready for immediate and precise adjustment.</li>
+                        <li class="list-item"><strong>Foil Settings:</strong> Inserting and securing the daggerboard/centreboard and rudder, and knowing the initial setting for the conditions.</li>
+                    </ul>
+                    You'll understand how these adjustments influence sail shape, boat balance, and overall performance, enabling you to get the best out of your boat in any given condition.
+                </li>
+            </ul>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Diagram showing mast rake, kicker, and sail controls.jpg" alt="Diagram showing mast rake, kicker, and sail controls" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">De-Rigging and Comprehensive Post-Sailing Care</h4>
+            <p class="mb-4">You will become highly skilled at safely and systematically decommissioning your boat after sailing, ensuring all equipment is cared for and secured.</p>
+            <div class="flex justify-center my-6">
+
+            </div>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can de-rig the boat:</strong> You'll learn to competently and efficiently <strong>de-rig the boat</strong>. This involves:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Lowering and Removing Sails:</strong> Safely bringing down the sails from the mast and boom.</li>
+                        <li class="list-item"><strong>Disassembling Rigging:</strong> Carefully disconnecting and disassembling the mast, boom, and other rigging components.</li>
+                        <li class="list-item"><strong>Securing Equipment:</strong> Ensuring all loose equipment is accounted for and stored securely in its designated place to prevent loss or damage.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Care for sails by washing, drying, folding/rolling up and stowing in sail bags:</strong> You will master the proper care of your sails to maintain their condition and extend their lifespan. This includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Washing:</strong> Rinsing sails thoroughly with fresh water to remove salt, dirt, and grime.</li>
+                        <li class="list-item"><strong>Drying:</strong> Ensuring sails are completely dry before storage to prevent mildew, rot, and fabric degradation. This often involves hanging them in a well-ventilated area.</li>
+                        <li class="list-item"><strong>Folding/Rolling Up:</strong> Learning specific techniques for neatly folding or rolling sails to minimize creasing and preserve their shape.</li>
+                        <li class="list-item"><strong>Stowing in Sail Bags:</strong> Correctly placing dried and folded/rolled sails into their protective sail bags for storage, shielding them from UV damage and contaminants.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Care for hull by washing, bailing, drying, fitting covers:</strong> You'll undertake thorough care for your boat's hull to protect its integrity and appearance:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Washing:</strong> Rinsing the hull and deck with fresh water immediately after sailing to remove salt and prevent buildup.</li>
+                        <li class="list-item"><strong>Bailing:</strong> Removing any accumulated water from the cockpit or bilge.</li>
+                        <li class="list-item"><strong>Drying:</strong> Wiping down the interior and exterior to prevent mildew and spotting.</li>
+                        <li class="list-item"><strong>Fitting Covers:</strong> Correctly fitting boat covers to protect the boat from UV exposure, rain, and debris when not in use.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Check for damage, tidy sheets and lines, and secure equipment:</strong> As part of your routine, you will always check for damage on the hull, rigging, spars, and foils (daggerboard/centreboard and rudder) during de-rigging and cleaning. You will meticulously tidy all sheets and lines by coiling them neatly and hanging or stowing them correctly to prevent tangles and prolong their life. Finally, you will secure all equipment, ensuring everything is safely put away or tied down, leaving the boat clean, organized, and ready for its next use or storage.</li>
+            </ul>
+        </section>
+
+        <section id="tuning" class="content-block">
+            <h3 class="section-heading">Tuning: Optimising Performance Through Rig and Sail Controls</h3>
+            <p class="mb-4">At this level, you'll develop the advanced skills to fine-tune your boat and its rigging, maximizing its speed, efficiency, and pointing ability across a range of wind and water conditions. This involves understanding and expertly using various sail and rig controls.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Close-up of sail controls outhaul, kicker, cunningham.png" alt="Close-up of sail controls: outhaul, kicker, cunningham" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Key Tuning Controls and Their Use</h4>
+            <p class="mb-4">You will be able to identify and demonstrate / describe the use of the following in order to optimise a boat / rig for a particular set of conditions:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Sail Telltales:</strong> These are small pieces of yarn attached to both sides of your sails (mainsail and jib).
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> You'll learn to interpret their behaviour as critical indicators of wind flow over the sail surfaces.
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item">When both windward and leeward telltales are streaming smoothly aft, it indicates optimal, attached airflow and maximum lift.</li>
+                                <li class="list-item">If the windward telltale flutters, the sail is luffing too much (boat is too high or sail is too far out).</li>
+                                <li class="list-item">If the leeward telltale flutters, the sail is stalled (boat is too low or sail is trimmed too far in).</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Optimisation:</strong> You'll use telltales to guide adjustments to your course and sail trim (e.g., sheeting in or out) to maintain smooth airflow and maximize power.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Outhaul:</strong> This control adjusts the tension along the foot of the mainsail.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> It pulls the clew (aft corner) of the mainsail towards the end of the boom.</li>
+                        <li class="list-item"><strong>Effect:</strong> Tightening the outhaul flattens the mainsail, reducing draft (depth) and power. Easing the outhaul allows the sail to become fuller and deeper, increasing power.</li>
+                        <li class="list-item"><strong>Optimisation:</strong> In lighter winds, you'll ease the outhaul to create a fuller sail, generating more power. In stronger winds, you'll tension the outhaul to flatten the sail, depowering it to reduce heel and improve control.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Kicker or Vang:</strong> This is a rope system (usually a block and tackle) that pulls the boom downwards, preventing it from lifting too high.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> It controls the vertical position of the boom and, crucially, affects the tension of the mainsail's leech (the aft edge).</li>
+                        <li class="list-item"><strong>Effect:</strong> Applying tension to the kicker/vang tightens the leech, increasing its curvature and potentially inducing more twist (the difference in angle between the top and bottom of the sail). When sailing off the wind (reaching or running), the kicker/vang becomes the primary control for leech tension, as the mainsheet is eased out.</li>
+                        <li class="list-item"><strong>Optimisation:</strong> In moderate to strong winds, particularly off the wind, you'll apply kicker/vang tension to prevent the boom from rising and the leech from twisting excessively, keeping the mainsail powerful and driving. In light winds upwind, you might ease the kicker/vang to allow more leech twist, which can help the top of the sail catch more wind.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Halyard Tension:</strong> This refers to the tension applied to the rope (halyard) that hoists the sail up the mast.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> It controls the tension along the luff (leading edge) of the sail.</li>
+                        <li class="list-item"><strong>Effect:</strong> Increasing halyard tension removes horizontal wrinkles from the luff, moving the draft (fullest part of the sail) forward. Easing tension allows horizontal wrinkles to form, moving the draft aft.</li>
+                        <li class="list-item"><strong>Optimisation:</strong> In stronger winds, more halyard tension flattens the entry of the sail, making it less powerful and reducing heel. In lighter winds, slightly less tension allows the luff to be fuller, creating more power.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Cunningham / Downhaul:</strong> This control pulls the luff of the mainsail downwards, often at the tack (forward-lower corner).
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> It directly impacts the position of the maximum draft in the mainsail.</li>
+                        <li class="list-item"><strong>Effect:</strong> Applying cunningham/downhaul tension moves the draft forward in the sail and flattens it. This creates a smoother entry for the airflow.</li>
+                        <li class="list-item"><strong>Optimisation:</strong> In stronger winds, you'll pull on the cunningham/downhaul to flatten the sail and move the draft forward, depowering the sail and improving pointing ability. In lighter winds, you'll ease it to allow the draft to move aft and the sail to become fuller, creating more power.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Jib Sheeting Angles:</strong> This involves adjusting the position of the jib sheet fairlead (the block through which the jib sheet passes) along the boat's deck.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> It controls the angle at which the jib sheet pulls on the sail, thus shaping the jib.</li>
+                        <li class="list-item"><strong>Effect:</strong> Moving the fairlead forward closes the leech of the jib, making it fuller at the top. Moving it aft opens the leech, flattening the top.</li>
+                        <li class="list-item"><strong>Optimisation:</strong> The goal is to ensure the jib telltales break evenly and that the jib's leech works effectively with the mainsail (the "slot effect"). You'll adjust for optimal shape for pointing and power in various wind strengths.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Main Sheet Traveller:</strong> Found on many dinghies and keelboats, this allows the mainsheet block to move from side to side across the boat.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> It controls the boom's lateral position relative to the boat's centerline, independently of the mainsheet tension (which primarily controls leech tension and sail twist).</li>
+                        <li class="list-item"><strong>Effect:</strong> Moving the traveller to windward allows you to sheet the boom closer to the centerline without over-tightening the mainsheet, which can stall the sail. Moving it to leeward opens the leech.</li>
+                        <li class="list-item"><strong>Optimisation:</strong> You'll use the traveller to maintain optimal boom angle and mainsail trim in varying wind conditions, allowing you to keep the sail powered and the boat balanced. In moderate to fresh winds, you can ease the mainsheet slightly to depower the sail and maintain control, while still keeping the boom centered with the traveller.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Sail telltales streaming correctly on a mainsail and jib.jpg" alt="Photo of sail telltales streaming correctly on a mainsail and jib" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Optimising Performance Across Conditions</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can use boat and rig controls to optimise the performance of a boat in a variety of conditions including light, medium and moderate wind conditions and on all points of sailing:</strong> You'll develop the practical skill of integrating all the above controls to continuously optimize your boat's performance. This means you'll:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Continuously Observe:</strong> Read the wind, water, and sail telltales.</li>
+                        <li class="list-item"><strong>Anticipate and React:</strong> Understand how each control influences the boat's speed, pointing ability, and balance.</li>
+                        <li class="list-item"><strong>Adapt Trim:</strong> Consistently adjust halyard tension, cunningham/downhaul, outhaul, kicker/vang, jib sheeting angles, and main sheet traveller settings to achieve peak performance in light winds (maximizing power and depth), medium winds (balancing power and control), and moderate winds (depowering and flattening for control and pointing).</li>
+                        <li class="list-item"><strong>Apply to All Points of Sailing:</strong> Master these adjustments for sailing upwind (close-hauled, optimizing pointing and VMG), across the wind (reaching, maximizing speed), and downwind (running/broad reaching, optimizing drive and stability).</li>
+                    </ul>
+                    Through this continuous process of observation and adjustment, you'll make your boat sail as fast and efficiently as possible, adapting to every change in conditions.
+                </li>
+            </ul>
+        </section>
+
+        <section id="boat-handling" class="content-block">
+            <h3 class="section-heading">Boat Handling: Advanced Manoeuvres and Independent Control</h3>
+            <p class="mb-4">At this advanced level, you'll develop exceptional control over your boat, executing complex manoeuvres with precision and confidence across a wider range of conditions. Your aim is to become highly independent and effective in all aspects of boat handling.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Sailors_performing_a_roll-tack.jpg" alt="Sailor performing a roll tack in light wind" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Advanced Turns: Tacking and Gybing Mastery</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can tack effectively in all wind conditions:</strong> You will achieve mastery in tacking (turning the bow through the wind). This involves executing quick, smooth, and controlled tacks that minimize loss of speed, not just in light or medium winds, but effectively in all wind conditions, including stronger winds. You'll demonstrate precise timing and coordinated movements between helm and crew to maintain momentum and control throughout the manoeuvre.</li>
+                <li class="list-item"><strong>Can gybe effectively in all wind conditions:</strong> Similarly, you will achieve mastery in gybing (turning the stern through the wind). You'll perform smooth, quick, and controlled gybes, even in challenging conditions or stronger winds, ensuring the boom crosses safely and the boat remains stable. This requires precise timing and coordinated movements between helm and crew to manage the sail and maintain control.</li>
+                <li class="list-item"><strong>Can perform a basic roll tack in light wind conditions:</strong> You'll learn and practice the technique of a basic roll tack specifically in light wind conditions. This advanced technique uses body weight (a "roll") to help the boat turn more efficiently and carry momentum through the tack, minimizing speed loss when there's not much wind to push the boat around.</li>
+                <li class="list-item"><strong>Can perform a basic roll gybe in light wind conditions:</strong> You'll also learn and practice a basic roll gybe in light wind conditions. Similar to the roll tack, this technique uses body weight to help the boat complete the gybe smoothly and maintain speed in minimal wind, making the manoeuvre more effective and less prone to stalling.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Precise Docking and Mooring</h4>
+            <div class="flex justify-center my-6">
+
+            </div>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Pick up a mooring in moderate conditions and with little or no assistance from the instructor:</strong> You will become highly skilled at approaching and picking up a mooring buoy. You'll demonstrate the ability to pick up a mooring in moderate conditions with excellent precision, requiring little or no assistance from the instructor. This involves judging your approach speed and angle, using sail and rudder to slow and position the boat accurately, and then securing the boat to the mooring buoy efficiently.</li>
+                <li class="list-item"><strong>Safely approach, come alongside and leave a pier or pontoon allowing for wind and current in moderate conditions and with little or no assistance from the instructor:</strong> You'll refine your ability to safely approach, come alongside, and leave a pier or pontoon, demonstrating proficiency in moderate conditions and requiring little or no assistance from the instructor. This encompasses:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Allowing for Wind and Current:</strong> Accurately assessing and compensating for the effects of both wind and current on your boat's approach and departure.</li>
+                        <li class="list-item"><strong>Precise Positioning:</strong> Using subtle sail adjustments and rudder control to achieve a gentle, controlled arrival alongside the pier or pontoon, regardless of the wind direction relative to the dock.</li>
+                        <li class="list-item"><strong>Controlled Departure:</strong> Executing smooth and efficient departures, understanding how to use the wind and initial boat momentum to safely clear the dock and other obstacles.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Specialized Manoeuvres and Control</h4>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/yacht-sailing-only-jib-front-260nw-1142111660.webp" alt="Sailing under jib only, mainsail down" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Sail effectively under jib only in moderate conditions:</strong> You'll learn to sail effectively under jib only in moderate conditions. This skill is valuable in situations where the mainsail might be too powerful (e.g., very strong winds), or if the mainsail is damaged. You'll demonstrate how to control the boat's course, manage its speed, and even perform basic turns using only the jib and rudder.</li>
+                <li class="list-item"><strong>Can describe the principles of sailing without a rudder and sail a beam reach without a rudder:</strong> This demonstrates a deep understanding of boat control. You'll be able to describe the principles of sailing without a rudder, explaining how sail trim (main sheet, jib sheets), crew weight distribution, and daggerboard/centreboard position can be used to steer the boat. You will then practically sail a beam reach without a rudder for a short distance, proving your ability to control the boat using only sail trim and weight shifts.</li>
+            </ul>
+            <div class="video-section bg-gray-100 p-48 rounded-lg shadow-lg mb-32">
+                <h5 class="text-5xl font-bold mb-16">Rudderless Tack</h5>
+                <div class="w-full">
+                    <iframe src="https://www.youtube.com/embed/a96DPQqEr_c?list=PLOSWq--nFEQwztFTc1F2sQAD4I1p6PJQ9" frameborder="0" class="rounded-lg shadow-lg w-full h-[600px]" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div class="video-section bg-gray-100 p-48 rounded-lg shadow-lg mb-32">
+                <h5 class="text-5xl font-bold mb-16">Rudderless Gybe</h5>
+                <div class="w-full">
+                    <iframe src="https://www.youtube.com/embed/Y5dsUd2sWSg?list=PLOSWq--nFEQwztFTc1F2sQAD4I1p6PJQ9" frameborder="0" class="rounded-lg shadow-lg w-full h-[600px]" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can sail backwards for short distances:</strong> You'll develop the technique to sail backwards for short distances. This is particularly useful in tight spots or when needing to create space. This often involves "backing" the mainsail (pushing the boom and sail out to the opposite side to catch the wind and generate reverse thrust) and using subtle rudder movements to control the stern's direction.</li>
+            </ul>
+            <div class="video-section bg-gray-100 p-48 rounded-lg shadow-lg mb-32">
+                <h5 class="text-5xl font-bold mb-16">Sailing Backwards</h5>
+                <div class="w-full">
+                    <iframe src="https://www.youtube.com/embed/dJIdP8za34Y?list=PLOSWq--nFEQwztFTc1F2sQAD4I1p6PJQ9" frameborder="0" class="rounded-lg shadow-lg w-full h-[600px]" allowfullscreen></iframe>
+                </div>
+            </div>
+            <h4 class="sub-section-heading">Emergency Response</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can consistently recover a man overboard in moderate conditions and with little or no assistance from the instructor:</strong> This is a critical safety skill that demands consistency and independence. You'll be able to consistently recover a man overboard (MOB) in moderate conditions, performing the entire manoeuvre with little or no assistance from the instructor. This includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Rapid Response:</strong> Reacting immediately to the MOB event.</li>
+                        <li class="list-item"><strong>Manoeuvre Execution:</strong> Safely executing a specific MOB recovery manoeuvre (e.g., Quick Stop, Figure-of-Eight) to return to the person as swiftly and safely as possible.</li>
+                        <li class="list-item"><strong>Approach and Recovery:</strong> Precisely bringing the boat alongside the person, ensuring they are safely brought back on board without further risk.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Continuous Application of Principles</h4>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Diagram showing the 5 Essentials of sailing.jpg" alt="Diagram showing the 5 Essentials of sailing" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+            <p class="mb-4">You'll continuously apply and master The 5 Essentials of sailing (Course Made Good, Sail Setting, Boat Balance, Boat Trim, and Daggerboard/Centerboard) to ensure your boat is always performing at its best. You'll specifically learn to:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Optimise for Points of Sailing:</strong> Set up your boat to sail most efficiently when going upwind (pointing high and fast), downwind (getting the most push from the wind), or on a reach (maximizing speed across the wind).</li>
+                <li class="list-item"><strong>Maximize Leverage:</strong> Practice getting the maximum leverage when hiking to keep the boat flat and fast, transferring wind power into forward motion.</li>
+                <li class="list-item"><strong>Precise Sail Trim:</strong> Constantly adjust your sheets to trim your sails for optimal speed and pointing, using telltales as your continuous guide for perfect airflow.</li>
+            </ul>
+        </section>
+
+        <section id="capsize-recovery" class="content-block">
+            <h3 class="section-heading">Capsize Recovery: Advanced Techniques for Dinghy & Catamaran Sailors</h3>
+            <p class="mb-4">At this level, you'll gain expertise in recovering from a fully inverted capsize, a more complex scenario requiring specific knowledge and techniques. <a href="basic_skills.html#capsize-recovery" class="text-blue-600 hover:underline">Review Capsize Recovery</a> from the Basic Skills course for initial techniques.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Diagram of a fully inverted dinghy and recovery steps.jpg" alt="Diagram of a fully inverted dinghy and recovery steps" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+              </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Recovering from an Inverted Capsize</h4>
+            <p class="mb-4">For dinghy and catamaran sailors, mastering the recovery from a fully inverted (upside-down) capsize is essential. You will learn the specific steps and techniques required for this more complex recovery:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Will know how to get the centre/daggerboard down if it has retracted:</strong> You will acquire the knowledge and practical methods to get the centreboard or daggerboard down if it has retracted into the hull during the inversion. This is often crucial as the board provides the leverage needed to right the boat. You'll learn techniques like pulling on the board line or using specific methods to free it if it's jammed.</li>
+                <li class="list-item"><strong>Will know how to break a vacuum formed under the hull:</strong> You will understand and know how to execute the technique to break the "vacuum" that can form under the hull when a boat is fully inverted. This vacuum can make it incredibly difficult to right the boat. You'll learn methods such as pushing down on the bow or stern, or rocking the boat slightly, to allow air to enter and release the suction, making it possible to right the boat.</li>
+                <li class="list-item"><strong>Will know how to tell if mast is stuck in bottom and what to/not to do if it is:</strong> You will learn to recognize the signs that the mast of your inverted boat might be stuck in the seabed. This could include the boat feeling unusually rigid or a distinct "thud" during the inversion. You'll understand what to do (e.g., assessing the situation calmly, trying to gently release it if safe) and, crucially, what not to do (e.g., avoiding forceful righting attempts that could damage the mast or hull) if the mast is stuck.</li>
+                <li class="list-item"><strong>Can describe what to do if someone is caught under an inverted boat:</strong> You will be able to describe the critical steps to take if someone is caught under an inverted boat. The primary action is to quickly and safely bring the boat back to a capsized (on its side) position. This creates a larger air pocket and allows the person to easily exit from under the hull, making it much safer for them to surface and be recovered. You'll also learn the importance of immediate communication and reassurance with the person.</li>
+            </ul>
+            <p class="mb-4">In addition to these specific points, you will also develop the general understanding of how to leverage your weight effectively on the centreboard or hull to apply sufficient force to flip the boat upright from its inverted state.</p>
+        </section>
+
+        <section id="boat-speed" class="content-block">
+            <h3 class="section-heading">Boat Speed: Maximising Performance and Efficiency</h3>
+            <p class="mb-4">At this level, your focus shifts to extracting the highest possible speed and efficiency from your boat. This involves a constant interplay of theoretical knowledge, precise control, and physical technique, all geared towards optimising your boat's performance across various conditions and points of sailing.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Sailor hiking out for maximum leverage.jpeg" alt="Sailor hiking out for maximum leverage" class="mx-auto rounded shadow border border-blue-200" style="max-width:600px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Foundational Principles for Speed</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Are constantly aware of and apply “The 5 Essentials”: You will integrate "The 5 Essentials" – Course Made Good, Sail Setting, Boat Balance, Boat Trim, and Daggerboard/Centerboard – as a continuous, intuitive framework for achieving maximum boat speed. You'll move beyond merely identifying them to constantly apply them in real-time, making subtle and timely adjustments to maintain optimal performance. This includes striving for the best VMG (Velocity Made Good) on upwind and downwind legs.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Setting Up for Performance</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can set the boat up:</strong> You will learn to expertly set the boat up for maximum performance tailored to the specific wind strength and water conditions of the day. This goes beyond basic rigging; it involves making the initial, subtle adjustments to the rig and controls (such as halyard tension, forestay tension, mast rake, and initial outhaul/kicker settings) to create the most efficient and powerful sail plan before you even leave the shore. This pre-set optimises the boat for immediate speed.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Efficient Sailing on All Points</h4>
+            <p class="mb-4">You will develop the refined skill to sail efficiently on every point of sailing, focusing on maximising your speed and VMG:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can sail efficiently up wind:</strong> You'll master the art of sailing efficiently upwind (close-hauled). This involves precise steering to maintain the closest possible course to the wind without sacrificing speed, continuous adjustments to mainsheet and jib sheets using telltales, and meticulous boat balance to minimise leeway and achieve the best possible VMG to windward.</li>
+                <li class="list-item"><strong>Can sail efficiently down wind:</strong> You'll learn to sail efficiently downwind by understanding how to extract maximum power and forward drive. This might involve sailing on a broad reach rather than directly running (to increase apparent wind and sail drive), precisely setting the kicker/vang and mainsheet to keep the mainsail full and projected, and actively pumping or rocking in appropriate conditions to surf waves and generate speed.</li>
+                <li class="list-item"><strong>Can sail efficiently on a reach:</strong> You'll excel at sailing efficiently on a reach (across the wind). This is often the fastest point of sailing. You'll learn to perfectly sheet your sails, use the daggerboard/centreboard to minimise drag while maintaining stability, and subtly adjust your course to maintain optimal apparent wind angle for maximum speed.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Physical and Sail Control for Speed</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can demonstrate how to obtain maximum leverage when hiking:</strong> You will master the physical technique of hiking to obtain maximum leverage, effectively converting the wind's heeling force into forward drive. This involves positioning your body correctly, extending fully out over the side, and coordinating with the crew to keep the boat as flat as possible, especially in stronger winds, to maximise sail efficiency and minimise side-slippage.</li>
+                <li class="list-item"><strong>Can demonstrate use of optimum sheeting on all points of sailing:</strong> You'll develop an acute sensitivity to sail trim, allowing you to demonstrate the use of optimum sheeting on all points of sailing. This means:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Mainsheet:</strong> Constantly adjusting the mainsheet based on wind shifts, gusts, and lulls to maintain the perfect angle of attack and leech tension, guided by the mainsail telltales and boat feel.</li>
+                        <li class="list-item"><strong>Jib Sheets:</strong> Precisely trimming the jib sheets to ensure the jib works harmoniously with the mainsail (the "slot effect"), indicated by perfectly streaming jib telltales, and adjusting the fairlead position for optimal sail shape across conditions.</li>
+                    </ul>
+                    This continuous and precise sheeting ensures your sails are always generating maximum lift and drive for the prevailing conditions.
+                </li>
+            </ul>
+        </section>
+
+        <section id="weather" class="content-block">
+            <h3 class="section-heading">Weather: Advanced Forecasting and Meteorological Interpretation</h3>
+            <p class="mb-4">At this advanced level, you'll develop a sophisticated understanding of weather patterns, enabling you to critically interpret forecasts and make informed decisions that directly impact your sailing plans and safety.</p>
+
+
+            <h4 class="sub-section-heading">Impact of Weather Elements on Planned Activities</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Wind Speed:</strong> You'll accurately describe how wind speed, measured in knots, Kph, or expressed on the Beaufort scale, can affect your planned activities. This includes understanding the specific implications of:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Light winds (Beaufort 1-2):</strong> Requiring larger sails, potentially slower progress, and needing to manage momentum, possibly altering destinations due to limited speed.</li>
+                        <li class="list-item"><strong>Medium winds (Beaufort 3-4):</strong> Ideal for many activities, but still requiring attention to trim and balance.</li>
+                        <li class="list-item"><strong>Moderate to Strong winds (Beaufort 5+):</strong> Necessitating reefing or changing to smaller sails, potentially altering courses to avoid challenging sea states, increasing workload, and potentially leading to a decision not to sail at all if beyond your skill level or boat's capacity.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Wind Direction:</strong> You'll describe how wind direction, indicated by compass headings, significantly affects planned activities. This includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Understanding the implications of onshore winds (e.g., easier return to shore but potentially larger waves near coast, more challenging landings).</li>
+                        <li class="list-item">Understanding offshore winds (e.g., pushing you away from land, potentially flatter water near shore, greater caution needed for safety).</li>
+                        <li class="list-item">How wind direction dictates your boat's course relative to your destination, requiring tacking or gybing, and influencing choice of sailing area.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Visibility:</strong> You'll describe how visibility, typically measured in nautical miles or meters, impacts your planned activities. Reduced visibility, especially due to fog or heavy precipitation, significantly increases collision risk. This may lead to:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Cancelling or delaying a trip.</li>
+                        <li class="list-item">Restricting sailing to familiar, open waters.</li>
+                        <li class="list-item">Necessitating increased vigilance, reduced speed, and the use of sound signals.</li>
+                        <li class="list-item">Altering a planned route to avoid busy shipping lanes or complex navigation areas.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Precipitation:</strong> You'll describe how precipitation (rain, hail, snow) can affect planned activities. This includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Reduced visibility.</li>
+                        <li class="list-item">Slippery decks and gear, increasing risk of falls.</li>
+                        <li class="list-item">Discomfort for crew, leading to fatigue.</li>
+                        <li class="list-item">Impact on equipment (e.g., electronics, foul weather gear performance).</li>
+                        <li class="list-item">Potential for associated wind shifts or temperature drops.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Temperature:</strong> You'll describe how temperature (actual air and water temperature) and the effects of wind chill can affect planned activities.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Low Temperatures & Wind Chill:</strong> Significantly increase the risk of hypothermia and frostbite, particularly if wet. This impacts clothing choices, duration of time on the water, and the need for warming strategies.</li>
+                        <li class="list-item"><strong>High Temperatures:</strong> Can lead to dehydration, heatstroke, and sunburn, necessitating sun protection and adequate hydration.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="flex flex-col md:flex-row-reverse items-start gap-8 my-8">
+                <!-- Image on the side -->
+                <div class="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 transition-transform duration-300 hover:scale-105">
+                    <img src="images/vhfradio.jpg" alt="VHF Radio for weather forecasts" class="w-full rounded-lg shadow-lg border border-blue-200">
+                </div>
+                <!-- Text content -->
+                <div class="w-full md:w-2/3 lg:w-3/4">
+                    <h4 class="sub-section-heading md:text-left">Sources of Weather Forecasts and Their Characteristics</h4>
+                    <p class="mb-4">You will be able to find forecasts on radio, VHF radio, television, internet, phone, fax & newspapers and identify the strengths & weaknesses of each type of forecast service:</p>
+                    <ul class="list-disc list-inside ml-4 mb-4">
+                        <li class="list-item"><strong>Radio (National Broadcasts):</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Widely accessible, often broad regional overview.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Less specific to precise sailing areas, may not be regularly updated, no visual aids.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>VHF Radio (Marine Forecasts, e.g., continuous broadcasts or specific times):</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Specifically tailored for marine use, updated frequently, often includes current conditions and warnings relevant to local coastal areas.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Requires a VHF radio, less visual information, can be missed if not tuned in at specific times.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Television:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Good for general overview, often includes synoptic charts and visual representation.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Not usually marine-specific, less detailed for local areas, infrequent updates.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Internet Websites (e.g., Met Éireann, Windy.com, PredictWind):</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Highly detailed, often area-specific, frequently updated (some real-time), offers visual charts (synoptic, wind models), historical data.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Requires internet access/data, can be overwhelming with too much data, potential for model differences.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Phone Apps (e.g., dedicated marine weather apps):</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Convenient, portable, often customizable to specific locations, can offer push notifications for warnings.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Relies on phone signal/data, may have limited detail compared to full websites, accuracy can vary between apps.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Fax:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Provides a hard copy, useful in areas with poor internet/radio.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Outdated technology, less common, slow to receive updates, no real-time data.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Newspapers:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Readily available.</li>
+                                <li class="list-item"><em>Weaknesses:</em> Least timely, general forecasts, often outdated by time of reading.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Local Harbour Masters / Sailing Centres:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><em>Strengths:</em> Highly localized, often based on direct observation and specific local knowledge, can provide practical advice.</li>
+                                <li class="list-item"><em>Weaknesses:</em> May not cover broader areas, relies on personal interpretation, availability can be limited.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <h4 class="sub-section-heading">Interpreting Marine Forecast Terminology and Synoptic Charts</h4>
+            <p class="mb-4">You will be able to explain the significance of commonly used terms in marine forecasts and identify the significance to sailors of common weather patterns illustrated on synoptic charts:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Isobars:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><em>Significance:</em> Lines connecting points of equal atmospheric pressure. You'll understand that closely spaced isobars indicate strong winds, while widely spaced isobars suggest lighter winds. They also show the general direction of wind (parallel to isobars, blowing from high to low pressure, with a deflection due to Coriolis effect in the Northern Hemisphere).</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Areas of High Pressure (Anticyclones):</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><em>Significance:</em> Usually associated with stable, settled weather, light winds, clear skies, and fair conditions. Winds generally blow clockwise around high pressure in the Northern Hemisphere.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Areas of Low Pressure (Depressions):</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><em>Significance:</em> Associated with unsettled, unstable weather, stronger winds, cloud, and precipitation. Winds generally blow anti-clockwise around low pressure in the Northern Hemisphere. You'll learn how these systems move and bring changing conditions.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Cold Fronts:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><em>Significance:</em> Represented by a blue line with triangles. They indicate a boundary where colder air is displacing warmer air. Their passage often brings a sudden shift in wind direction (veering, typically to the right), a drop in temperature, squally winds, and showers or thunderstorms.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Warm Fronts:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><em>Significance:</em> Represented by a red line with semicircles. They indicate a boundary where warmer air is replacing colder air. Their approach usually brings a gradual increase in cloudiness, steady rain or drizzle, and a backing of the wind (typically to the left) before the front passes, followed by warmer, often humid air.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Common Weather Patterns on Synoptic Chart:</strong> You'll identify the significance of how these elements combine on a synoptic chart to form recognizable weather patterns (e.g., frontal systems approaching, ridges of high pressure, deep depressions) and predict their typical impact on wind, waves, and visibility for sailors.</li>
+            </ul>
+            <div class="pdf-section bg-gray-100 p-8 rounded-lg shadow-lg mb-8">
+                <h5 class="text-2xl font-bold mb-4">How to Read a Weather Chart</h5>
+                <embed src="OP-Fun-Facts-How-to-read-a-Weather-Chart-1.pdf" type="application/pdf" class="w-full h-[600px] rounded-lg shadow-lg"></embed>
+            </div>
+            <h4 class="sub-section-heading">Applying Forecasts to Sailing Plans</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can obtain a forecast for the day and then explain how the weather it predicts will affect the sailing area & activities planned for the day:</strong> You will confidently demonstrate your ability to obtain a weather forecast for the day from appropriate sources and then explain precisely how the weather it predicts will affect your specific sailing area and the activities planned for the day. This involves:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Critical Assessment:</strong> Evaluating the forecast for wind strength and direction changes, expected visibility, temperature shifts, and any precipitation.</li>
+                        <li class="list-item"><strong>Impact Analysis:</strong> Explaining how these elements will influence your decisions regarding:
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item">Whether to go out: Assessing if conditions are within your skill level and boat's capabilities.</li>
+                                <li class="list-item">Sail choice and reefing: Determining if you need to use smaller sails or plan for reefing.</li>
+                                <li class="list-item">Course to take: Planning your route to leverage favorable winds/tides or avoid adverse conditions.</li>
+                                <li class="list-item">Safety precautions: Identifying necessary clothing, equipment, and contingency plans based on the predicted weather.</li>
+                                <li class="list-item">Adjusting the duration or scope of your trip.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="coastal-knowledge" class="content-block">
+            <h3 class="section-heading">Coastal Knowledge: Understanding Tides and Their Effects</h3>
+            <p class="mb-4">At this level, you'll gain a deeper and more nuanced understanding of tidal phenomena, enabling you to predict their behavior and plan your coastal sailing activities with greater precision and safety.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Diagram showing spring and neap tides and their effect on water levels.jpg" alt="Diagram showing spring and neap tides and their effect on water levels" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">What Causes Tides</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe what causes tides:</strong> You will gain a thorough understanding of the primary forces that cause tides. The dominant factor is the gravitational pull of the Moon, which exerts a strong attractive force on the Earth's oceans. The Sun also plays a significant role with its own gravitational pull, though its effect is about half that of the Moon due to its greater distance. As the Earth rotates, different areas experience the bulge of water caused by these gravitational pulls, resulting in the cyclical rise and fall of sea levels known as tides.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Neap and Spring Tides and Their Impact</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how neap and spring tides might affect sailors:</strong> You'll learn to differentiate between spring and neap tides and understand their distinct impacts on water levels and tidal streams, which are critical for effective sailing.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Spring Tides:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><strong>When they occur:</strong> These occur when the Sun, Moon, and Earth are approximately aligned in a straight line (during new moon and full moon phases).</li>
+                                <li class="list-item"><strong>Effect on Tides:</strong> Their combined gravitational pull creates a larger tidal range, meaning higher high waters and lower low waters.</li>
+                                <li class="list-item"><strong>Effect on Sailors:</strong> For sailors, spring tides mean the water levels will fluctuate more dramatically. This is crucial for:
+                                    <ul class="list-disc list-inside ml-4 mt-2">
+                                        <li class="list-item"><strong>Access:</strong> Knowing if you can safely access shallow areas, harbors, or slipways at high tide, and conversely, being aware of very low waters that could leave your boat grounded or unable to launch/recover.</li>
+                                        <li class="list-item"><strong>Tidal Streams:</strong> During spring tides, the tidal streams (currents) will be at their strongest. This can significantly impact your boat's speed over the ground – either providing a strong assist or creating a powerful opposing force that can severely hinder progress or even push you backwards.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Neap Tides:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><strong>When they occur:</strong> These occur when the Sun and Moon are at right angles to each other relative to the Earth (during the first and third quarter moon phases).</li>
+                                <li class="list-item"><strong>Effect on Tides:</strong> Their gravitational pulls partially counteract each other, resulting in a smaller tidal range, meaning lower high waters and higher low waters.</li>
+                                <li class="list-item"><strong>Effect on Sailors:</strong> For sailors, neap tides mean the water levels will have less difference between high and low. This is useful for:
+                                    <ul class="list-disc list-inside ml-4 mt-2">
+                                        <li class="list-item"><strong>Access:</strong> Offering more consistent water depths, reducing the risk of grounding in marginal areas compared to spring tides.</li>
+                                        <li class="list-item"><strong>Tidal Streams:</strong> The tidal streams (currents) will be at their weakest during neap tides. This makes sailing less affected by currents, potentially easier for navigation, and can be advantageous when needing to make progress against a stream that would be too strong during springs.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <p class="mb-4">By understanding these tidal patterns, you'll be able to effectively plan your sailing times, assess the risk of grounding, and utilize or mitigate the effects of powerful tidal streams.</p>
+        </section>
+
+        <section id="sailing-knowledge" class="content-block">
+            <h3 class="section-heading">Sailing Knowledge: Hydrodynamics, Aerodynamics, and Force Dynamics</h3>
+            <p class="mb-4">At this level, you'll delve deeper into the fundamental principles that govern how your boat moves and responds. You'll gain a sophisticated understanding of the forces generated by sails and foils, and how their interaction dictates your boat's performance and handling.</p>
+            <div class="flex justify-center my-6">
+                <figure class="text-center">
+                    <img src="images/Sailtips-airflow.jpg" alt="Diagram showing lift on a sail and foil, with arrows for airflow and water flow" class="mx-auto rounded shadow border border-blue-200" style="max-width:400px;">
+
+                </figure>
+            </div>
+
+            <h4 class="sub-section-heading">Understanding Forces: Lift Generation and Stalling</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how sails & foils generate lift and what stalling is:</strong> You'll learn the detailed mechanics of how both sails (acting as aerofoils in the air) and foils (like your daggerboard/centreboard and rudder, acting as hydrofoils in the water) generate the necessary lift to propel and steer your boat.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Lift Generation:</strong> This involves understanding that as fluid (air for sails, water for foils) flows over their curved surfaces, it travels faster on one side (the leeward side of a sail, or the low-pressure side of a foil). According to Bernoulli's principle, this faster flow creates lower pressure on that side, while the slower flow on the other side creates higher pressure. The difference in pressure results in a net force – lift – acting perpendicular to the direction of flow. For sails, this lift pulls the boat forward; for foils, it counteracts sideways motion (leeway) and provides steering force.</li>
+                        <li class="list-item"><strong>Stalling:</strong> You'll understand the critical concept of stalling. This occurs when the angle of attack (the angle at which the sail or foil meets the fluid) becomes too great, causing the fluid flow over the curved surface to break away and become turbulent instead of smooth and attached. When a sail stalls, it significantly loses its ability to generate lift and instead creates excessive drag. You'll learn to identify a stalled sail (e.g., telltales fluttering on the leeward side, lack of power, excessive heel with little forward speed) and how to rectify it (e.g., easing the sheet slightly or heading up to re-establish smooth airflow).</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Force Interaction: Centre of Effort and Centre of Lateral Resistance</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can explain how centre of effort (sails) & centre of lateral resistance (hull & foils) interact to drive boat forwards and to steer the boat:</strong> You'll learn about two crucial theoretical points and how their dynamic interplay is fundamental to driving your boat forward and enabling steering:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Centre of Effort (CoE):</strong> This is the single theoretical point on the sail plan where all the wind's pushing force can be considered to act. Its position changes with sail trim and wind conditions.</li>
+                        <li class="list-item"><strong>Centre of Lateral Resistance (CoLR):</strong> This is the single theoretical point on the underwater profile of the hull and foils (daggerboard/centreboard and rudder) where all the water's opposing sideways force acts. Its position changes with the boat's speed, heel, and daggerboard/rudder depth.</li>
+                        <li class="list-item"><strong>Interaction for Drive:</strong> When the CoE and CoLR are reasonably aligned (with CoE slightly ahead of CoLR for forward drive), the forces are balanced, and the boat moves efficiently forward with minimal unwanted turning.</li>
+                        <li class="list-item"><strong>Interaction for Steering:</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item">If the CoE is too far aft of the CoLR, the wind force tries to turn the boat's bow away from the wind, resulting in lee helm (the boat wants to turn downwind, requiring you to push the tiller away from the boom to steer upwind).</li>
+                                <li class="list-item">If the CoE is too far forward of the CoLR, the wind force tries to turn the boat's bow into the wind, resulting in weather helm (the boat wants to turn upwind, requiring you to pull the tiller towards the boom to steer a straight course).</li>
+                            </ul>
+                            You'll understand how to manage this balance through sail trim, daggerboard/centreboard position, and crew weight to achieve a slight, manageable amount of weather helm, which often provides the best feel and control.
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="my-6 flex justify-center">
+                <a href="https://hayward.peirce.me/the-physics-of-sailing-ce-and-clr/" target="_blank" rel="noopener" class="inline-block bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition">
+                    More on this here
+                </a>
+            </div>
+    </main>
+
+    <section id="quiz" class="content-block">
+        <h3 class="section-heading">Quiz: Test Your Knowledge</h3>
+        <form id="quiz-form" class="space-y-6">
+            <!-- Question 1 -->
+            <div>
+                <label class="block font-bold">1. What is the primary force that causes tides?</label>
+                <input type="radio" name="q1" value="a" id="q1a"> <label for="q1a">Wind</label><br>
+                <input type="radio" name="q1" value="b" id="q1b"> <label for="q1b">Moon's gravitational pull</label><br>
+                <input type="radio" name="q1" value="c" id="q1c"> <label for="q1c">Earth's rotation</label><br>
+            </div>
+            <!-- Question 2 -->
+            <div>
+                <label class="block font-bold">2. Which control adjusts the tension along the foot of the mainsail?</label>
+                <input type="radio" name="q2" value="a" id="q2a"> <label for="q2a">Outhaul</label><br>
+                <input type="radio" name="q2" value="b" id="q2b"> <label for="q2b">Kicker/Vang</label><br>
+                <input type="radio" name="q2" value="c" id="q2c"> <label for="q2c">Halyard</label><br>
+            </div>
+            <!-- Question 3 -->
+            <div>
+                <label class="block font-bold">3. Select all that apply: What are the 5 Essentials of sailing?</label>
+                <input type="checkbox" name="q3" value="a" id="q3a"> <label for="q3a">Course Made Good</label><br>
+                <input type="checkbox" name="q3" value="b" id="q3b"> <label for="q3b">Sail Setting</label><br>
+                <input type="checkbox" name="q3" value="c" id="q3c"> <label for="q3c">Boat Balance</label><br>
+                <input type="checkbox" name="q3" value="d" id="q3d"> <label for="q3d">Weather Forecasting</label><br>
+                <input type="checkbox" name="q3" value="e" id="q3e"> <label for="q3e">Boat Trim</label><br>
+            </div>
+            <!-- Question 4 -->
+            <div>
+                <label class="block font-bold">4. What does the kicker/vang control?</label>
+                <input type="radio" name="q4" value="a" id="q4a"> <label for="q4a">The foot of the mainsail</label><br>
+                <input type="radio" name="q4" value="b" id="q4b"> <label for="q4b">The leech of the mainsail</label><br>
+                <input type="radio" name="q4" value="c" id="q4c"> <label for="q4c">The luff of the mainsail</label><br>
+            </div>
+            <!-- Question 5 -->
+            <div>
+                <label class="block font-bold">5. What is the significance of closely spaced isobars on a synoptic chart?</label>
+                <input type="radio" name="q5" value="a" id="q5a"> <label for="q5a">Light winds</label><br>
+                <input type="radio" name="q5" value="b" id="q5b"> <label for="q5b">Strong winds</label><br>
+                <input type="radio" name="q5" value="c" id="q5c"> <label for="q5c">Clear skies</label><br>
+            </div>
+            <!-- Question 6 -->
+            <div>
+                <label class="block font-bold">6. What is the primary purpose of the daggerboard/centreboard?</label>
+                <input type="radio" name="q6" value="a" id="q6a"> <label for="q6a">To increase boat speed</label><br>
+                <input type="radio" name="q6" value="b" id="q6b"> <label for="q6b">To reduce leeway</label><br>
+                <input type="radio" name="q6" value="c" id="q6c"> <label for="q6c">To control sail trim</label><br>
+            </div>
+            <!-- Question 7 -->
+            <div>
+                <label class="block font-bold">7. What does the term "weather helm" mean?</label>
+                <input type="radio" name="q7" value="a" id="q7a"> <label for="q7a">The boat turns downwind</label><br>
+                <input type="radio" name="q7" value="b" id="q7b"> <label for="q7b">The boat turns upwind</label><br>
+                <input type="radio" name="q7" value="c" id="q7c"> <label for="q7c">The boat remains neutral</label><br>
+            </div>
+            <!-- Question 8 -->
+            <div>
+                <label class="block font-bold">8. What is the effect of easing the outhaul?</label>
+                <input type="radio" name="q8" value="a" id="q8a"> <label for="q8a">Flattens the sail</label><br>
+                <input type="radio" name="q8" value="b" id="q8b"> <label for="q8b">Makes the sail fuller</label><br>
+                <input type="radio" name="q8" value="c" id="q8c"> <label for="q8c">Increases leech tension</label><br>
+            </div>
+            <!-- Question 9 -->
+            <div>
+                <label class="block font-bold">9. What is the significance of spring tides for sailors?</label>
+                <input type="radio" name="q9" value="a" id="q9a"> <label for="q9a">Smaller tidal range</label><br>
+                <input type="radio" name="q9" value="b" id="q9b"> <label for="q9b">Larger tidal range</label><br>
+                <input type="radio" name="q9" value="c" id="q9c"> <label for="q9c">No tidal range</label><br>
+            </div>
+            <!-- Question 10 -->
+            <div>
+                <label class="block font-bold">10. What does the cunningham/downhaul control?</label>
+                <input type="radio" name="q10" value="a" id="q10a"> <label for="q10a">The foot of the mainsail</label><br>
+                <input type="radio" name="q10" value="b" id="q10b"> <label for="q10b">The luff of the mainsail</label><br>
+                <input type="radio" name="q10" value="c" id="q10c"> <label for="q10c">The leech of the mainsail</label><br>
+            </div>
+            <!-- Question 11 -->
+            <div>
+                <label class="block font-bold">11. What is the purpose of jib telltales?</label>
+                <input type="radio" name="q11" value="a" id="q11a"> <label for="q11a">To indicate wind direction</label><br>
+                <input type="radio" name="q11" value="b" id="q11b"> <label for="q11b">To show airflow over the sail</label><br>
+                <input type="radio" name="q11" value="c" id="q11c"> <label for="q11c">To measure boat speed</label><br>
+            </div>
+            <!-- Question 12 -->
+            <div>
+                <label class="block font-bold">12. What does the term "lee helm" mean?</label>
+                <input type="radio" name="q12" value="a" id="q12a"> <label for="q12a">The boat turns downwind</label><br>
+                <input type="radio" name="q12" value="b" id="q12b"> <label for="q12b">The boat turns upwind</label><br>
+                <input type="radio" name="q12" value="c" id="q12c"> <label for="q12c">The boat remains neutral</label><br>
+            </div>
+            <!-- Question 13 -->
+            <div>
+                <label class="block font-bold">13. What is the significance of a cold front on a synoptic chart?</label>
+                <input type="radio" name="q13" value="a" id="q13a"> <label for="q13a">Stable weather</label><br>
+                <input type="radio" name="q13" value="b" id="q13b"> <label for="q13b">Squally winds and showers</label><br>
+                <input type="radio" name="q13" value="c" id="q13c"> <label for="q13c">Light winds</label><br>
+            </div>
+            <!-- Question 14 -->
+            <div>
+                <label class="block font-bold">14. What is the primary purpose of the kicker/vang?</label>
+                <input type="radio" name="q14" value="a" id="q14a"> <label for="q14a">To control the boom's vertical position</label><br>
+                <input type="radio" name="q14" value="b" id="q14b"> <label for="q14b">To adjust the foot of the mainsail</label><br>
+                <input type="radio" name="q14" value="c" id="q14c"> <label for="q14c">To control the jib sheet</label><br>
+            </div>
+            <!-- Question 15 -->
+            <div>
+                <label class="block font-bold">15. What does the term "stalling" refer to in sailing?</label>
+                <input type="radio" name="q15" value="a" id="q15a"> <label for="q15a">Loss of lift due to turbulent airflow</label><br>
+                <input type="radio" name="q15" value="b" id="q15b"> <label for="q15b">Excessive heel</label><br>
+                <input type="radio" name="q15" value="c" id="q15c"> <label for="q15c">Increase in boat speed</label><br>
+            </div>
+            <!-- Question 16 -->
+            <div>
+                <label class="block font-bold">16. What is the primary purpose of the mainsheet traveller?</label>
+                <input type="radio" name="q16" value="a" id="q16a"> <label for="q16a">To control the boom's lateral position</label><br>
+                <input type="radio" name="q16" value="b" id="q16b"> <label for="q16b">To adjust the leech tension</label><br>
+                <input type="radio" name="q16" value="c" id="q16c"> <label for="q16c">To control the jib sheet</label><br>
+            </div>
+            <!-- Question 17 -->
+            <div>
+                <label class="block font-bold">17. What does the term "apparent wind" refer to?</label>
+                <input type="radio" name="q17" value="a" id="q17a"> <label for="q17a">The wind felt on the boat</label><br>
+                <input type="radio" name="q17" value="b" id="q17b"> <label for="q17b">The wind direction shown on a compass</label><br>
+                <input type="radio" name="q17" value="c" id="q17c"> <label for="q17c">The wind speed measured at the masthead</label><br>
+            </div>
+            <!-- Question 18 -->
+            <div>
+                <label class="block font-bold">18. What is the significance of a warm front on a synoptic chart?</label>
+                <input type="radio" name="q18" value="a" id="q18a"> <label for="q18a">Squally winds and showers</label><br>
+                <input type="radio" name="q18" value="b" id="q18b"> <label for="q18b">Gradual increase in cloudiness and steady rain</label><br>
+                <input type="radio" name="q18" value="c" id="q18c"> <label for="q18c">Clear skies</label><br>
+            </div>
+            <!-- Question 19 -->
+            <div>
+                <label class="block font-bold">19. What does the term "reefing" refer to in sailing?</label>
+                <input type="radio" name="q19" value="a" id="q19a"> <label for="q19a">Reducing sail area</label><br>
+                <input type="radio" name="q19" value="b" id="q19b"> <label for="q19b">Increasing sail area</label><br>
+                <input type="radio" name="q19" value="c" id="q19c"> <label for="q19c">Adjusting sail trim</label><br>
+            </div>
+            <!-- Question 20 -->
+            <div>
+                <label class="block font-bold">20. What is the primary purpose of the rudder?</label>
+                <input type="radio" name="q20" value="a" id="q20a"> <label for="q20a">To control boat speed</label><br>
+                <input type="radio" name="q20" value="b" id="q20b"> <label for="q20b">To steer the boat</label><br>
+                <input type="radio" name="q20" value="c" id="q20c"> <label for="q20c">To reduce leeway</label><br>
+            </div>
+            <!-- Question 21 -->
+            <div>
+                <label class="block font-bold">21. What does the term "backing wind" mean?</label>
+                <input type="radio" name="q21" value="a" id="q21a"> <label for="q21a">Wind direction shifting clockwise</label><br>
+                <input type="radio" name="q21" value="b" id="q21b"> <label for="q21b">Wind direction shifting counterclockwise</label><br>
+                <input type="radio" name="q21" value="c" id="q21c"> <label for="q21c">Wind speed increasing</label><br>
+            </div>
+            <!-- Question 22 -->
+            <div>
+                <label class="block font-bold">22. What is the significance of tidal streams for sailors?</label>
+                <input type="radio" name="q22" value="a" id="q22a"> <label for="q22a">They affect boat speed over ground</label><br>
+                <input type="radio" name="q22" value="b" id="q22b"> <label for="q22b">They determine wind direction</label><br>
+                <input type="radio" name="q22" value="c" id="q22c"> <label for="q22c">They control sail trim</label><br>
+            </div>
+            <!-- Question 23 -->
+            <div>
+                <label class="block font-bold">23. What does the term "veering wind" mean?</label>
+                <input type="radio" name="q23" value="a" id="q23a"> <label for="q23a">Wind direction shifting clockwise</label><br>
+                <input type="radio" name="q23" value="b" id="q23b"> <label for="q23b">Wind direction shifting counterclockwise</label><br>
+                <input type="radio" name="q23" value="c" id="q23c"> <label for="q23c">Wind speed decreasing</label><br>
+            </div>
+            <!-- Question 24 -->
+            <div>
+                <label class="block font-bold">24. What is the primary purpose of the cunningham/downhaul?</label>
+                <input type="radio" name="q24" value="a" id="q24a"> <label for="q24a">To control the luff tension</label><br>
+                <input type="radio" name="q24" value="b" id="q24b"> <label for="q24b">To adjust the leech tension</label><br>
+                <input type="radio" name="q24" value="c" id="q24c"> <label for="q24c">To control the foot tension</label><br>
+            </div>
+            <!-- Question 25 -->
+            <div>
+                <label class="block font-bold">25. What does the term "draft" refer to in sailing?</label>
+                <input type="radio" name="q25" value="a" id="q25a"> <label for="q25a">The depth of the sail's curve</label><br>
+                <input type="radio" name="q25" value="b" id="q25b"> <label for="q25b">The length of the mast</label><br>
+                <input type="radio" name="q25" value="c" id="q25c"> <label for="q25c">The width of the boom</label><br>
+            </div>
+            <button type="button" onclick="submitQuiz()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Submit Quiz</button>
+
+        <div id="quiz-results" class="mt-6"></div>
+        </form>
+    </section>
+
+    <button id="back-to-top" onclick="scrollToTop()" class="hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-blue-700">Back to Top</button>
+
+    <script>
+        const answers = {
+            q1: "b",
+            q2: "a",
+            q3: ["a", "b", "c", "e"],
+            q4: "b",
+            q5: "b",
+            q6: "b",
+            q7: "b",
+            q8: "b",
+            q9: "b",
+            q10: "b",
+            q11: "b",
+            q12: "a",
+            q13: "b",
+            q14: "a",
+            q15: "a",
+            q16: "a",
+            q17: "a",
+            q18: "b",
+            q19: "a",
+            q20: "b",
+            q21: "b",
+            q22: "a",
+            q23: "a",
+            q24: "a",
+            q25: "a"
+        };
+
+        function submitQuiz() {
+            const form = document.getElementById("quiz-form");
+            const resultsDiv = document.getElementById("quiz-results");
+            let score = 0;
+            let totalQuestions = Object.keys(answers).length;
+            resultsDiv.innerHTML = "";
+
+            for (let key in answers) {
+                const userAnswer = form[key];
+                if (userAnswer) {
+                    if (Array.isArray(answers[key])) {
+                        const selected = Array.from(form[key]).filter(input => input.checked).map(input => input.value);
+                        const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(answers[key].sort());
+                        if (isCorrect) {
+                            score++;
+                            Array.from(form[key]).forEach(input => {
+                                if (input.checked) {
+                                    input.parentElement.style.backgroundColor = "rgba(0, 128, 0, 0.3)"; // Transparent green
+                                }
+                            });
+                        } else {
+                            Array.from(form[key]).forEach(input => {
+                                if (input.checked) {
+                                    input.parentElement.style.backgroundColor = "rgba(255, 0, 0, 0.3)"; // Transparent red
+                                }
+                            });
+                        }
+                    } else {
+                        const selected = form[key].value;
+                        if (selected === answers[key]) {
+                            score++;
+                            document.getElementById(`${key}${selected}`).parentElement.style.backgroundColor = "rgba(0, 128, 0, 0.3)"; // Transparent green
+                        } else if (selected) {
+                            document.getElementById(`${key}${selected}`).parentElement.style.backgroundColor = "rgba(255, 0, 0, 0.3)"; // Transparent red
+                        }
+                    }
+                }
+            }
+
+            resultsDiv.innerHTML = `<p class="text-lg font-bold">Your score: ${score} / ${totalQuestions}</p>`;
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show/hide "Back to Top" button
+        window.addEventListener('scroll', () => {
+            const button = document.getElementById('back-to-top');
+            if (window.scrollY > 200) {
+                button.classList.remove('hidden');
+            } else {
+                button.classList.add('hidden');
+            }
+        });
+    </script>
+
+<footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <p class="text-lg font-semibold">&copy; 2025
+                <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+            </p>
+            <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+            <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.013 15.647 2 15.267 2 12s.012-3.584.07-4.85c.059-1.281.316-2.393 1.296-3.373.98-.98 2.092-1.237 3.373-1.296C8.332 2.175 8.741 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</footer></svg>
+</body>
+</html>

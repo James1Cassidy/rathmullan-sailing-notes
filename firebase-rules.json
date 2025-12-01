@@ -1,0 +1,65 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "users": {
+      ".indexOn": ["email", "approved"],
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.admin === true)",
+        "approved": {
+          ".write": "auth.token.admin === true"
+        },
+        "role": {
+          ".write": "auth.token.admin === true"
+        }
+      }
+    },
+    "students": {
+      "cara-na-mara": {
+        ".indexOn": ["name", "approved"]
+      },
+      "taste-of-sailing": {
+        ".indexOn": ["name", "approved"]
+      },
+      "start-sailing": {
+        ".indexOn": ["name", "approved"]
+      },
+      "basic-skills": {
+        ".indexOn": ["name", "approved"]
+      },
+      "improving-skills": {
+        ".indexOn": ["name", "approved"]
+      },
+      "start-racing": {
+        ".indexOn": ["name", "approved"]
+      },
+      "advanced-boat-handling": {
+        ".indexOn": ["name", "approved"]
+      },
+      "coastal-navigation": {
+        ".indexOn": ["name", "approved"]
+      }
+    },
+    "announcements": {
+      ".indexOn": ["timestamp", "pinned", "urgent"]
+    },
+    "availability": {
+      ".indexOn": ["date", "timestamp"]
+    },
+    "repairsLog": {
+      ".indexOn": ["timestamp"]
+    },
+    "chat": {
+      ".indexOn": ["timestamp", "sender"]
+    },
+    "weeklyPlan": {
+      ".indexOn": ["timestamp"]
+    },
+    "notifications": {
+      "pending": {
+        ".indexOn": ["timestamp"]
+      }
+    }
+  }
+}

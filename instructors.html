@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
+    <!-- Removed PWA theme-color & manifest (no app install) -->
+    <title>Sailing Instructor Resources</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+
+    <style>
+        /* --- Mobile improvements --- */
+        @media (max-width: 640px) {
+
+            header .container,
+            footer .container,
+            main.container,
+            section.container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .shadow-lg,
+            .shadow-md,
+            .shadow-inner {
+                box-shadow: none;
+            }
+
+            .rounded-lg,
+            .rounded-md {
+                border-radius: 0.5rem;
+            }
+
+            .grid-cols-2,
+            .grid-cols-3,
+            .md\:grid-cols-2,
+            .lg\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .flex-row,
+            .md\:flex-row {
+                flex-direction: column;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- Minimal inline fallback to ensure login works if main JS fails -->
+    <script>
+        (function () {
+            function fallbackInit() {
+                var form = document.getElementById('login-form');
+                var email = document.getElementById('email-input');
+                var password = document.getElementById('password-input');
+                var errorBox = document.getElementById('auth-error');
+                if (!form || !email || !password) return;
+                if (!form.__fallbackBound) {
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        var em = email.value.trim();
+                        var pw = password.value.trim();
+                        if (!em || !pw) {
+                            if (errorBox) { errorBox.textContent = 'Enter email & password'; errorBox.classList.remove('hidden'); }
+                            return;
+                        }
+                        if (window.firebase && firebase.auth) {
+                            firebase.auth().signInWithEmailAndPassword(em, pw).catch(function (err) {
+                                if (errorBox) { errorBox.textContent = err.message; errorBox.classList.remove('hidden'); }
+                            });
+                        } else {
+                            alert('Auth library not loaded yet. Please retry after a moment.');
+                        }
+                    });
+                    form.__fallbackBound = true;
+                    if (email && !email.value) email.focus();
+                }
+            }
+            document.addEventListener('DOMContentLoaded', fallbackInit);
+        })();
+    </script>
+    <!-- Authentication Overlay -->
+    <div id="auth-container" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center">
+        <div id="auth-form" class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+            <h2 id="auth-heading" class="text-2xl font-bold text-blue-800 mb-6 text-center">Instructor Login</h2>
+            <form id="login-form" class="space-y-4">
+                <div id="signup-name-wrapper" class="hidden">
+                    <label for="name-input" class="block text-sm font-medium text-gray-700">Name (for chat)</label>
+                    <input type="text" id="name-input" placeholder="Your name"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2"
+                        autocomplete="off">
+                    <p class="text-xs text-gray-500 mt-1">Only required when creating an account.</p>
+                </div>
+                <div>
+                    <label for="email-input" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email-input" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
+                </div>
+                <div>
+                    <label for="password-input" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password-input" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
+                </div>
+                <div id="auth-error" class="text-red-600 text-sm hidden"></div>
+                <button id="auth-submit-btn" type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Sign
+                    In</button>
+                <button id="google-signin-btn" type="button" class="w-full mt-2 flex items-center justify-center gap-2 py-2 px-4 border rounded-md shadow-sm text-sm font-medium bg-white text-gray-700 hover:bg-gray-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="w-5 h-5"><path fill="#EA4335" d="M24 9.5c3.9 0 6.6 1.7 8.1 3.1l6-5.8C34.8 4 30.8 2.5 24 2.5 14.7 2.5 6.9 8.9 3.5 17.6l7.4 5.8C12.7 18 17.7 9.5 24 9.5z"/><path fill="#34A853" d="M46.5 24.5c0-1.6-.1-2.7-.4-3.9H24v7.4h12.8c-.6 3.1-2.5 6-5.4 7.9l8.6 6.7C44.3 38.2 46.5 31.8 46.5 24.5z"/><path fill="#4A90E2" d="M10.9 29.9c-.9-2.6-1.4-5.4-1.4-8.4s.5-5.8 1.4-8.4L3.5 7.3C1.3 11.6 0 16.6 0 21.5s1.3 9.9 3.5 14.2l7.4-5.8z"/><path fill="#FBBC05" d="M24 46.5c6.8 0 12.8-2.4 17.1-6.5l-8.6-6.7c-2.4 1.6-5.4 2.6-8.5 2.6-6.3 0-11.7-4.7-13.6-11.1l-7.4 5.8C6.9 39.1 14.7 46.5 24 46.5z"/></svg>
+                    <span>Sign in with Google</span>
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <button id="toggle-auth-mode" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Need an
+                    account? Sign up</button>
+            </div>
+            <p class="mt-4 text-center text-sm text-gray-600">Authorized personnel only.</p>
+        </div>
+    </div>
+
+    <!-- Pending Approval Overlay -->
+    <div id="pending-approval"
+        class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full text-center">
+            <svg class="w-16 h-16 text-yellow-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Account Pending Approval</h2>
+            <p class="text-gray-600 mb-6">Your account has been created and is awaiting administrator approval. You will
+                be notified once your access is granted.</p>
+            <button id="pending-logout-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Back to
+                Login</button>
+        </div>
+    </div>
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan Sailing
+                    School Notes</a></h1>
+            <nav class="space-x-4 text-white text-sm">
+                <a href="taste_of_sailing.html" class="hover:underline">Taste of Sailing</a>
+                <a href="start_sailing.html" class="hover:underline">Start Sailing</a>
+                <a href="basic_skills.html" class="hover:underline">Basic Skills</a>
+                <a href="improving_skills.html" class="hover:underline">Improving Skills</a>
+                <a href="advanced.html" class="hover:underline">Advanced</a>
+                <a href="instructors.html" class="font-semibold underline">Instructors</a>
+            </nav>
+            <button id="logout-btn"
+                class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-4">Logout</button>
+        </div>
+    </header>
+    <main id="main-content" class="hidden container mx-auto px-4 py-8 flex-grow">
+        <!-- Admin Panel (Pending Approvals) -->
+        <div id="admin-panel" class="px-4 py-6 bg-yellow-50 rounded-lg shadow-md border border-yellow-200 hidden mb-8">
+            <h2 class="text-xl font-semibold text-yellow-800 mb-4 text-center">Admin Panel: Users</h2>
+            <p class="text-center text-gray-600 mb-4">Approve, revoke, or delete user database records. (Auth deletion
+                must be done in Firebase Console.)</p>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded shadow">
+                    <thead class="bg-yellow-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-yellow-800 text-sm">Email</th>
+                            <th class="px-4 py-2 text-left text-yellow-800 text-sm">Status</th>
+                            <th class="px-4 py-2 text-left text-yellow-800 text-sm">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-users-list"></tbody>
+                </table>
+            </div>
+        </div>
+        <h1 class="text-3xl font-extrabold text-blue-800 mb-4">Instructor Dashboard</h1>
+        <p class="text-gray-700 mb-4">Manage weekly plans, student lists, instructor/boat arrangement and resources.</p>
+
+        <!-- Notification banner removed (push notifications disabled) -->
+
+        <!-- Sticky Quick Navigation -->
+        <nav id="section-nav" class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200 mb-6">
+            <div class="overflow-x-auto no-scrollbar">
+                <ul class="flex gap-2 px-2 py-2 whitespace-nowrap text-sm">
+                    <li><a href="#announcements-section" data-target="announcements-section"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Announcements</a>
+                    </li>
+                    <li><a href="#weather-section" data-target="weather-section"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Weather</a>
+                    </li>
+                    <li><a href="#availability-section" data-target="availability-section"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Availability</a>
+                    </li>
+                    <li><a href="#instructor-chat" data-target="instructor-chat"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Chat</a></li>
+                    <li><a href="#interactive-map" data-target="interactive-map"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Map</a></li>
+                    <li><a href="#instructors-table" data-target="instructors-table"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Arrangement</a>
+                    </li>
+                    <li><a href="#student-notes-section" data-target="student-notes-section"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Student
+                            Notes</a></li>
+                    <li><a href="#templates-section" data-target="templates-section"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Templates</a>
+                    </li>
+                    <li><a href="#weekly-planning" data-target="weekly-planning"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Weekly Plan</a>
+                    </li>
+                    <li><a href="#instructors-resources" data-target="instructors-resources"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Resources</a>
+                    </li>
+                    <li><a href="#repairs-log" data-target="repairs-log"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">Breakages</a>
+                    </li>
+                    <li><a href="#training-reminders" data-target="training-reminders"
+                            class="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">EDICT/DICE</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Announcements Board -->
+        <section id="announcements-section"
+            class="container mx-auto px-4 py-8 bg-gradient-to-r from-yellow-100 to-yellow-50 rounded-2xl shadow-lg mb-10 border-l-8 border-yellow-400 scroll-mt-24">
+            <h2 class="text-2xl font-semibold text-yellow-800 mb-4 flex items-center gap-2">
+                <span class="text-3xl">📌</span> <span>Announcements Board</span>
+            </h2>
+            <div id="announcements-list" class="space-y-3 mb-4 max-h-96 overflow-y-auto"></div>
+            <div id="add-announcement-form" class="bg-white/90 p-6 rounded-xl shadow-lg border border-yellow-200">
+                <textarea id="announcement-input" placeholder="Post an important announcement for all instructors..."
+                    class="w-full border border-gray-300 rounded px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    rows="3"></textarea>
+                <div class="flex gap-4 items-center flex-wrap">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="announcement-pinned" class="rounded">
+                        <span class="text-sm">Pin to top</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="announcement-urgent" class="rounded">
+                        <span class="text-sm">🔔 Mark urgent (notify)</span>
+                    </label>
+                    <button id="enable-notifications-btn" type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hidden">Enable Notifications</button>
+                    <button id="toggle-prefs-btn" type="button" class="text-xs bg-gray-600 text-white px-2 py-1 rounded">Preferences</button>
+                </div>
+                <div id="notification-preferences" class="mt-3 bg-gray-50 border border-gray-200 rounded p-3 space-y-2 hidden">
+                    <h3 class="text-sm font-semibold text-gray-700">Notification Preferences</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="pref-enabled" class="rounded">
+                            <span>Enable notifications</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="pref-urgent" class="rounded">
+                            <span>Urgent announcements</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="pref-weather" class="rounded">
+                            <span>Weather danger alerts</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="pref-own" class="rounded">
+                            <span>Notify on my own posts</span>
+                        </label>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Stored per account; affects only this device/browser.</div>
+                    <div class="flex gap-2 mt-2">
+                        <button id="save-prefs-btn" type="button" class="text-xs bg-green-600 text-white px-3 py-1 rounded">Save Preferences</button>
+                        <button id="disable-all-notifs-btn" type="button" class="text-xs bg-red-600 text-white px-3 py-1 rounded">Disable All</button>
+                    </div>
+                    <div id="prefs-flash" class="hidden text-xs mt-2 font-medium"></div>
+                </div>
+                <button onclick="postAnnouncement()"
+                    class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 mt-2">📌 Post
+                    Announcement</button>
+            </div>
+        </section>
+
+        <!-- Weather Widget -->
+        <section id="weather-section"
+            class="container mx-auto px-4 py-8 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 text-gray-900 rounded-2xl shadow-lg mb-10 scroll-mt-24 border-l-8 border-blue-400">
+            <h2 class="text-2xl font-semibold mb-4 flex items-center gap-2">
+                ⛅ Weather & Tides for Rathmullan
+            </h2>
+
+            <!-- Weather Alert Banner -->
+            <div id="weather-alert" class="hidden bg-red-600 border-2 border-red-800 rounded-lg p-4 mb-4 animate-pulse">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-grow">
+                        <div class="font-bold text-lg">⚠️ Weather Alert</div>
+                        <div id="weather-alert-text" class="text-sm"></div>
+                    </div>
+                    <button onclick="dismissWeatherAlert()"
+                        class="text-white hover:text-gray-200 px-3 py-1 border border-white rounded">Dismiss</button>
+                </div>
+            </div>
+
+            <div id="weather-display" class="grid grid-cols-1 gap-4">
+                                <!-- Weather Cards Row 1 -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
+                                    <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-blue-100">
+                                        <div class="text-blue-700 text-2xl font-bold mb-1">🌡️</div>
+                                        <div id="weather-temp" class="text-4xl font-extrabold text-blue-900">--°</div>
+                                        <div class="text-gray-500">Celsius</div>
+                                    </div>
+                                    <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-blue-100">
+                                        <div class="text-blue-700 text-xl font-bold mb-2 flex items-center gap-2">⚡ Wind</div>
+                                        <!-- Wind Compass -->
+                                        <div class="relative w-32 h-32 mb-3">
+                                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                                <!-- Compass circle -->
+                                                <circle cx="50" cy="50" r="45" fill="#f0f9ff" stroke="#cbd5e1" stroke-width="2"/>
+                                                <!-- Cardinal directions -->
+                                                <text x="50" y="15" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">N</text>
+                                                <text x="85" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">E</text>
+                                                <text x="50" y="93" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">S</text>
+                                                <text x="15" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">W</text>
+                                                <!-- Ordinal directions -->
+                                                <text x="73" y="23" text-anchor="middle" font-size="8" fill="#64748b">NE</text>
+                                                <text x="73" y="82" text-anchor="middle" font-size="8" fill="#64748b">SE</text>
+                                                <text x="27" y="82" text-anchor="middle" font-size="8" fill="#64748b">SW</text>
+                                                <text x="27" y="23" text-anchor="middle" font-size="8" fill="#64748b">NW</text>
+                                                <!-- Wind arrow (rotates) -->
+                                                <g id="wind-arrow" transform="rotate(0 50 50)">
+                                                    <path d="M 50 25 L 58 45 L 54 45 L 54 65 L 46 65 L 46 45 L 42 45 Z" fill="#f97316" stroke="#ea580c" stroke-width="1"/>
+                                                </g>
+                                            </svg>
+                                            <!-- Wind speed in center -->
+                                            <div class="absolute inset-0 flex items-center justify-center">
+                                                <div class="text-center">
+                                                    <div id="weather-wind" class="text-2xl font-extrabold text-orange-600">--</div>
+                                                    <div class="text-xs text-gray-500">kts</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Direction -->
+                                        <div class="text-center mb-2">
+                                            <div id="wind-direction-letter" class="text-2xl font-bold text-gray-700">--</div>
+                                            <div id="wind-direction-degrees" class="text-sm text-gray-500">--°</div>
+                                        </div>
+                                        <!-- Beaufort description -->
+                                        <div id="wind-beaufort" class="text-sm text-gray-600 mb-2 text-center">--</div>
+                                        <!-- Gust speed -->
+                                        <div class="text-center pt-2 border-t border-gray-200 w-full">
+                                            <div class="text-xs text-gray-500">Gust Speed</div>
+                                            <div id="wind-gust" class="text-lg font-bold text-gray-700">-- kts</div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-blue-100">
+                                        <div class="text-blue-700 text-2xl font-bold mb-1">🌊</div>
+                                        <div id="weather-tide" class="text-4xl font-extrabold text-blue-900">--</div>
+
+                                    </div>
+                                    <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-blue-100">
+                                        <div class="text-blue-700 text-2xl font-bold mb-1">🌡️</div>
+                                        <div id="weather-humidity" class="text-3xl font-extrabold text-blue-900">--%</div>
+                                        <div class="text-gray-500">Humidity</div>
+                                    </div>
+                                    <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-blue-100">
+                                        <div class="text-blue-700 text-2xl font-bold mb-1">🧭</div>
+                                        <div id="weather-pressure" class="text-3xl font-extrabold text-blue-900">--</div>
+                                        <div class="text-gray-500">Pressure (hPa)</div>
+                                    </div>
+                                </div>
+                                <!-- Graphs -->
+                                <div class="bg-white rounded-xl shadow p-6 border border-blue-100 col-span-1 md:col-span-3 mb-4">
+                                    <h4 class="text-lg font-semibold text-blue-800 mb-2">Wind Speed & Gust Speed (24 Hours)</h4>
+                                    <!-- Chart Controls -->
+                                    <div class="mb-3 flex flex-wrap gap-2 items-center justify-between border-b border-gray-200 pb-3">
+                                        <div class="flex gap-2 items-center">
+                                            <button onclick="windChartZoomIn()" class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors" title="Zoom In">🔍+</button>
+                                            <button onclick="windChartZoomOut()" class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors" title="Zoom Out">🔍−</button>
+                                            <button onclick="windChartPanLeft()" class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors" title="Pan Left">◀</button>
+                                            <button onclick="windChartPanRight()" class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors" title="Pan Right">▶</button>
+                                        </div>
+                                        <div class="flex gap-2 items-center">
+                                            <button onclick="windChartGoToNow()" class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded transition-colors font-semibold" title="Jump to Now">Now</button>
+                                            <button onclick="windChartReset()" class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded transition-colors" title="Reset View">Reset</button>
+                                        </div>
+                                    </div>
+                                    <!-- Time Range Slider -->
+                                    <div class="mb-3 flex items-center gap-3">
+                                        <label class="text-sm text-gray-700 font-medium whitespace-nowrap">Time Range:</label>
+                                        <input type="range" id="wind-time-slider" min="-48" max="48" value="0" step="1" class="flex-1" oninput="windChartSliderChange(this.value)" />
+                                        <span id="wind-slider-label" class="text-sm text-gray-600 whitespace-nowrap min-w-[80px] text-right">Now</span>
+                                    </div>
+                                    <div class="w-full" style="height:220px;">
+                                        <canvas id="wind-graph" style="width:100%; height:100%; display:block;"></canvas>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-xl shadow p-6 border border-blue-100 col-span-1 md:col-span-3 mb-4">
+                                    <h4 class="text-lg font-semibold text-blue-800 mb-2">Tide Height</h4>
+                                    <div class="w-full" style="height:180px;">
+                                        <canvas id="tide-graph" style="width:100%; height:100%; display:block;"></canvas>
+                                    </div>
+                                </div>
+                                <!-- Tides Card -->
+                                <div class="bg-white/90 rounded-xl shadow-lg border border-blue-200 p-6 mb-2 col-span-1 md:col-span-3">
+                                    <div id="tides-nearme" class="text-center text-gray-700">Loading Rathmullan tide data...</div>
+                                    <p class="text-xs text-gray-500 mt-4 text-center">Source: <a href="https://tidesnear.me/tide_stations/3459" target="_blank" class="text-blue-600 hover:underline">tidesnear.me station 3459</a></p>
+                                </div>
+            </div>
+            <div class="mt-4 text-xs opacity-75 text-center">Weather updates every 30 minutes • <span
+                    id="offline-indicator" class="hidden">📡 Offline Mode Active</span></div>
+        </section>
+
+        <!-- Instructor Availability Calendar -->
+        <section id="availability-section"
+            class="container mx-auto px-4 py-6 bg-white rounded-lg shadow-md mb-8 scroll-mt-24">
+            <h2 class="text-2xl font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                📅 Instructor Availability
+            </h2>
+
+            <!-- Date Range Input -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div class="mb-3 flex gap-2 items-center flex-wrap">
+                    <label class="text-sm font-medium text-gray-700">From:</label>
+                    <input type="date" id="availability-start-date" class="border border-gray-300 rounded px-3 py-2">
+                    <label class="text-sm font-medium text-gray-700">To:</label>
+                    <input type="date" id="availability-end-date" class="border border-gray-300 rounded px-3 py-2">
+                    <select id="availability-status" class="border border-gray-300 rounded px-3 py-2">
+                        <option value="available">✅ Available</option>
+                        <option value="unavailable">❌ Unavailable</option>
+                    </select>
+                    <button onclick="setAvailabilityRange()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">Set
+                        Range</button>
+                    <button onclick="clearMyAvailability()"
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">Clear My
+                        Availability</button>
+                </div>
+                <p class="text-xs text-gray-600">💡 Select a date range to mark your availability. Leave end date empty
+                    to set a single day.</p>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Calendar View</h3>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="changeCalendarMonth(-1)"
+                            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-sm">←
+                            Previous</button>
+                        <span id="calendar-month-display"
+                            class="font-semibold text-gray-700 min-w-[120px] text-center"></span>
+                        <button onclick="changeCalendarMonth(1)"
+                            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-sm">Next
+                            →</button>
+                        <button onclick="resetCalendarToToday()"
+                            class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors text-sm">Today</button>
+                    </div>
+                </div>
+                <div id="availability-calendar" class="bg-gray-50 border border-gray-300 rounded-lg p-4"></div>
+            </div>
+
+            <!-- List View -->
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Instructor List</h3>
+                <div id="availability-list" class="bg-gray-50 border border-gray-300 rounded-lg p-4"></div>
+            </div>
+        </section>
+
+        <!-- Instructor Chat / Discussion -->
+        <section id="instructor-chat"
+            class="container mx-auto px-4 py-8 bg-blue-50 rounded-lg shadow-md mb-8 scroll-mt-24">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-semibold text-blue-800">Instructor Chat</h3>
+                <div class="flex gap-2">
+                    <button onclick="toggleChatView('general')" id="chat-view-general"
+                        class="bg-blue-600 text-white px-3 py-1 rounded text-sm">💬 General</button>
+                    <button onclick="toggleChatView('gallery')" id="chat-view-gallery"
+                        class="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">🖼️ Gallery</button>
+                    <button onclick="toggleChatView('private')" id="chat-view-private"
+                        class="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">✉️ Private</button>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 text-center mb-4">Use this space for quick coordination. Messages are
+                visible to all approved instructors.</p>
+
+            <!-- General Chat View -->
+            <div id="chat-view-general-content">
+                <div id="chat-messages"
+                    class="bg-white border border-blue-200 rounded-lg h-72 overflow-y-auto p-4 text-sm space-y-3"></div>
+            </div>
+
+            <!-- Photo Gallery View -->
+            <div id="chat-view-gallery-content" class="hidden">
+                <div id="chat-gallery"
+                    class="bg-white border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
+                </div>
+            </div>
+
+            <!-- Private Messages View -->
+            <div id="chat-view-private-content" class="hidden">
+                <div class="flex gap-4 h-96">
+                    <div class="w-1/3 bg-white border border-blue-200 rounded-lg overflow-y-auto">
+                        <div class="p-3 border-b border-gray-200 font-semibold text-sm bg-blue-50">Instructors</div>
+                        <div id="private-instructors-list" class="divide-y"></div>
+                    </div>
+                    <div class="flex-grow bg-white border border-blue-200 rounded-lg flex flex-col">
+                        <div id="private-chat-header"
+                            class="p-3 border-b border-gray-200 font-semibold text-sm bg-blue-50">Select an instructor
+                        </div>
+                        <div id="private-messages" class="flex-grow overflow-y-auto p-4 space-y-2"></div>
+                        <form id="private-chat-form" class="p-3 border-t border-gray-200 hidden">
+                            <div class="flex gap-2">
+                                <input type="text" id="private-chat-input" placeholder="Type a private message..."
+                                    class="flex-grow border border-gray-300 rounded px-3 py-2 text-sm">
+                                <button type="submit"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="chat-form" class="mt-4 flex gap-2">
+                <input type="file" id="chat-file-input" accept="image/*,video/*,application/pdf" class="hidden">
+                <button type="button" id="chat-attach-btn" title="Attach photo/video/PDF"
+                    class="bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                        </path>
+                    </svg>
+                </button>
+                <input type="text" id="chat-input" placeholder="Type a message or paste a link..."
+                    class="flex-grow border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    autocomplete="off">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send</button>
+            </form>
+            <div id="chat-upload-preview" class="mt-2 hidden">
+                <div class="bg-blue-50 border border-blue-200 rounded p-2 flex items-center gap-2">
+                    <span id="chat-preview-name" class="text-sm text-gray-700 flex-grow"></span>
+                    <button type="button" id="chat-cancel-upload"
+                        class="text-red-600 hover:text-red-800 text-sm font-medium">Cancel</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Map -->
+        <section id="interactive-map"
+            class="container mx-auto px-4 py-8 bg-gray-100 rounded-lg shadow-md mt-4 scroll-mt-24">
+            <h2 class="text-2xl font-semibold text-blue-800 mb-4 text-center">Interactive Map</h2>
+            <div class="relative bg-cover bg-center rounded-lg shadow-md"
+                style="background-image: url('images/image24.png'); height: 600px;">
+                <div class="absolute text-center draggable" id="yak" draggable="true">
+                    <div class="bg-orange-500 text-white px-2 py-1 rounded-md">Yak</div>
+                </div>
+                <div class="absolute text-center draggable" id="big-rib" draggable="true">
+                    <div class="bg-orange-500 text-white px-2 py-1 rounded-md">Big Rib</div>
+                </div>
+                <div class="absolute text-center draggable" id="old-rib" draggable="true">
+                    <div class="bg-orange-500 text-white px-2 py-1 rounded-md">Old Rib</div>
+                </div>
+                <div class="absolute text-center draggable" id="new-rib" draggable="true">
+                    <div class="bg-orange-500 text-white px-2 py-1 rounded-md">New Rib</div>
+                </div>
+                <div class="absolute text-center draggable" id="cara-na-mara" draggable="true">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded-md">Cara na Mara</div>
+                </div>
+                <div class="absolute text-center draggable" id="taste-of-sailing" draggable="true">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded-md">Taste of Sailing</div>
+                </div>
+                <div class="absolute text-center draggable" id="start-sailing" draggable="true">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded-md">Start Sailing</div>
+                </div>
+                <div class="absolute text-center draggable" id="basic-skills" draggable="true">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded-md">Basic Skills</div>
+                </div>
+                <div class="absolute text-center draggable" id="improving-skills" draggable="true">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded-md">Improving Skills</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Instructors Table / Arrangement -->
+        <section id="instructors-table"
+            class="container mx-auto px-4 py-8 bg-gray-100 rounded-lg shadow-md mt-8 scroll-mt-24">
+            <h3 class="text-2xl font-semibold text-blue-800 mb-4 text-center">Draggable Instructors</h3>
+            <p class="text-lg text-gray-700 text-center mb-6">Drag and drop instructors, assistants, and boats into the
+                appropriate levels below or back to the available section.</p>
+            <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-6">
+                <h4 class="text-xl font-bold text-blue-700 mb-4 text-center">Irish Sailing Teaching Ratios </h4>
+
+
+
+
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden shadow-lg">
+                        <thead class="bg-blue-700">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                    Level</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                    Boat Type</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                    Instructor:Sailor Ratio (Standard)</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                    Max Boats (Standard)</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                    Instructor:Sailor Ratio (with Assistant)</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                                    Max Boats (with Assistant)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td rowspan="3"
+                                    class="px-6 py-3 text-sm font-medium text-blue-800 align-top border-r border-blue-200">
+                                    Taste of Sailing</td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">Single handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">1:6</td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">6</td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">1:8</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">8</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">Double handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">3</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:8</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">4</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">Multi handed dinghy</td>
+                                <td class="px-6 py-3 text-sm text-gray-700">1:3 <span class="text-xs text-gray-500">(in
+                                        1 boat)</span></td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">1</td>
+                                <td class="px-6 py-3 text-sm text-gray-700">1:6 <span class="text-xs text-gray-500">(in
+                                        2 boats)</span></td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">2</td>
+                            </tr>
+
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td rowspan="3"
+                                    class="px-6 py-3 text-sm font-medium text-blue-800 align-top border-r border-blue-200">
+                                    Start Sailing</td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">Single handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:8</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">8</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">Double handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">3</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:8</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">4</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Multi handed dinghy</td>
+                                <td class="px-6 py-3 text-sm text-gray-700">1:3 <span class="text-xs text-gray-500">(in
+                                        1 boat)</span></td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1</td>
+                                <td class="px-6 py-3 text-sm text-gray-700">1:6 <span class="text-xs text-gray-500">(in
+                                        2 boats)</span></td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">2</td>
+                            </tr>
+
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td rowspan="3"
+                                    class="px-6 py-3 text-sm font-medium text-blue-800 align-top border-r border-blue-200">
+                                    Basic Skills</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Single handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:8</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">8</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Double handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">3</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:8</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">4</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Multi handed dinghy</td>
+                                <td class="px-6 py-3 text-sm text-gray-700">1:3 <span class="text-xs text-gray-500">(in
+                                        1 boat)</span></td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1</td>
+                                <td class="px-6 py-3 text-sm text-gray-700">1:6 <span class="text-xs text-gray-500">(in
+                                        2 boats)</span></td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">2</td>
+                            </tr>
+
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td rowspan="3"
+                                    class="px-6 py-3 text-sm font-medium text-blue-800 align-top border-r border-blue-200">
+                                    Improving Skills</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Single handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:10</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">10</td>
+                                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-400">N/A</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-400">N/A</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Double handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:12</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">6</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-400">N/A</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-400">N/A</td>
+                            </tr>
+                            <tr class="odd:bg-blue-50 even:bg-white hover:bg-blue-100 transition-colors duration-200">
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">Multi handed dinghy</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">1:12</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-700">4</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-400">N/A</td>
+                                <td class="px-6 py-3 whitespace-nowrap textsm text-gray-400">N/A</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Cara na Mara -->
+                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                    <span id="count-cara-na-mara"
+                        class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
+                        <span class="count-num">0</span></span>
+                    <h4 class="text-lg font-bold text-blue-700 mb-3">Cara na Mara</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md min-h-[120px]" id="cara-na-mara-zone">
+                        <p class="text-gray-500 text-sm">Drop here</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
+                        <form class="flex mb-2" onsubmit="return addStudent(event, 'cara-na-mara')">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add name" id="input-student-cara-na-mara" autocomplete="off">
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
+                        </form>
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-cara-na-mara"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Taste of Sailing -->
+                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                    <span id="count-taste-of-sailing"
+                        class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
+                        <span class="count-num">0</span></span>
+                    <h4 class="text-lg font-bold text-blue-700 mb-3">Taste of Sailing</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md min-h-[120px]" id="taste-of-sailing-zone">
+                        <p class="text-gray-500 text-sm">Drop here</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
+                        <form class="flex mb-2" onsubmit="return addStudent(event, 'taste-of-sailing')">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add name" id="input-student-taste-of-sailing" autocomplete="off">
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
+                        </form>
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-taste-of-sailing"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Start Sailing -->
+                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                    <span id="count-start-sailing"
+                        class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
+                        <span class="count-num">0</span></span>
+                    <h4 class="text-lg font-bold text-blue-700 mb-3">Start Sailing</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md min-h-[120px]" id="start-sailing-zone">
+                        <p class="text-gray-500 text-sm">Drop here</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
+                        <form class="flex mb-2" onsubmit="return addStudent(event, 'start-sailing')">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add name" id="input-student-start-sailing" autocomplete="off">
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
+                        </form>
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-start-sailing"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Basic Skills -->
+                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                    <span id="count-basic-skills"
+                        class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
+                        <span class="count-num">0</span></span>
+                    <h4 class="text-lg font-bold text-blue-700 mb-3">Basic Skills</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md min-h-[120px]" id="basic-skills-zone">
+                        <p class="text-gray-500 text-sm">Drop here</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
+                        <form class="flex mb-2" onsubmit="return addStudent(event, 'basic-skills')">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add name" id="input-student-basic-skills" autocomplete="off">
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
+                        </form>
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-basic-skills"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Improving Skills -->
+                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                    <span id="count-improving-skills"
+                        class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
+                        <span class="count-num">0</span></span>
+                    <h4 class="text-lg font-bold text-blue-700 mb-3">Improving Skills</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md min-h-[120px]" id="improving-skills-zone">
+                        <p class="text-gray-500 text-sm">Drop here</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
+                        <form class="flex mb-2" onsubmit="return addStudent(event, 'improving-skills')">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add name" id="input-student-improving-skills" autocomplete="off">
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
+                        </form>
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-improving-skills"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-col md:flex-row gap-8 justify-center items-stretch">
+                <div class="flex-1">
+                    <h4 class="text-xl font-bold text-blue-700 mb-4 text-center">Available Boats</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md" id="available-boats-zone"
+                        style="min-height: 140px;">
+                        <div class="flex flex-wrap gap-3 justify-center text-sm">
+                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-feva-1" draggable="true">Feva-1</div>
+                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-feva-2" draggable="true">Feva-2</div>
+                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-feva-3" draggable="true">Feva-3</div>
+                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-feva-4" draggable="true">Feva-4</div>
+                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-feva-5" draggable="true">Feva-5</div>
+                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-topaz-1" draggable="true">Topaz-1</div>
+                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-topaz-2" draggable="true">Topaz-2</div>
+                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-topaz-3" draggable="true">Topaz-3</div>
+                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-topaz-4" draggable="true">Topaz-4</div>
+                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-topaz-5" draggable="true">Topaz-5</div>
+                            <div class="draggable boat bg-blue-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-vago-1" draggable="true">Vago</div>
+                            <div class="draggable boat bg-red-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-bahia-1" draggable="true">Bahia-1</div>
+                            <div class="draggable boat bg-red-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="boat-bahia-2" draggable="true">Bahia-2</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-xl font-bold text-blue-700 mb-4 text-center">Available Instructors & Assistants</h4>
+                    <div class="dropzone bg-gray-200 p-4 rounded-md" id="available-zone" style="min-height: 140px;">
+                        <div class="flex flex-wrap gap-3 justify-center text-sm">
+                            <div class="draggable bg-orange-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-7" draggable="true">Alannah</div>
+                            <div class="draggable bg-orange-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-8" draggable="true">Samantha</div>
+                            <div class="draggable bg-blue-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-1" draggable="true">Anna</div>
+                            <div class="draggable bg-blue-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-2" draggable="true">James</div>
+                            <div class="draggable bg-blue-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-3" draggable="true">Ruaidhri</div>
+                            <div class="draggable bg-blue-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-4" draggable="true">Alexander</div>
+                            <div class="draggable bg-blue-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-5" draggable="true">Sophie</div>
+                            <div class="draggable bg-blue-500 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="instructor-6" draggable="true">Ceola</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-1" draggable="true">Muireann</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-2" draggable="true">Charlie</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-3" draggable="true">Leona</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-4" draggable="true">Izzy</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-5" draggable="true">Kitty</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-6" draggable="true">Sophia</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-7" draggable="true">Mary-Rose</div>
+                            <div class="draggable bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
+                                id="assistant-8" draggable="true">Senan</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 text-center space-x-4">
+                <button onclick="clearInstructors()"
+                    class="bg-red-500 text-white px-5 py-2 rounded hover:bg-red-600">Clear Instructors</button>
+                <button onclick="clearBoats()"
+                    class="bg-yellow-500 text-white px-5 py-2 rounded hover:bg-yellow-600">Clear Boats</button>
+                <button onclick="clearAll()"
+                    class="bg-purple-600 text-white px-5 py-2 rounded hover:bg-purple-700">Clear All</button>
+            </div>
+        </section>
+
+        <!-- Student Notes Section -->
+        <section id="student-notes-section"
+            class="container mx-auto px-4 py-8 bg-white rounded-lg shadow-md mt-8 scroll-mt-24">
+            <h2 class="text-2xl font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                📝 Student Notes & Observations
+            </h2>
+            <div class="mb-4 flex gap-2 flex-wrap">
+                <select id="notes-level-select" class="border border-gray-300 rounded px-3 py-2">
+                    <option value="">Select Level</option>
+                    <option value="cara-na-mara">Cara na Mara</option>
+                    <option value="taste-of-sailing">Taste of Sailing</option>
+                    <option value="start-sailing">Start Sailing</option>
+                    <option value="basic-skills">Basic Skills</option>
+                    <option value="improving-skills">Improving Skills</option>
+                </select>
+                <select id="notes-student-select" class="border border-gray-300 rounded px-3 py-2 flex-grow" disabled>
+                    <option value="">Select Student First</option>
+                </select>
+                <button onclick="loadStudentNotes()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    id="load-notes-btn" disabled>Load Notes</button>
+            </div>
+            <div id="student-notes-display" class="hidden">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h3 class="font-semibold text-blue-800 mb-2" id="notes-student-name"></h3>
+                    <div id="notes-history" class="space-y-2 max-h-64 overflow-y-auto mb-4"></div>
+                    <textarea id="notes-input" placeholder="Add observation about this student..."
+                        class="w-full border border-gray-300 rounded px-3 py-2 mb-2" rows="3"></textarea>
+                    <button onclick="saveStudentNote()"
+                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">💾 Save Note</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Plan Templates -->
+        <section id="templates-section"
+            class="container mx-auto px-4 py-8 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg shadow-md mt-8 scroll-mt-24">
+            <h2 class="text-2xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
+                📋 Weekly Plan Templates
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-semibold text-purple-700 mb-3">Save Current Week as Template</h3>
+                    <input type="text" id="template-name-input" placeholder="Template name (e.g., 'Beginner Week 1')"
+                        class="w-full border border-gray-300 rounded px-3 py-2 mb-2">
+                    <button onclick="saveWeekTemplate()"
+                        class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full">💾 Save
+                        Template</button>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-semibold text-purple-700 mb-3">Load Saved Template</h3>
+                    <select id="template-select" class="w-full border border-gray-300 rounded px-3 py-2 mb-2">
+                        <option value="">Select a template...</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <button onclick="loadWeekTemplate()"
+                            class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex-grow">📥 Load
+                            Template</button>
+                        <button onclick="deleteWeekTemplate()"
+                            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">🗑️</button>
+                    </div>
+                </div>
+            </div>
+            <div id="templates-list" class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        </section>
+
+        <!-- Print View Button -->
+        <div class="container mx-auto px-4 py-4 text-center">
+            <button onclick="openPrintView()"
+                class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-800 shadow-lg inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                    </path>
+                </svg>
+                🖨️ Print Weekly Plan
+            </button>
+        </div>
+
+        <!-- Weekly Planning Section -->
+        <section id="weekly-planning"
+            class="container mx-auto px-4 py-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 rounded-2xl shadow-xl mt-12 border border-blue-200 scroll-mt-24">
+            <h3 class="text-3xl font-extrabold text-blue-800 mb-6 text-center tracking-tight drop-shadow">Weekly
+                Planning</h3>
+            <p class="text-lg text-gray-700 text-center mb-10">Plan and organize activities for each level. Drag
+                activities between timeslots. <span class="font-semibold text-blue-700">Tap/click a tile to edit or
+                    delete.</span></p>
+            <!-- AI Plan Assistant -->
+            <div class="mb-8 bg-white/90 rounded-xl border border-blue-100 shadow p-4">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                    <div class="flex-1">
+                        <h4 class="text-xl font-semibold text-blue-700 mb-1">AI Plan Assistant</h4>
+                        <p class="text-sm text-gray-600">Let AI suggest a weekly plan based on levels, students, and
+                            weather. API key is managed server-side.</p>
+                    </div>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button id="ai-suggest-plan-btn"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">✨ Suggest Weekly
+                        Plan</button>
+                    <button id="ai-risk-briefing-btn"
+                        class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 text-sm">🧭 Generate Risk
+                        Briefing</button>
+                    <button id="clear-weekly-plan-btn"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm">🗑️ Clear All
+                        Activities</button>
+                </div>
+                <div id="ai-plan-output" class="mt-3 text-sm text-gray-700"></div>
+                <div id="ai-risk-output" class="mt-2 text-sm text-gray-700"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- Row 1 -->
+                <div class="grid grid-cols-1 gap-10 md:grid-cols-2 md:col-span-2">
+                    <!-- Taste of Sailing -->
+                    <div class="weekly-level bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-2xl transition-shadow duration-300"
+                        data-level="taste-of-sailing">
+                        <h4 class="text-xl font-bold text-blue-700 mb-4 text-center uppercase tracking-wide">Taste of
+                            Sailing</h4>
+                        <div class="flex mb-3">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add activity..." id="input-taste-of-sailing">
+                            <button class="bg-blue-500 text-white px-4 rounded-r-lg hover:bg-blue-600 transition-colors"
+                                data-level="taste-of-sailing">Add</button>
+                        </div>
+                        <div
+                            class="weekly-table bg-gradient-to-br from-blue-100 via-white to-blue-50 rounded-xl shadow border border-blue-100 overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">Day
+                                        </th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            10:00-13:00</th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            14:00-17:00</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Mon</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="mon" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="mon" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Tue</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="tue" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="tue" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Wed</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="wed" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="wed" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Thu</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="thu" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="thu" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Fri</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="fri" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="taste-of-sailing"
+                                            data-day="fri" data-slot="pm"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Start Sailing -->
+                    <div class="weekly-level bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-2xl transition-shadow duration-300"
+                        data-level="start-sailing">
+                        <h4 class="text-xl font-bold text-blue-700 mb-4 text-center uppercase tracking-wide">Start
+                            Sailing</h4>
+                        <div class="flex mb-3">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add activity..." id="input-start-sailing">
+                            <button class="bg-blue-500 text-white px-4 rounded-r-lg hover:bg-blue-600 transition-colors"
+                                data-level="start-sailing">Add</button>
+                        </div>
+                        <div
+                            class="weekly-table bg-gradient-to-br from-blue-100 via-white to-blue-50 rounded-xl shadow border border-blue-100 overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">Day
+                                        </th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            10:00-13:00</th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            14:00-17:00</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Mon</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="mon" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="mon" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Tue</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="tue" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="tue" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Wed</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="wed" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="wed" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Thu</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="thu" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="thu" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Fri</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="fri" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="start-sailing"
+                                            data-day="fri" data-slot="pm"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Row 2 -->
+                <div class="grid grid-cols-1 gap-10 md:grid-cols-2 md:col-span-2">
+                    <!-- Basic Skills -->
+                    <div class="weekly-level bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-2xl transition-shadow duration-300"
+                        data-level="basic-skills">
+                        <h4 class="text-xl font-bold text-blue-700 mb-4 text-center uppercase tracking-wide">Basic
+                            Skills</h4>
+                        <div class="flex mb-3">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add activity..." id="input-basic-skills">
+                            <button class="bg-blue-500 text-white px-4 rounded-r-lg hover:bg-blue-600 transition-colors"
+                                data-level="basic-skills">Add</button>
+                        </div>
+                        <div
+                            class="weekly-table bg-gradient-to-br from-blue-100 via-white to-blue-50 rounded-xl shadow border border-blue-100 overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">Day
+                                        </th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            10:00-13:00</th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            14:00-17:00</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Mon</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="mon" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="mon" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Tue</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="tue" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="tue" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Wed</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="wed" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="wed" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Thu</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="thu" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="thu" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Fri</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="fri" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="basic-skills"
+                                            data-day="fri" data-slot="pm"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Improving Skills -->
+                    <div class="weekly-level bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-blue-100 p-6 hover:shadow-2xl transition-shadow duration-300"
+                        data-level="improving-skills">
+                        <h4 class="text-xl font-bold text-blue-700 mb-4 text-center uppercase tracking-wide">Improving
+                            Skills</h4>
+                        <div class="flex mb-3">
+                            <input type="text"
+                                class="flex-grow border border-blue-200 rounded-l-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                                placeholder="Add activity..." id="input-improving-skills">
+                            <button class="bg-blue-500 text-white px-4 rounded-r-lg hover:bg-blue-600 transition-colors"
+                                data-level="improving-skills">Add</button>
+                        </div>
+                        <div
+                            class="weekly-table bg-gradient-to-br from-blue-100 via-white to-blue-50 rounded-xl shadow border border-blue-100 overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">Day
+                                        </th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            10:00-13:00</th>
+                                        <th class="p-2 border-b text-center font-semibold text-blue-800 bg-blue-50">
+                                            14:00-17:00</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Mon</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="mon" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="mon" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Tue</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="tue" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="tue" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Wed</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="wed" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="wed" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Thu</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="thu" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="thu" data-slot="pm"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 border-b text-center font-medium text-blue-700">Fri</td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="fri" data-slot="am"></td>
+                                        <td class="p-2 border-b align-top weekly-slot" data-level="improving-skills"
+                                            data-day="fri" data-slot="pm"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Drag logic moved to instructors.js -->
+
+        <!-- Instructors Resources Section -->
+        <section id="instructors-resources"
+            class="container mx-auto px-4 py-8 bg-gray-100 rounded-lg shadow-md mt-8 scroll-mt-24">
+            <h3 class="text-2xl font-semibold text-blue-800 mb-4 text-center cursor-pointer flex items-center justify-center gap-2"
+                onclick="toggleResourcesSection()">
+                <span>Instructors Resources</span>
+                <span id="resources-toggle-icon" class="text-lg">▼</span>
+            </h3>
+            <p class="text-lg text-gray-700 text-center mb-6">Access a collection of files and resources tailored for
+                sailing instructors.</p>
+            <div id="resources-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                style="display: none;">
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Instructor Handbook</h4>
+                    <p class="text-gray-600 mb-4">Comprehensive guide for instructors.</p>
+                    <a href="SBSS Instructor Handbook_ (1).pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">SBSS Advanced Instructor Handbook</h4>
+                    <br>
+                    <a href="SBSS Advanced Instructor Handbook.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Checklick</h4>
+                    <br>
+                    <a href="https://app.checklick.com/" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Access</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Logbook</h4>
+                    <br>
+                    <a href="IrishSailing-LogBook-FINAL_Screen.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Joe Soaps Spreadsheets</h4>
+                    <p class="text-gray-600 mb-4">Weekly progress sheets.</p>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <a href="https://docs.google.com/spreadsheets/d/1rTKdhXYwYTf9YZtvfnutzokcW_GDPhmCrD9BGcPekvw/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            1</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1jdzp6uYWw67rLPVljfM7t_1nqOzeymyZ5-yW-uRZga8/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            2</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1sZzHH2AZq02FfuwvbyVynB-aXIpTAzDaEzmSHDL_LpY/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            3</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1UyeI5IO-iNrR4jHlLfA2aIs0xvEoo8Qqv7KB6o0zmm0/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            4</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1130_Qrodo-1rKx_CeaO3gQnJXtlDJCehpphwyfudvqw/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            5</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1hcPafeG-nEMbQcMbwSltZ2Ia8XVDfn0qlNtEOCqX7Qg/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            6</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1vg2i3hZVHSf4VQhLoA9qoEuvcHrJDU_J3gPMCwQ4uoo/edit?usp=sharing"
+                            target="_blank" rel="noopener"
+                            class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 shadow">Week
+                            7</a>
+                    </div>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Notes (editable)</h4>
+                    <br>
+                    <a href="all_notes.docx" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        WORD file</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Joe Soaps pdf</h4>
+                    <br>
+                    <a href="SBSS-Joe-Soap-Sheets-2016.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Blank Session plan</h4>
+                    <br>
+                    <a href="blanksessionplan.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Blank Course Program</h4>
+                    <br>
+                    <a href="Blank Course Programme.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">concussion protocol</h4>
+                    <br>
+                    <a href="https://www.sailing.ie/Portals/0/adam/Library/L9vywF0_d0eetsQJ1wujUA/LinkOrDocument/Concussion-Protocol-for-Sailing-Coaches-4.pdf"
+                        download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Taste of Sailing - old</h4>
+                    <br>
+                    <a href="Taste of Sailing 2024.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Start Sailing - old</h4>
+                    <br>
+                    <a href="Start Sailing 2024.pub (1).pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Basic skills - old</h4>
+                    <br>
+                    <a href="Basic Skills 2024.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Improving skills - old</h4>
+                    <br>
+                    <a href="Improving Skills 2024.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Instructor Wet Notes</h4>
+                    <br>
+                    <a href="Instructor Wet Notes.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Instructor Support Observation Card</h4>
+                    <br>
+                    <a href="Instructor Support Observation Card (1).pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Taste of Sailing</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-TasteOfSailing-V3.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Start Sailing</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-StartSailing-V3.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Basic Skills</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-BasicSkills-V2.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Improving Skills</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-ImprovingSkills-V2.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Advanced Boat Handling</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-AdvancedBoatHandling-V1.pdf" download target="_blank"
+                        rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Adventure</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-Adventure-V5.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Coastal Boats</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-CoastalBoats-V1.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Kites & Wires</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-Kites&Wires-V2.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">Irish Sailing Syllabi - Start Racing</h4>
+                    <br>
+                    <a href="IrishSailing-Syllabi-A4-StartRacing-V1.pdf" download target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Download
+                        PDF</a>
+                </div>
+                <div class="lg:col-start-2 resource-card bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold text-blue-700 mb-2">RYA interactive</h4>
+                    <h3 class="text-lg text-gray-700 mb-2">
+                        <p>DO NOT DO THE TESTS OR ACESS TO THIS RESOURCE WILL BE REMOVED</p>
+                    </h3>
+                    <a href="https://www.ryainteractive.org/login/" target="_blank" rel="noopener"
+                        class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300 mb-3">Go
+                        to website</a>
+                    <p class="text-gray-600 text-sm mb-1">Login with RYA account:</p>
+                    <div class="mt-2 bg-gray-50 p-3 rounded-md border border-gray-200">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-semibold text-gray-800">Username:</span>
+                            <input type="text" value="jcassidy" readonly
+                                class="copy-input bg-white border border-gray-300 rounded px-2 py-1 text-sm w-32 cursor-pointer"
+                                onclick="this.select();document.execCommand('copy');" title="Click to copy">
+                            <button type="button"
+                                class="ml-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold hover:bg-blue-200 transition"
+                                onclick="navigator.clipboard.writeText('jcassidy')">Copy</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-gray-800">Password:</span>
+                            <input type="text" value="james1234" readonly
+                                class="copy-input bg-white border border-gray-300 rounded px-2 py-1 text-sm w-32 cursor-pointer"
+                                onclick="this.select();document.execCommand('copy');" title="Click to copy">
+                            <button type="button"
+                                class="ml-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold hover:bg-blue-200 transition"
+                                onclick="navigator.clipboard.writeText('james1234')">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Repairs Log Section -->
+        <section id="repairs-log"
+            class="container mx-auto px-4 py-10 bg-gray-100 rounded-lg shadow-md mt-12 mb-12 scroll-mt-24">
+            <h3 class="text-2xl font-bold text-blue-800 mb-4 text-center">Breakages Log</h3>
+            <form id="repairs-log-form"
+                class="bg-white rounded-lg shadow p-6 mb-6 flex flex-col md:flex-row gap-4 items-center justify-center">
+                <input type="text" id="repair-detail"
+                    class="flex-grow border border-blue-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                    placeholder="Enter repair details..." required autocomplete="off">
+                <button type="submit"
+                    class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors">Add
+                    Breakage</button>
+            </form>
+            <div class="bg-white rounded-lg shadow p-4">
+                <h4 class="text-lg font-semibold text-blue-700 mb-2">Recent Breakages</h4>
+                <ul id="repairs-log-list" class="divide-y divide-blue-100"></ul>
+            </div>
+        </section>
+
+        <!-- EDICT/DICE Section -->
+        <section id="training-reminders"
+            class="container mx-auto px-4 py-8 bg-blue-50 rounded-lg shadow-md mt-8 scroll-mt-24">
+            <h3 class="text-2xl font-bold text-blue-800 mb-4 text-center tracking-wide">REMEMBER</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow p-6 border border-blue-200">
+                    <h4 class="text-xl font-semibold text-blue-700 mb-3 text-center">EDICT</h4>
+                    <table class="w-full text-lg mb-2">
+                        <tbody>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">E</td>
+                                <td class="px-3 py-2">Explain</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">D</td>
+                                <td class="px-3 py-2">Demonstrate</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">I</td>
+                                <td class="px-3 py-2">Imitate</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">C</td>
+                                <td class="px-3 py-2">Coach</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">T</td>
+                                <td class="px-3 py-2">Task</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-gray-600 text-center text-sm">Explain, Demonstrate, Imitate, Coach, Task</p>
+                </div>
+                <div class="bg-white rounded-xl shadow p-6 border border-blue-200">
+                    <h4 class="text-xl font-semibold text-blue-700 mb-3 text-center">DICE</h4>
+                    <table class="w-full text-lg mb-2">
+                        <tbody>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">D</td>
+                                <td class="px-3 py-2">Define Area</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">I</td>
+                                <td class="px-3 py-2">Identify Hazards</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">C</td>
+                                <td class="px-3 py-2">Communication</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-blue-800 px-3 py-2">E</td>
+                                <td class="px-3 py-2">Escape Plan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-gray-600 text-center text-sm">Define Area, Identify Hazards, Communication, Escape
+                        Plan</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Level Info Modal -->
+        <div id="level-info-modal"
+            style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.45); align-items:center; justify-content:center;">
+            <div
+                style="background:white; border-radius:1rem; max-width:95vw; width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2rem; position:relative;">
+                <button id="close-level-info-modal"
+                    style="position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; font-size:1.5rem; color:#888; cursor:pointer;">&times;</button>
+                <h2 id="level-info-title" class="text-xl font-bold text-blue-700 mb-3 text-center"></h2>
+                <div>
+                    <h3 class="font-semibold text-blue-600 mb-1">Instructors & Assistants</h3>
+                    <ul id="level-info-instructors" class="mb-3 list-disc list-inside text-gray-800"></ul>
+                    <h3 class="font-semibold text-blue-600 mb-1">Boats</h3>
+                    <ul id="level-info-boats" class="mb-3 list-disc list-inside text-gray-800"></ul>
+                    <h3 class="font-semibold text-blue-600 mb-1">Students</h3>
+                    <ul id="level-info-students" class="list-disc list-inside text-gray-800"></ul>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div class="mb-4 md:mb-0">
+                <p class="text-lg font-semibold">&copy; 2025
+                    <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James
+                        Cassidy</a> |
+                    <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition"
+                        target="_blank">Rathmullan Sailing School</a>
+                </p>
+                <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/"
+                    target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                    <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram"
+                    class="hover:text-pink-400 transition">
+                    <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.013 15.668 2 15.077 2 12c0-5.923.013-6.332.072-7.612.059-1.281.316-2.393 1.296-3.373.98.98 2.092-1.237 3.373-1.296C8.332 2.987 8.741 2.975 12 2.975zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+    </div>
+
+    <!-- External consolidated logic -->
+                <script>document.write('<script src="js/chartjs-loader.js?v=' + new Date().getTime() + '"><\/script>');</script>
+                <script>document.write('<script src="js/instructors.js?v=' + new Date().getTime() + '"><\/script>');</script>
+                <script>document.write('<script src="js/tides.js?v=' + new Date().getTime() + '"><\/script>');</script>
+
+    <!-- Back to top button -->
+    <button id="back-to-top" title="Back to top"
+        class="hidden fixed bottom-6 right-6 z-40 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg w-12 h-12 flex items-center justify-center">↑</button>
+</body>
+
+</html>

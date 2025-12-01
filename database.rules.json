@@ -1,0 +1,93 @@
+    {
+    "rules": {
+        ".read": false,
+        ".write": false,
+
+        "users": {
+        ".read": "auth != null",
+        "$uid": {
+            ".write": "auth != null && (auth.uid === $uid || auth.token.admin === true)",
+            "notificationPrefs": {
+            ".read": "$uid === auth.uid",
+            ".write": "$uid === auth.uid"
+            },
+            "approved": {
+            ".write": "auth.token.admin === true"
+            },
+            "role": {
+            ".write": "auth.token.admin === true"
+            }
+        }
+        },
+
+        "announcements": {
+        ".read": "auth != null && root.child('users').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        "$announcementId": {
+            ".validate": "newData.hasChildren(['text', 'author', 'timestamp'])"
+        }
+        },
+
+        "chat": {
+        "messages": {
+            ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+            "$messageId": {
+            ".validate": "newData.hasChildren(['userId', 'name', 'ts'])"
+            }
+        }
+        },
+
+        "privateMessages": {
+        "$messageId": {
+            ".read": "auth != null && (data.child('senderId').val() === auth.uid || data.child('recipientId').val() === auth.uid)",
+            ".write": "auth != null && newData.child('senderId').val() === auth.uid"
+        }
+        },
+
+        "students": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
+        "studentNotes": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
+        "weeklyPlan": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
+        "weeklyTemplates": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
+        "arrangement": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
+        "mapPositions": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
+        "availability": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        "$instructorId": {
+            ".write": "auth != null && ($instructorId === auth.uid || root.child('users').child(auth.uid).child('approved').val() === true)"
+        }
+        },
+
+        "repairsLog": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".indexOn": ["timestamp"]
+        },
+
+        "system": {}
+    }
+    }

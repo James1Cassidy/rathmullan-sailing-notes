@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Boat Parts</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .boat-diagram-container {
+            position: relative;
+            width: 90%; /* Responsive width */
+            max-width: 800px; /* Max width for desktop */
+            margin-bottom: 2rem;
+        }
+        .boat-diagram-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+        .part-label {
+            position: absolute;
+            background-color: #2563eb; /* blue-700 */
+            color: white;
+            padding: 0.5rem 0.75rem; /* py-2 px-3 */
+            border-radius: 9999px; /* full rounded */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            cursor: pointer;
+            border: 2px solid #3b82f6; /* blue-500 border */
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            white-space: nowrap; /* Prevent text wrap */
+        }
+        .part-label:hover {
+            background-color: #1d4ed8; /* blue-800 */
+            transform: scale(1.05);
+        }
+        .part-info-box {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            max-width: 250px;
+            z-index: 10;
+            display: none; /* Hidden by default */
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #4b5563; /* gray-700 */
+        }
+        .part-info-box h3 {
+            font-weight: 700; /* font-bold */
+            color: #1e40af; /* blue-800 */
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        .part-info-box button.close-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #9ca3af; /* gray-400 */
+        }
+        .part-info-box button.close-btn:hover {
+            color: #4b5563; /* gray-700 */
+        }
+
+        /* Adjust label positions relative to the image */
+        /* These percentages are approximate for a horizontally oriented boat image */
+        #label-bow { top: 60%; left: 88%; }
+        #label-stern { top: 60%; left: 0%; }
+        #label-port { top: 60%; left: 30%; } /* Assuming image shows starboard side, so port is "behind" */
+        #label-starboard { top: 70%; left: 50%; } /* Visible side */
+        #label-mast { top: 15%; left: 67%; }
+        #label-boom { top: 50%; left: 50%; }
+        #label-mainsail { top: 20%; left: 50%; }
+        #label-jib { top: 30%; left: 80%; }
+        #label-rudder { top: 75%; left: 0%; }
+        #label-daggerboard { top: 85%; left: 35%; }
+        #label-tiller { top: 65%; left: 10%; }
+        #label-halyard { top: 10%; left: 45%; }
+        #label-sheet { top: 65%; left: 35%; }
+
+        /* Media queries for smaller screens to adjust label positions if needed */
+        @media (max-width: 768px) {
+            .part-label {
+                padding: 0.3rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            #label-bow { top: 70%; left: 85%; }
+            #label-stern { top: 70%; left: 5%; }
+            #label-mast { top: -5%; left: 65%; }
+            #label-boom { top: 45%; left: 50%; }
+            #label-mainsail { top: 25%; left: 65%; }
+            #label-jib { top: 35%; left: 80%; }
+            #label-rudder { top: 80%; left: 10%; }
+            #label-daggerboard { top: 88%; left: 35%; }
+            #label-tiller { top: 70%; left: 15%; }
+            #label-halyard { top: 5%; left: 40%; }
+            #label-sheet { top: 55%; left: 70%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container">
+        <h2 class="text-4xl font-extrabold text-blue-800 mb-8 text-center">Interactive Boat Parts</h2>
+        <p class="text-lg text-gray-700 text-center mb-8 max-w-2xl">Click on any label to learn more about that part of the sailboat!</p>
+
+        <div class="boat-diagram-container">
+            <!-- Replace this placeholder with a real sailboat diagram image URL -->
+            <img src="images/image23.png" alt="Diagram of a Sailboat for interactive labeling.">
+
+            <!-- Labels for various boat parts -->
+            <button class="part-label" id="label-bow" data-part="bow">Bow</button>
+            <button class="part-label" id="label-stern" data-part="stern">Stern</button>
+            <button class="part-label" id="label-mast" data-part="mast">Mast</button>
+            <button class="part-label" id="label-boom" data-part="boom">Boom</button>
+            <button class="part-label" id="label-mainsail" data-part="mainsail">Mainsail</button>
+            <button class="part-label" id="label-jib" data-part="jib">Jib</button>
+            <button class="part-label" id="label-rudder" data-part="rudder">Rudder</button>
+            <button class="part-label" id="label-daggerboard" data-part="daggerboard">Daggerboard</button>
+            <button class="part-label" id="label-tiller" data-part="tiller">Tiller</button>
+            <button class="part-label" id="label-sheet" data-part="sheet">Sheet</button>
+            <button class="part-label" id="label-port" data-part="port">Port</button>
+            <button class="part-label" id="label-starboard" data-part="starboard">Starboard</button>
+
+            <!-- Info box (initially hidden) -->
+            <div id="info-box" class="part-info-box">
+                <button class="close-btn">&times;</button>
+                <h3 id="info-box-title"></h3>
+                <p id="info-box-description"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for each boat part
+        const boatPartsData = {
+            bow: {
+                title: "Bow",
+                description: "The very front part of the boat."
+            },
+            stern: {
+                title: "Stern",
+                description: "The very back part of the boat."
+            },
+            port: {
+                title: "Port",
+                description: "The left-hand side of the boat when looking forward. Remember: 'Port left the ship' (left is red light at night)."
+            },
+            starboard: {
+                title: "Starboard",
+                description: "The right-hand side of the boat when looking forward. Remember: 'Starboard right, you're always right!' (right is green light at night)."
+            },
+            mast: {
+                title: "Mast",
+                description: "The tall, upright pole that holds up the sails."
+            },
+            boom: {
+                title: "Boom",
+                description: "The horizontal pole extending from the bottom of the mast, to which the bottom of the mainsail is attached."
+            },
+            mainsail: {
+                title: "Mainsail",
+                description: "The large sail attached to the mast and boom, usually the primary driving sail."
+            },
+            jib: {
+                title: "Jib",
+                description: "The smaller triangular sail set forward of the mast."
+            },
+            rudder: {
+                title: "Rudder",
+                description: "The flat, movable blade at the stern of the boat used for steering."
+            },
+            daggerboard: {
+                title: "Daggerboard / Centreboard",
+                description: "A retractable fin in the hull that prevents the boat from slipping sideways (leeway) when sailing upwind. It's lowered for lateral resistance and raised to reduce drag downwind."
+            },
+            tiller: {
+                title: "Tiller",
+                description: "The stick or handle connected to the rudder, used to steer the boat."
+            },
+
+            sheet: {
+                title: "Sheet",
+                description: "A rope used to control the angle and trim of a sail (e.g., mainsheet for the mainsail, jib sheets for the jib)."
+            }
+        };
+
+        const infoBox = document.getElementById('info-box');
+        const infoBoxTitle = document.getElementById('info-box-title');
+        const infoBoxDescription = document.getElementById('info-box-description');
+        const closeBtn = infoBox.querySelector('.close-btn');
+        const diagramContainer = document.querySelector('.boat-diagram-container');
+
+        // Get all part labels
+        const partLabels = document.querySelectorAll('.part-label');
+
+        partLabels.forEach(label => {
+            label.addEventListener('click', (event) => {
+                const partKey = event.target.dataset.part;
+                const data = boatPartsData[partKey];
+
+                if (data) {
+                    infoBoxTitle.textContent = data.title;
+                    infoBoxDescription.textContent = data.description;
+
+                    // Position the info box near the clicked label
+                    // Calculate relative position within diagramContainer
+                    const labelRect = label.getBoundingClientRect();
+                    const containerRect = diagramContainer.getBoundingClientRect();
+
+                    // Position the info box relative to the diagramContainer
+                    let topPos = labelRect.top - containerRect.top - infoBox.offsetHeight / 2 + label.offsetHeight / 2;
+                    let leftPos = labelRect.left - containerRect.left - infoBox.offsetWidth / 2 + label.offsetWidth / 2;
+
+                    // Basic boundary checks to keep it within view (adjust as needed)
+                    if (topPos < 0) topPos = 0;
+                    if (leftPos < 0) leftPos = 0;
+                    if (topPos + infoBox.offsetHeight > containerRect.height) topPos = containerRect.height - infoBox.offsetHeight;
+                    if (leftPos + infoBox.offsetWidth > containerRect.width) leftPos = containerRect.width - infoBox.offsetWidth;
+
+                    infoBox.style.top = `${topPos}px`;
+                    infoBox.style.left = `${leftPos}px`;
+                    infoBox.style.display = 'block'; // Show the box
+                }
+            });
+        });
+
+        // Close button functionality
+        closeBtn.addEventListener('click', () => {
+            infoBox.style.display = 'none';
+        });
+
+        // Close info box if clicking outside it (optional, but good UX)
+        document.addEventListener('click', (event) => {
+            if (!infoBox.contains(event.target) && !event.target.classList.contains('part-label')) {
+                infoBox.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

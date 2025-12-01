@@ -1,0 +1,943 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Skills - Irish Sailing Course</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    <style>
+        body.dark {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark a {
+            color: #90caf9;
+        }
+        body.dark header {
+            background-color: #1f1f1f;
+        }
+        body.dark footer {
+            background-color: #1f1f1f;
+        }
+        body.dark .content-block {
+            background-color: #1f1f1f;
+            border-color: #333333;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header/Navigation Bar -->
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+            <button onclick="toggleDarkMode()" class="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400">Toggle Dark Mode</button>
+        </div>
+    </header>
+
+    <!-- Dropdown for Section Navigation -->
+    <div class="container mx-auto px-4 py-4">
+        <label for="section-select" class="block text-lg font-bold mb-2">Jump to Section:</label>
+        <select id="section-select" class="w-full p-2 border rounded-md" onchange="scrollToSection(this.value)">
+            <option value="">Select a section...</option>
+            <option value="objective">Objective</option>
+            <option value="clothing-equipment">Clothing & Equipment</option>
+            <option value="rigging">Rigging</option>
+            <option value="ropework">Ropework</option>
+            <option value="sailing-techniques">Sailing Techniques & Manoeuvres</option>
+            <option value="capsize-recovery">Capsize Recovery</option>
+            <option value="sailing-knowledge">Sailing Knowledge</option>
+            <option value="coastal-knowledge">Coastal Knowledge</option>
+            <option value="weather-safety">Weather & Safety</option>
+            <option value="quiz-section">Quiz Section</option>
+        </select>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Basic Skills</h2>
+
+        <section id="objective" class="content-block">
+            <h3 class="section-heading">Objective</h3>
+            <div class="image-container"><img src="images/Confident young sailor solo on a dinghy, smiling.jpg" alt="Solo young sailor, smiling, on a dinghy." style="width:100%;max-width:400px;display:block;margin:auto;"><div style="text-align:center;font-size:0.9em;color:#555;"></div></div>
+            <p class="mb-4">By the end of this course, you will be sailing on your own in light wind conditions without assistance from your instructor.</p>
+        </section>
+
+        <section id="clothing-equipment" class="content-block">
+            <h3 class="section-heading">Clothing and Equipment: Essential Preparation for Sailing</h3>
+            <div class="image-container"><img src="images/Sailor layering up with sailing gear and waterproofs.jpg" alt="Sailor putting on layers of sailing clothing." style="width:100%;max-width:400px;display:block;margin:auto;"><div style="text-align:center;font-size:0.9em;color:#555;"></div></div>
+            <h4 class="sub-section-heading">Personal Preparation: Clothing Choices</h4>
+            <!-- Carousel for Clothing & Equipment Images -->
+            <div id="clothing-carousel" class="relative w-full max-w-md mx-auto mb-6">
+                <div class="overflow-hidden rounded-lg shadow-lg w-full">
+                    <div class="carousel-images flex transition-transform duration-500 w-full" style="width: 200%;">
+                        <div class="carousel-item flex-shrink-0 flex flex-col items-center justify-center w-full">
+                            <img src="images/download.jpeg" alt="Close-up of non-slip sailing shoes on a wet boat deck." class="h-64 object-contain bg-white mx-auto w-full" style="object-fit: contain; display: block;">
+                            <div class="text-center text-sm text-gray-600 bg-white bg-opacity-80 py-2 w-full">Appropriate Footwear</div>
+                        </div>
+                        <div class="carousel-item flex-shrink-0 flex flex-col items-center justify-center w-full">
+                            <img src="images/download (1).jpeg" alt="Instructor fitting a PFD on a student." class="h-64 object-contain bg-white mx-auto w-full" style="object-fit: contain; display: block;">
+                            <div class="text-center text-sm text-gray-600 bg-white bg-opacity-80 py-2 w-full">Personal Flotation Device (PFD)</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Carousel Controls -->
+                <button id="carousel-prev" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700 focus:outline-none" aria-label="Previous" style="z-index:2;">
+                    &#8592;
+                </button>
+                <button id="carousel-next" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700 focus:outline-none" aria-label="Next" style="z-index:2;">
+                    &#8594;
+                </button>
+                <!-- Carousel Indicators -->
+                <div class="flex justify-center mt-2 space-x-2">
+                    <span class="carousel-indicator w-3 h-3 bg-blue-400 rounded-full inline-block cursor-pointer"></span>
+                    <span class="carousel-indicator w-3 h-3 bg-gray-300 rounded-full inline-block cursor-pointer"></span>
+                </div>
+            </div>
+            <style>
+                #clothing-carousel .overflow-hidden {
+                    width: 100%;
+                    max-width: 400px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #clothing-carousel .carousel-images {
+                    width: 200%;
+                }
+                #clothing-carousel .carousel-item {
+                    width: 50%;
+                }
+                #clothing-carousel img {
+                    width: 100%;
+                    height: 16rem;
+                    object-fit: contain;
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+            </style>
+            <script>
+                // Simple 2-slide carousel logic
+                const carousel = document.querySelector('#clothing-carousel .carousel-images');
+                const indicators = document.querySelectorAll('#clothing-carousel .carousel-indicator');
+                let currentSlide = 0;
+
+                function showSlide(idx) {
+                    currentSlide = idx;
+                    carousel.style.transform = `translateX(-${idx * 50}%)`;
+                    indicators.forEach((el, i) => {
+                        el.classList.toggle('bg-blue-400', i === idx);
+                        el.classList.toggle('bg-gray-300', i !== idx);
+                    });
+                }
+
+                document.getElementById('carousel-prev').onclick = () => showSlide((currentSlide + 1) % 2);
+                document.getElementById('carousel-next').onclick = () => showSlide((currentSlide + 1) % 2);
+                indicators[0].onclick = () => showSlide(0);
+                indicators[1].onclick = () => showSlide(1);
+
+                // Optional: auto-advance every 6 seconds
+                // setInterval(() => showSlide((currentSlide + 1) % 2), 6000);
+
+                showSlide(0);
+            </script>
+            <ul class="list-disc list-inside ml-4 mb-4"></ul>
+                <li class="list-item"><strong>Layering Strategy:</strong> Understanding the benefit of wearing multiple layers of clothing. This allows you to add or remove layers to regulate your body temperature effectively as conditions on the water can change rapidly.</li>
+                <li class="list-item"><strong>Material Selection:</strong> Prioritizing quick drying, insulating materials (such as synthetics like fleece or polypropylene, or natural wool) which retain warmth even when wet. Crucially, you'll learn to avoid cotton, as it absorbs water and loses its insulating properties, leading to rapid heat loss.</li>
+                <li class="list-item"><strong>Sun Protection:</strong> Recognizing the magnified risk of sunburn due to UV reflection off the water. This means actively choosing to wear sunscreen, hats with brims, and sunglasses for eye protection, even on seemingly cloudy days.</li>
+                <li class="list-item"><strong>Appropriate Footwear:</strong> Selecting closed-toe, non-slip footwear that can get wet and provides good grip on a boat's slippery surfaces.</li>
+                <li class="list-item"><strong>Personal Flotation Device (PFD):</strong> Ensuring you always have access to a correctly fitting PFD (lifejacket or buoyancy aid) and understanding when its wear is legally mandated in Ireland or strongly recommended for safety (e.g., strong winds, cold water, non-swimmers).</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Boat Preparation: Essential Equipment and Checks</h4>
+            <p class="mb-4">You'll develop a routine for preparing your sailing boat for use, ensuring it is properly equipped and structurally sound.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Equipping a Sailing Boat for Use:</strong> You'll learn to <strong>equip a sailing boat for use</strong> by ensuring all necessary items are on board and correctly stowed in accessible locations. This typically includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Mandatory Safety Gear:</strong> Confirming the presence of essential safety equipment, such as a correctly sized Personal Flotation Device (PFD) for every person on board, a reliable bailing device (like a bucket or sponge) for removing any water that enters the boat, and a painter (a strong line attached to the bow for mooring or towing).</li>
+                        <li class="list-item"><strong>Sailing Specific Components:</strong> Ensuring the sails, rudder, and daggerboard/centreboard are present, correctly assembled, and ready for efficient deployment.</li>
+                        <li class="list-item"><strong>Emergency & Contingency Gear:</strong> Including a basic first-aid kit, a whistle for audible signalling, and, particularly for smaller boats, a pair of paddles or oars as an alternative means of propulsion in case of no wind or equipment failure.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Checking Integrity of Hull, Buoyancy, Rigging, Spars & Foils:</strong> You'll learn to systematically <strong>check the integrity of the hull, buoyancy, rigging, spars & foils</strong> before every sailing trip. This detailed pre-sail inspection helps identify any potential issues that could compromise safety or performance during your time on the water:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Hull & Buoyancy:</strong> Conduct a thorough visual inspection of the hull for any visible cracks, punctures, dents, or signs of damage. For boats with integrated buoyancy tanks (sealed air compartments), ensure they are airtight and integral. If the boat relies on inflatable buoyancy (e.g., dinghy tubes), check for proper inflation and absence of leaks.</li>
+                        <li class="list-item"><strong>Rigging:</strong> Carefully examine all lines (including halyards for raising sails, sheets for controlling sails, and other control lines) for any signs of fraying, kinks, excessive wear, or damage. Confirm that all shackles, clips, and other connecting fittings are secure and operating smoothly.</li>
+                        <li class="list-item"><strong>Spars:</strong> Inspect the mast and boom (the main support structures for the sails, collectively known as spars) for any unnatural bends, cracks, or structural damage. Verify that all fittings attached to the spars (e.g., cleats, blocks) are tight and secure.</li>
+                        <li class="list-item"><strong>Foils:</strong> Examine the rudder and daggerboard/centreboard (the underwater components that provide steering and prevent leeway, collectively known as foils) for any cracks, chips, excessive wear, or damage. Ensure they are securely attached to the boat and can be deployed and operated smoothly without excessive play.</li>
+                        <li class="list-item"><strong>Overall Condition:</strong> Beyond these specific components, cultivate a general awareness for anything that seems loose, worn, out of place, or not functioning as expected. Addressing these minor issues ashore can prevent major problems afloat.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="rigging" class="content-block">
+            <h3 class="section-heading">Rigging</h3>
+            <div class="image-container"><img src="images/Student independently rigging a dinghy.jpeg" alt="Step-by-step rigging sequence onshore." style="width:100%;max-width:400px;display:block;margin:auto;"><div style="text-align:center;font-size:0.9em;color:#555;"></div></div>
+            <p class="mb-4">You'll develop the proficiency to prepare a sailing boat independently for use on the water. <a href="start_sailing.html#rigging" class="text-blue-600 hover:underline">Review Rigging</a> from the Start Sailing course for basic rigging techniques.</p>
+            <h4 class="sub-section-heading">Rigging the Boat for Use</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can rig a boat for use on their own:</strong> You'll develop the proficiency to prepare a sailing boat independently for use on the water. This involves a systematic process of assembling the boat's components and setting up the rigging, ensuring everything is correctly and securely attached. This includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Assembling Mast and Boom:</strong> Attaching the mast to the boat and the boom to the mast.</li>
+                        <li class="list-item"><strong>Attaching Sails:</strong> Properly hoisting and attaching the mainsail and jib (if applicable) to their respective spars and halyards.</li>
+                        <li class="list-item"><strong>Connecting Running Rigging:</strong> Threading all sheets and control lines through their correct blocks and cleats, ensuring they run freely and are ready for adjustment.</li>
+                        <li class="list-item"><strong>Setting Foils:</strong> Inserting and securing the daggerboard/centreboard and rudder.</li>
+                        <li class="list-item"><strong>Initial Trim Settings:</strong> Setting up basic sail controls like <strong>mast rake</strong> (how much the mast leans backward or forward, influencing helm balance) and initial tension on the <strong>boom vang/kicker</strong> (a rope system that pulls the boom down, controlling leech tension), based on expected conditions.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Sail Selection and Reefing Decisions</h4>
+           <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can make appropriate decisions as to what sails to use or whether they should reef:</strong> You'll learn to assess the prevailing wind conditions and make informed choices about your sail plan to ensure both safety and optimal performance. This includes:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Sail Choice:</strong> For boats with multiple sail options (e.g., different sized jibs/mains), you'll learn when to opt for a smaller or larger sail based on wind strength.</li>
+                        <li class="list-item"><strong>Reefing Decision:</strong> Understanding the signs of needing to reef (e.g., excessive heeling, loss of control, heavy helm) and deciding when it's necessary to reduce the sail area by reefing. This decision prevents overpowering the boat and ensures a safer, more controlled sailing experience in stronger winds.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Sail Controls: The Outhaul</h4>
+            <div class="image-container"><img src="images/Outhaul_1.jpg" alt="Close-up of outhaul adjustment on a boom." style="width:100%;max-width:400px;display:block;margin:auto;"><div style="text-align:center;font-size:0.9em;color:#555;"></div></div>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can identify effect of outhaul on the sail and its use in lighter & stronger winds:</strong> You'll understand the specific function and impact of the outhaul control line on your mainsail, and how to use it effectively in varying wind conditions:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Effect on Sail Shape:</strong> The outhaul pulls the foot of the mainsail along the boom. When pulled tight, it flattens the sail (removes draft from the lower part), making it less powerful. When eased, it allows the sail to become fuller, creating more power.</li>
+                        <li class="list-item"><strong>Use in Lighter Winds:</strong> In lighter winds, you'll ease the outhaul to make the sail fuller and deeper, generating maximum power to propel the boat.</li>
+                        <li class="list-item"><strong>Use in Stronger Winds:</strong> In stronger winds, you'll tension the outhaul to flatten the sail, depowering it to reduce heeling and maintain control, often in conjunction with reefing.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Reefing Techniques</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can rig a slab or roll reef boat while on the trolley:</strong> For dinghy sailors, you'll practice and become proficient at reducing your mainsail area while the boat is safely on its launching trolley ashore. This involves either:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Slab Reefing:</strong> Learning the process of lowering the sail slightly, securing a new tack point, pulling down on a new clew point, and tying off the excess sail material.</li>
+                        <li class="list-item"><strong>Roll Reefing:</strong> Understanding how to use a rolling mechanism to wrap the sail around the mast to reduce its area. This shore-based practice helps you develop the memory and understanding necessary for future reefing afloat.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="ropework" class="content-block">
+            <h3 class="section-heading">Ropework: Essential Knots for Sailing</h3>
+             <p class="mb-4">Mastering fundamental knots is a vital skill for every sailor, ensuring safety, efficiency, and control when handling lines on board. You'll learn to tie critical knots and understand their practical applications.</p>
+            <p class="mb-4">You'll develop the practical skill to tie two essential knots, understanding their specific characteristics and when to apply them in a sailing context.</p>
+
+            <h4 class="sub-section-heading">The Bowline:</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>How to Tie:</strong> You'll learn the steps to tie a <strong>Bowline</strong> reliably and efficiently, creating a secure loop at the end of a rope.
+
+                    <div class="embed-container mt-4 mb-4 border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                        <iframe src="https://knots3d.com/en/bowline-knot" width="100%" height="700" frameborder="0" class="rounded-lg"></iframe>
+                    </div>
+
+
+                <li class="list-item"><strong>Characteristics:</strong> This knot is renowned for creating a strong, non-slipping loop that will not tighten under strain. It is also relatively easy to untie even after being heavily loaded.</li>
+                <li class="list-item"><strong>When to Use It:</strong> The Bowline is incredibly versatile and is used in a wide range of sailing scenarios where a fixed, non-slipping loop is required. Common uses include:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Creating a rescue line: Forming a loop to place around a person to pull them from the water.</li>
+                        <li class="list-item">Attaching halyards to sails: Securing the rope that hoists the sail to the sail's head.</li>
+                        <li class="list-item">Securing fenders: Attaching fenders to stanchions or rails to protect the boat.</li>
+                        <li class="list-item">Anywhere a secure, non-slipping loop is needed.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">The Clove Hitch:</h4>
+                        <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>How to Tie:</strong> You'll learn how to tie a <strong>Clove Hitch</strong> quickly and effectively around a spar, rail, or post.
+
+                <div class="embed-container mt-4 mb-4 border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                    <iframe src="https://knots3d.com/en/clove-hitch-knot" width="100%" height="700" frameborder="0" class="rounded-lg"></iframe>
+                </div>
+
+                <li class="list-item"><strong>Characteristics:</strong> This knot is useful for making a quick, temporary attachment to a cylindrical object. It holds well when there is constant tension but can slip if the load is intermittent or if the object it's tied to is too smooth.</li>
+                <li class="list-item"><strong>When to Use It:</strong> The Clove Hitch is frequently used for:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item">Temporarily securing fenders: Attaching fenders to guardrails or stanchions.</li>
+                        <li class="list-item">Attaching a line to a mast or boom: For securing a temporary line, though care must be taken with intermittent loads.</li>
+                        <li class="list-item">As a quick temporary tie for gear: On deck or in the cockpit when a fast, easily releasable attachment is needed.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+         <section id="sailing-techniques" class="content-block">
+            <h3 class="section-heading">Sailing Techniques & Manoeuvres</h3>
+            <h4 class="sub-section-heading">Boat Control</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Paddling/Rowing and Coming Alongside:</strong> You'll hone your ability to <strong>paddle or row a boat around a triangular course and come alongside</strong> a specific point or another boat. This involves maintaining a straight line while paddling, executing controlled turns using paddle strokes, and judging momentum to approach a target smoothly and gently alongside, ready to secure the boat.</li>
+                <li class="list-item"><strong>Precise Stopping:</strong> You'll practice stopping your boat precisely at a chosen spot. This skill involves understanding how to use the wind and your steering to progressively reduce boat speed, bringing the boat to a controlled halt exactly where intended, often by turning "in irons" or luffing sails. (fill and spill)</li>
+                <li class="list-item"><strong>Speed Control (Accelerating/Decelerating):</strong> You'll learn to actively control your boat's speed. This is achieved by adjusting your sails (trimming in to accelerate, letting out to decelerate or depower) and subtle steering adjustments. You'll understand how to generate or reduce power to sail faster or slower as needed.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">The 5 Essentials:</h4>
+            <p class="mb-4">You'll learn to <strong>describe "The 5 Essentials" and apply them to all points of sailing</strong>. These are fundamental elements that, when managed correctly, ensure efficient and controlled sailing:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Course Made Good:</strong> This refers to the actual path your boat takes over the water, considering the effects of wind, current, and your steering. You'll learn to maintain your desired direction and adjust achieve the most efficient path towards your destination.</li>
+                <li class="list-item"><strong>Sail Setting:</strong> This involves correctly adjusting your sails (trimming in or letting out sheets, adjusting outhaul, vang, etc.) to optimize their shape and angle to the wind for maximum power and efficiency, whether sailing upwind, downwind, or across the wind.</li>
+                <li class="list-item"><strong>Boat Balance:</strong> This is about keeping the boat flat and upright. You'll learn to use your body weight (hiking out) and sail trim to counteract the force of the wind, preventing excessive heeling (leaning over) which can slow the boat down or make it difficult to control.</li>
+                <li class="list-item"><strong>Boat Trim:</strong> This refers to the fore-and-aft balance of the boat in the water, achieved by the placement of crew weight. Proper trim minimizes resistance and helps the boat perform optimally by keeping the bow and stern at the ideal depth.</li>
+                <li class="list-item"><strong>Daggerboard/Centreboard:</strong> You'll learn to adjust the depth of your daggerboard or centreboard. Lowering it fully provides maximum lateral resistance for sailing efficiently upwind, preventing leeway (sideways drift). Raising it partially or fully reduces drag when sailing downwind, allowing for greater speed. You'll continuously apply these principles to optimize your boat's performance on every point of sailing.</li>
+            </ul>
+            <div class="image-container my-8 flex flex-col items-center">
+                <img src="images/Diagram showing the 5 Essentials of sailing.jpg" alt="Diagram showing the 5 Essentials of sailing" class="rounded-lg shadow-lg max-w-full md:max-w-xl border border-gray-300">
+                <div class="text-center text-sm text-gray-600 mt-2">Diagram: The 5 Essentials of Sailing</div>
+            </div>
+
+            <h4 class="sub-section-heading">Core Sailing Manoeuvres</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Reaching, Upwind, and Downwind Sailing:</strong> You'll reinforce your ability to <strong>reach across the wind</strong>, <strong>sail upwind</strong> (close-hauled, zig-zagging against the wind), and <strong>sail downwind</strong> (running or on a broad reach). This involves consistent course keeping, appropriate sail trim for each point of sailing, and maintaining boat balance.</li>
+                <li class="list-item"><strong>Tacking and Gybing:</strong> Your turns, both <strong>tacking</strong> (turning into the wind) and <strong>gybing</strong> (turning away from the wind), will become effortless and controlled. You'll focus on executing these manoeuvres with smooth, coordinated movements between helm and crew, making your boat appear to turn gracefully. You'll ensure boat speed is maintained through the manoeuvre, maintain awareness of other water users, and maintain control before, during, and after the turn, coordinating with your crew.</li>
+                <li class="list-item"><strong>Heaving To:</strong> You'll learn the technique to <strong>heave to</strong>, which is a method of effectively stopping the boat while maintaining some steerage. This involves sheeting the jib to windward and having the rudder turned to leeward, allowing the boat to drift slowly sideways, providing a stable platform for a break, consultation, or to wait out a squall.</li>
+                <div class="image-container my-8 flex flex-col items-center">
+                    <img src="images/6148aab68f1441c5bb2324cc_heave-to.png" alt="Heaving To Diagram" class="rounded-lg shadow-lg max-w-full md:max-w-xl border border-gray-300">
+                    <div class="text-center text-sm text-gray-600 mt-2">Diagram: Heaving To</div>
+                </div>
+                <li class="list-item"><strong>Sailing Under Jib Only:</strong> You'll learn the technique of <strong>sailing under jib only</strong>. This involves lowering or furling the mainsail and using only the smaller jib to propel the boat. This can be useful in very strong winds when the mainsail is too powerful (coming ashore with an onshore breeze) or if the mainsail or its rigging is damaged.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Docking and Mooring</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Leaving and Returning to a Beach or Slipway (Light Winds):</strong> As both helm and crew, you'll practice how to <strong>leave and return to a beach or slipway in the prevailing wind direction in light winds</strong>. This involves understanding how to manage the boat's momentum, steer gently away from or towards the shore, and handle the sails efficiently for a smooth departure or arrival without power.</li>
+                <li class="list-item"><strong>Landing on a Beach or Slipway (Various Wind Conditions):</strong> You'll gain a detailed understanding of <strong>how to land on a beach or slipway</strong> effectively and safely when the wind is:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Offshore:</strong> Approaching with more sail area, using the wind to push you in, but controlling speed carefully.</li>
+                        <li class="list-item"><strong>Cross-shore:</strong> Using controlled turns and potentially a "ferry glide" (crabbing sideways) to offset the wind's push.</li>
+                        <li class="list-item"><strong>Onshore:</strong> Approaching with minimal speed, possibly depowering sails early (jib only if needed), and using the wind to bring you to a gentle stop against the shore. You'll learn to anticipate the wind's effect on your approach and adjust accordingly.</li>
+                    </ul>
+                </li>
+            </ul>
+
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Picking Up and Leaving a Mooring:</strong> You'll learn the steps to safely <strong>pick up and leave a mooring buoy</strong>. This involves precise boat handling to approach the buoy, secure your boat to it using a painter or mooring line (round turn 2 half hitches), and then smoothly sail away from it when ready, coordinating sail trim and steering to clear the buoy and other vessels.</li>
+                <li class="list-item"><strong>Coming Alongside and Leaving Piers/Pontoons (Head to Wind):</strong> You'll practice how to <strong>come alongside and leave a boat, pier, or pontoon that is head to wind</strong> (i.e., the wind is blowing directly off the dock/boat). This involves approaching slowly, using the wind to help you slow down, and then powering away directly into the wind for departure. (same approach as mooring)</li>
+                <li class="list-item"><strong>Coming Alongside and Leaving Piers/Pontoons (Not Head to Wind):</strong> You'll also learn to <strong>come alongside and leave a pier or pontoon that is not head to wind</strong> (e.g., cross-shore or stern-to-wind). This requires more control of boat momentum, wind effects, and sail trim to execute controlled approaches and departures, using careful steering to offset the wind.</li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image15.png" alt="Landing on Beach or Slipway Diagram">
+            </div>
+            <h4 class="sub-section-heading">Man Overboard Recovery:</h4>
+            <p class="mb-4">This is a crucial safety skill. If someone falls out of the boat (<strong>man overboard</strong>), you'll learn a quick and safe way to turn your boat around and get them back on board. This involves executing a specific manoeuvre aimed at getting back to the person as fast as possible and safely alongside for recovery. You'll also practice the steps for recovery (e.g., getting a line to the person, assisting them back into the boat).</p>
+            <div class="video-embed">
+                <iframe src="https://www.youtube.com/embed/PDS8gGQL67A?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </section>
+        <section id="capsize-recovery" class="content-block">
+            <h3 class="section-heading">Capsize Recovery</h3>
+            <div class="image-container my-8 flex flex-col items-center">
+                <img src="images/image6.png" alt="Step-by-step sequence of scoop method capsize recovery." class="rounded-lg shadow-lg max-w-full md:max-w-xl border border-gray-300">
+                <div class="text-center text-sm text-gray-600 mt-2">Step-by-step: Scoop Method Capsize Recovery</div>
+            </div>
+            <p class="mb-4">You'll become an expert at righting a capsized boat using a special technique called the <strong>"scoop method."</strong> <a href="taste_of_sailing.html#capsize-recovery" class="text-blue-600 hover:underline">Review Capsize Recovery</a> from the Taste of Sailing course for initial guidance.</p>
+        </section>
+
+        <section id="sailing-knowledge" class="content-block">
+            <h3 class="section-heading">Sailing Knowledge: Principles of Sail Trim and Collision Avoidance</h3>
+            <div class="image-container my-8 flex flex-col items-center">
+                <img src="images/How a sail works.png" alt="Diagram showing how sails generate lift, like an airplane wing." class="rounded-lg shadow-lg max-w-full md:max-w-2xl border-4 border-blue-300" style="width:100%;max-width:600px;display:block;margin:auto;">
+                <div class="text-center text-base text-gray-700 mt-2 font-semibold">Diagram: How Sails Generate Lift (Like an Airplane Wing)</div>
+            </div>
+            <h4 class="sub-section-heading text-2xl mt-6 mb-2 text-blue-800 font-bold">How Your Boat Moves</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how a sail works:</strong> You'll discover the fundamental science behind how sails propel a boat. Like an airplane wing, a sail primarily creates <strong>lift</strong> (a pulling force) rather than just being pushed by the wind. You'll learn:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Lift Generation:</strong> As wind flows over the curved surface of the sail, it creates higher pressure on one side and lower pressure on the other. This pressure difference generates a powerful lifting force that pulls the boat forward, not just pushes it from behind.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="video-embed">
+                <iframe src="https://www.youtube.com/embed/FCcKeOmYHFY?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how a centre / dagger board works:</strong> You'll understand the vital role of the centreboard or daggerboard in your boat's performance, particularly when sailing upwind.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Function:</strong> This movable fin extends beneath the hull into the water. Its primary function is to resist the sideways force of the wind on the sails, preventing the boat from being pushed sideways (called <strong>leeway</strong>).</li>
+                        <li class="list-item"><strong>Enabling Upwind Sailing:</strong> By providing lateral resistance, the centreboard/daggerboard allows the boat to convert the forward component of the sail's lift into efficient forward motion, enabling you to sail effectively towards the wind (close-hauled). Without it, the boat would simply be blown sideways.</li>
+                        <li class="list-item"><strong>Adjusting for Conditions:</strong> You'll also learn how to adjust its depth – typically fully down for upwind sailing, and partially or fully up for downwind sailing to reduce drag.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Collision Avoidance: Rules of the Road</h4>
+            <p class="mb-4">Understanding and applying the maritime "Rules of the Road" is paramount to preventing collisions and ensuring safe navigation.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can tell if risk of collision exists between two boats:</strong> You'll develop the crucial ability to quickly assess whether a risk of collision exists between your boat and another vessel. The key indicator is if the <strong>bearing to the other vessel remains constant while the range (distance) is decreasing</strong>. If you observe another boat remaining in the same relative position on your horizon (e.g., always appearing off your port bow) but getting closer, a collision risk exists, and immediate action is required.</li>
+                <li class="list-item"><strong>Can describe what should happen when:</strong> You'll learn the specific "Rules of the Road" governing interactions between different types of vessels and between sailboats in various scenarios:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>A motorboat and sailing boat meet:</strong> Generally, a <strong>power-driven vessel (motorboat) must give way to a sailing vessel under sail</strong>. However, a sailing vessel should not impede the safe passage of a large vessel restricted in its ability to manoeuvre (e.g., a commercial ship in a narrow channel).</li>
+                        <li class="list-item"><strong>Two sailing boats on the same tack meet:</strong> When two sailing boats are on the <strong>same tack</strong> (meaning the wind is coming from the same side for both boats), the <strong>leeward boat (the one further downwind)</strong> has the right of way. The windward boat (the one further upwind) must keep clear. You'll learn to actively identify your position relative to other sailboats on the same tack to determine who is the stand-on vessel (maintains course and speed) and who is the give-way vessel (takes avoiding action).</li>
+                        <li class="list-item"><strong>Boats are being overtaken:</strong> Any vessel <strong>overtaking</strong> another vessel is the <strong>give-way vessel</strong>, regardless of type. The vessel being overtaken is the stand-on vessel. You'll learn that the overtaking vessel must keep clear of the vessel being overtaken until it is past and clear. This rule applies equally to sailboats overtaking other sailboats, or powerboats overtaking sailboats, etc.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container my-8 flex flex-col items-center">
+                <img src="images/image13.png" alt="Sailing collision avoidance diagram" class="rounded-lg shadow-lg max-w-full md:max-w-xl border border-blue-300">
+                <div class="text-center text-sm text-gray-600 mt-2">Diagram: Collision Avoidance Rules</div>
+            </div>
+            <div class="my-6 flex justify-center">
+                <a href="https://www.ryainteractive.org/mod/scorm/view.php?id=1524"
+                   target="_blank"
+                   class="inline-block bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition">
+                RYA Interactive: Rules of the Road Module
+                </a>
+            </div></section>
+
+        <section id="coastal-knowledge" class="content-block">
+            <h3 class="section-heading">Coastal Knowledge: Understanding Tides and Tidal Streams</h3>
+        <div class="image-container my-8 flex flex-col md:flex-row items-center justify-center gap-8">
+            <div class="flex flex-col items-center">
+                <img src="images/tides near me.png" alt="Tide chart screenshot" class="rounded-lg shadow-lg max-w-full md:max-w-xs border border-blue-300 mb-2">
+                <div class="text-center text-sm text-gray-600 mb-2">Example: Local tide table</div>
+            </div>
+            <div class="flex flex-col items-center">
+                <img src="images/HW-2.png" alt="High water tide table example" class="rounded-lg shadow-lg max-w-full md:max-w-xs border border-blue-300 mb-2">
+                <div class="text-center text-sm text-gray-600 mt-2">Example: tidal stream atlas</div>
+            </div>
+        </div>
+           <h4 class="sub-section-heading">Understanding Tides</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can identify when high and low tide occur using local tide tables:</strong> You'll learn how to interpret <strong>local tide tables</strong> to accurately determine the times of high and low water in your specific sailing area. You'll understand how to read the tables to find the predicted heights of the tide and the times at which high and low water will occur on any given day. This enables you to plan your sailing activities to coincide with favorable water depths, avoid grounding in shallow areas, and ensure access to harbors and slipways.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Understanding Tidal Streams</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how to estimate the rate and direction of the flow of tide and describe the effect that this might have on a sailor:</strong> You'll learn how to estimate the rate (speed) and direction of the <strong>tidal stream</strong> (the horizontal movement of water caused by the tides). This is crucial because tidal streams can significantly affect your boat's speed and direction over the ground.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Estimating Rate and Direction:</strong> You'll learn to use tidal stream atlases, charts, and local knowledge to predict the direction and speed of the tidal stream at various times and locations. You'll understand how the tidal stream changes throughout the tidal cycle and in different areas. (Rule of Twelfths)</li>
+                        <li class="list-item"><strong>Effect on a Sailor:</strong> You'll understand how a favorable tidal stream can significantly increase your boat's speed towards your destination, while an opposing tidal stream can slow you down or even push you backwards. You'll learn how to factor the tidal stream into your navigation to make accurate course corrections, avoid being set off course, and time your passages to take advantage of favorable flows.</li>
+                    </ul>
+                </li>
+            </ul>
+        <div class="my-6 flex justify-center">
+            <a href="https://www.ryainteractive.org/mod/scorm/view.php?id=1574" target="_blank" class="inline-block bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition">
+                🌊 RYA Interactive: Tides Module
+            </a>
+        </div>
+        </section>
+
+        <section id="weather-safety" class="content-block">
+            <h3 class="section-heading">Weather: Understanding Conditions for Safe Sailing</h3>
+            <div class="image-container my-8 flex flex-col items-center">
+                <img src="images/beaufort.png" alt="Beaufort scale visual chart with wind effects on water."
+                     class="rounded-lg shadow-lg border-4 border-blue-300"
+                     style="width:100%;max-width:900px;display:block;margin:auto;">
+                <div class="text-center text-base text-gray-700 mt-2 font-semibold">
+                    Beaufort scale visual chart with wind effects on water
+                </div>
+            </div><ul class="list-disc list-inside ml-4 mb-4"></ul>
+                <li class="list-item"><strong>Measurement:</strong> You'll understand the relationship between these units (e.g., 1 knot ≈ 1.85 Kph). The Beaufort scale provides a descriptive measure of wind strength based on observed effects on the sea and land (e.g., Force 2: light breeze, ripples; Force 5: fresh breeze, moderate waves, whitecaps).</li>
+                <li class="list-item"><strong>Effect on Sailor:</strong> Wind speed directly impacts your boat's performance and handling. Higher wind speeds mean faster sailing but also increased heel (leaning), greater demands on steering, and a higher risk of capsizing if not managed correctly (e.g., through reefing). Very low wind speeds mean slow progress or being becalmed.</li>
+            </ul>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how wind direction is measured and how it may affect a sailor:</strong> You'll learn that wind direction is measured using compass headings (e.g., from the North, South-West, etc.). You'll also understand its critical implications based on its relation to the land:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Onshore Winds:</strong> These blow towards the land from the water. They generally provide a 'safety net', pushing you towards shore if you have difficulty. However, they can also create choppy conditions near the coast and make landing more challenging.</li>
+                        <li class="list-item"><strong>Offshore Winds:</strong> These blow away from the land towards the open water. They present a significant safety concern as they can push you further offshore if you lose control or suffer equipment failure, making it harder to return to safety. They often create flatter water closer to shore.</li>
+                        <li class="list-item"><strong>Effect on Sailor:</strong> Wind direction dictates your boat's course relative to the wind (points of sailing) and influences tactics for leaving and returning to shore and managing waves.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how visibility is measured and how it may affect a sailor:</strong> You'll learn that visibility is measured in nautical miles or meters.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Effect on Sailor:</strong> Reduced visibility significantly increases the risk of collision.</li>
+                        <li class="list-item"><strong>Hazards associated with fog:</strong> Fog is a common cause of severely reduced visibility. In fog, it becomes extremely difficult to see other vessels, navigation marks, or land. This necessitates slowing down, making sound signals (e.g., foghorn), and relying more on compass bearings and charts, as well as keeping a vigilant lookout for hazards.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how temperature is measured and how it may affect a sailor - Actual and effects of wind chill:</strong> You'll understand the importance of air and water temperature and the concept of wind chill.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Actual Temperature:</strong> This is the ambient air temperature, measured in Celsius. Water temperature is also vital, especially for immersion.</li>
+                        <li class="list-item"><strong>Wind Chill:</strong> This is the apparent temperature felt on exposed skin due to the combined effect of air temperature and wind speed. Even on a moderately cold day, a strong wind can make it feel much colder, significantly increasing the risk of cold-related injuries.</li>
+                        <li class="list-item"><strong>Effect on Sailor:</strong> Low temperatures and wind chill can lead to rapid heat loss from the body, increasing the risk of hypothermia (dangerously low body temperature). This necessitates appropriate clothing choices (layers, waterproofs), and awareness of how quickly conditions can lead to cold stress.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can obtain a weather forecast for a sailing area and describe how it might affect their planned activities:</strong> You'll learn to actively seek out and interpret reliable weather forecasts for your specific sailing area.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Sources:</strong> You'll know where to find forecasts (e.g., reputable marine weather websites and apps, marine radio broadcasts, local sailing club boards, or your instructors).</li>
+                        <li class="list-item"><strong>Application to Planning:</strong> You'll learn to analyse key elements of the forecast (wind speed/direction, visibility, temperature, precipitation) and describe how they might affect your planned activities, such as:
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item">Deciding whether to sail at all.</li>
+                                <li class="list-item">Choosing appropriate sail area (e.g., reefing).</li>
+                                <li class="list-item">Planning your route to take advantage of or mitigate wind/tide effects.</li>
+                                <li class="list-item">Selecting suitable clothing and safety equipment.</li>
+                                <li class="list-item">Adjusting your expected return time.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="safety" class="content-block">
+            <h3 class="section-heading">Safety: Essential Practices and Emergency Response</h3>
+        <div class="image-container my-8 flex flex-col items-center">
+            <img src="images/sitemgr_marine-yacht-first-aid-kit.jpg" alt="First aid kit for sailors" class="rounded-lg shadow-lg max-w-full md:max-w-md border border-blue-300">
+            <div class="text-center text-sm text-gray-600 mt-2">First aid kit for sailors</div>
+        </div>
+        <h4 class="sub-section-heading mt-8 mb-2 text-blue-800 font-bold text-2xl">Pre-Sailing Safety Planning</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can explain the importance of telling someone where they are going and when they will be back:</strong> You'll understand in detail why it is super important to always tell someone ashore (like your instructor, family, or a sailing centre contact) where you're going sailing and when you expect to be back. This is known as leaving a "passage plan" or "shore contact details."
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Importance:</strong> This is a crucial safety rule because if you don't return as expected, someone will know to raise an alert. They will have vital information about your intended route, destination, and expected return time, significantly aiding any potential search and rescue efforts. It ensures that help can be summoned promptly if you encounter unforeseen difficulties.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Emergency Equipment and Care</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how to use and care for distress flares:</strong> You'll learn about several types of distress flares (e.g., handheld red flares for close-range signalling, parachute flares for long-range visibility) and understand their purpose as visual emergency signals.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Use:</strong> You'll learn the proper procedure for deploying flares safely according to their instructions, emphasizing pointing away from yourself and others, and ensuring they are visible to potential rescuers.</li>
+                        <li class="list-item"><strong>Care:</strong> You'll understand the importance of storing flares in a dry, accessible location, checking their expiry dates (as they must be in date to be legally carried and effective), and disposing of expired flares responsibly.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Main Types of Distress Flares (Commonly Carried on Boats):</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Red Handheld Flare:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Appearance:</strong> A cylindrical tube, often with a handle. When activated, it produces a bright, steady red flame.</li>
+                        <li class="list-item"><strong>Purpose:</strong> Short-range distress signal, primarily for pinpointing your location to rescuers who are already in sight or relatively close. It's used to show your exact position.</li>
+                        <li class="list-item"><strong>Burn Time:</strong> Typically burns for about 60 seconds.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Red Parachute Flare (Rocket Flare / Red Star Signal):</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Appearance:</strong> A larger, rocket-like tube. When activated, it fires a projectile high into the air.</li>
+                        <li class="list-item"><strong>Purpose:</strong> Long-range distress signal. The projectile deploys a flare on a small parachute at altitude, which burns brightly as it descends slowly. This is used to attract attention from a significant distance (e.g., to distant ships, aircraft, or shore stations).</li>
+                        <li class="list-item"><strong>Altitude:</strong> Can reach 300 meters (approx. 1000 feet) or more.</li>
+                        <li class="list-item"><strong>Burn Time:</strong> Typically burns for about 40-60 seconds.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Orange Smoke Signal (Handheld or Floating):</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Appearance:</strong> A cylindrical canister. When activated, it produces dense orange smoke. Can be handheld or designed to float on the water.</li>
+                        <li class="list-item"><strong>Purpose:</strong> Daytime distress signal. The vivid orange smoke is highly visible against the sky or water, especially from aircraft or boats during daylight hours.</li>
+                        <li class="list-item"><strong>Burn Time:</strong> Typically produces smoke for 60-120 seconds.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>White Handheld Flare (or White Collision Warning Flare):</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Appearance:</strong> Like a red handheld flare, a cylindrical tube that produces a bright white flame.</li>
+                        <li class="list-item"><strong>Purpose:</strong> <strong>Not a distress signal.</strong> Instead, white flares are used as a <strong>collision warning signal</strong> or for <strong>illumination</strong>.
+                            <ul class="list-disc list-inside ml-4 mt-2">
+                                <li class="list-item"><strong>Collision Warning:</strong> If you believe another vessel is on a collision course with you and doesn't seem to be taking appropriate avoiding action (especially at night or in low visibility), a white flare can be used to attract their attention and warn them of your presence or danger. It's a "warn-off" signal.</li>
+                                <li class="list-item"><strong>Illumination:</strong> They can also be used to briefly illuminate an area, for example, to get a better look at a navigation mark, a mooring buoy, or a person in the water at night. This is particularly useful in an emergency like a man overboard at night, to help a searchlight locate the person.</li>
+                            </ul>
+                        </li>
+                        <li class="list-item"><strong>Burn Time:</strong> Typically burns for about 60 seconds.</li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Flare Images Carousel -->
+            <div id="flare-carousel" class="relative w-full max-w-2xl mx-auto my-8">
+                <div class="overflow-hidden rounded-lg shadow-lg w-full">
+                    <div class="carousel-images flex transition-transform duration-500 w-full" style="width: 300%;">
+                        <div class="carousel-item flex-shrink-0 flex flex-col items-center justify-center w-full">
+                            <img src="images/image20.png" alt="Orange Smoke Signal in Water" class="h-96 object-contain bg-white mx-auto w-full rounded-t-lg">
+                            <div class="text-center text-sm text-gray-600 bg-white bg-opacity-80 py-2 w-full rounded-b-lg">Orange Smoke Signal in Water</div>
+                        </div>
+                        <div class="carousel-item flex-shrink-0 flex flex-col items-center justify-center w-full">
+                            <img src="images/image21.png" alt="Person in Liferaft with Red Flare" class="h-96 object-contain bg-white mx-auto w-full rounded-t-lg">
+                            <div class="text-center text-sm text-gray-600 bg-white bg-opacity-80 py-2 w-full rounded-b-lg">Person in Liferaft with Red Flare</div>
+                        </div>
+                        <div class="carousel-item flex-shrink-0 flex flex-col items-center justify-center w-full">
+                            <img src="images/image22.png" alt="White Handheld Flare" class="h-96 object-contain bg-white mx-auto w-full rounded-t-lg">
+                            <div class="text-center text-sm text-gray-600 bg-white bg-opacity-80 py-2 w-full rounded-b-lg">White Handheld Flare</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Carousel Controls -->
+                <button id="flare-carousel-prev" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700 focus:outline-none" aria-label="Previous" style="z-index:2;">
+                    &#8592;
+                </button>
+                <button id="flare-carousel-next" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700 focus:outline-none" aria-label="Next" style="z-index:2;">
+                    &#8594;
+                </button>
+                <!-- Carousel Indicators -->
+                <div class="flex justify-center mt-2 space-x-2">
+                    <span class="flare-carousel-indicator w-3 h-3 bg-blue-400 rounded-full inline-block cursor-pointer"></span>
+                    <span class="flare-carousel-indicator w-3 h-3 bg-gray-300 rounded-full inline-block cursor-pointer"></span>
+                    <span class="flare-carousel-indicator w-3 h-3 bg-gray-300 rounded-full inline-block cursor-pointer"></span>
+                </div>
+            </div>
+            <style>
+                #flare-carousel .overflow-hidden {
+                    width: 100%;
+                    max-width: 700px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #flare-carousel .carousel-images {
+                    width: 300%;
+                }
+                #flare-carousel .carousel-item {
+                    width: 33.3333%;
+                }
+                #flare-carousel img {
+                    width: 100%;
+                    height: 24rem;
+                    object-fit: contain;
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                    background: #fff;
+                }
+            </style>
+            <script>
+                // Flare carousel logic
+                (function() {
+                    const carousel = document.querySelector('#flare-carousel .carousel-images');
+                    const indicators = document.querySelectorAll('#flare-carousel .flare-carousel-indicator');
+                    let currentSlide = 0;
+                    const totalSlides = 3;
+
+                    function showSlide(idx) {
+                        currentSlide = idx;
+                        carousel.style.transform = `translateX(-${idx * 33.3333}%)`;
+                        indicators.forEach((el, i) => {
+                            el.classList.toggle('bg-blue-400', i === idx);
+                            el.classList.toggle('bg-gray-300', i !== idx);
+                        });
+                    }
+
+                    document.getElementById('flare-carousel-prev').onclick = () => showSlide((currentSlide + totalSlides - 1) % totalSlides);
+                    document.getElementById('flare-carousel-next').onclick = () => showSlide((currentSlide + 1) % totalSlides);
+                    indicators[0].onclick = () => showSlide(0);
+                    indicators[1].onclick = () => showSlide(1);
+                    indicators[2].onclick = () => showSlide(2);
+
+                    // Optional: auto-advance every 7 seconds
+                    // setInterval(() => showSlide((currentSlide + 1) % totalSlides), 7000);
+
+                    showSlide(0);
+                })();
+            </script>
+
+            <h4 class="sub-section-heading">Emergency Care</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Can describe how to care for someone who is very cold:</strong> You'll learn to recognize the signs of hypothermia (dangerously low body temperature), such as shivering, confusion, slurred speech, and clumsiness. You'll then learn simple yet effective ways to help someone who is very cold:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Remove Wet Clothing:</strong> Get them out of any wet clothes immediately.</li>
+                        <li class="list-item"><strong>Insulate and Warm:</strong> Wrap them in dry blankets, sleeping bags, or foil emergency blankets to prevent further heat loss and begin warming them slowly.</li>
+                        <li class="list-item"><strong>Provide Warmth (if conscious):</strong> Offer warm, sweet drinks (non-alcoholic) to help warm them from the inside. Avoid rubbing their limbs.</li>
+                        <li class="list-item"><strong>Seek Professional Help:</strong> Always monitor their condition and seek professional medical attention as soon as possible.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Can explain why it is important for a sailor to have some training in Emergency Care:</strong> You'll understand that having some basic training in Emergency Care (First Aid) is incredibly helpful for sailors.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Preparedness:</strong> Minor cuts, scrapes, sprains, or even more serious incidents can occur while sailing. Basic first aid knowledge empowers you to confidently manage common injuries and illnesses.</li>
+                        <li class="list-item"><strong>Bridging the Gap:</strong> On the water, professional medical help may not be immediately available. Emergency care training enables you to provide immediate assistance, stabilize a casualty, and potentially prevent a situation from worsening while awaiting professional medical attention.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="what-next" class="content-block">
+            <h3 class="section-heading">What Next?</h3>
+            <p class="mb-4">You'll get advice on how to continue sailing and improve your skills even further after finishing this course, perhaps joining a racing club or exploring new sailing areas.</p>
+        </section>
+
+        <section id="quiz-section" class="container mx-auto px-4 py-8">
+            <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Quiz Section</h2>
+
+            <form id="basic-skills-quiz" class="bg-gray-100 p-4 rounded-lg shadow-md">
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Objective</h4>
+                <p class="mb-4">What is the main goal of the "Basic Skills" course?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="objective-quiz" id="objective-option1" value="option1"> To sail independently in light wind conditions</li>
+                <li><input type="radio" name="objective-quiz" id="objective-option2" value="option2"> To learn advanced sailing techniques</li>
+                <li><input type="radio" name="objective-quiz" id="objective-option3" value="option3"> To sail mostly on your own in gentle winds</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Clothing & Equipment</h4>
+                <p class="mb-4">Which material should you avoid wearing while sailing?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="clothing-quiz" id="clothing-option1" value="option1"> Wool</li>
+                <li><input type="radio" name="clothing-quiz" id="clothing-option2" value="option2"> Cotton</li>
+                <li><input type="radio" name="clothing-quiz" id="clothing-option3" value="option3"> Synthetic fibre</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Rigging</h4>
+                <p class="mb-4">What does the outhaul control on the mainsail?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="rigging-quiz" id="rigging-option1" value="option1"> The angle of the mast</li>
+                <li><input type="radio" name="rigging-quiz" id="rigging-option2" value="option2"> The tension along the foot of the sail</li>
+                <li><input type="radio" name="rigging-quiz" id="rigging-option3" value="option3"> The position of the rudder</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Ropework</h4>
+                <p class="mb-4">Which knot is used to create a secure loop at the end of a rope?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="ropework-loop-quiz" id="ropework-loop-option1" value="option1"> Clove Hitch</li>
+                <li><input type="radio" name="ropework-loop-quiz" id="ropework-loop-option2" value="option2"> Bowline</li>
+                <li><input type="radio" name="ropework-loop-quiz" id="ropework-loop-option3" value="option3"> Figure of Eight</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Boat Trim</h4>
+                <p class="mb-4">What does proper boat trim help minimize?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="boat-trim-quiz" id="boat-trim-option1" value="option1"> Resistance</li>
+                <li><input type="radio" name="boat-trim-quiz" id="boat-trim-option2" value="option2"> Wind Speed</li>
+                <li><input type="radio" name="boat-trim-quiz" id="boat-trim-option3" value="option3"> Wave Height</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Sail Controls</h4>
+                <p class="mb-4">What does easing the outhaul do to the mainsail?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="sail-controls-quiz" id="sail-controls-option1" value="option1"> Flattens the sail</li>
+                <li><input type="radio" name="sail-controls-quiz" id="sail-controls-option2" value="option2"> Makes the sail fuller</li>
+                <li><input type="radio" name="sail-controls-quiz" id="sail-controls-option3" value="option3"> Moves the sail forward</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Ropework</h4>
+                <p class="mb-4">Which knot is used to temporarily secure a rope to a cylindrical object?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="ropework-temp-quiz" id="ropework-temp-option1" value="option1"> Bowline</li>
+                <li><input type="radio" name="ropework-temp-quiz" id="ropework-temp-option2" value="option2"> Clove Hitch</li>
+                <li><input type="radio" name="ropework-temp-quiz" id="ropework-temp-option3" value="option3"> Figure of Eight</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: The 5 Essentials</h4>
+                <p class="mb-4">Which of the following is NOT one of the 5 Essentials?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="essentials-quiz" id="essentials-option1" value="option1"> Sail Setting</li>
+                <li><input type="radio" name="essentials-quiz" id="essentials-option2" value="option2"> Boat Trim</li>
+                <li><input type="radio" name="essentials-quiz" id="essentials-option3" value="option3"> Wave Height</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Docking</h4>
+                <p class="mb-4">What should you consider when landing on a beach with an onshore wind?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="docking-quiz" id="docking-option1" value="option1"> Depower sails early</li>
+                <li><input type="radio" name="docking-quiz" id="docking-option2" value="option2"> Approach with minimal speed</li>
+                <li><input type="radio" name="docking-quiz" id="docking-option3" value="option3"> Both of the above</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Man Overboard Recovery</h4>
+                <p class="mb-4">What is the primary goal of the man overboard recovery maneuver?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="man-overboard-quiz" id="man-overboard-option1" value="option1"> To quickly turn the boat around</li>
+                <li><input type="radio" name="man-overboard-quiz" id="man-overboard-option2" value="option2"> To safely get the person back on board</li>
+                <li><input type="radio" name="man-overboard-quiz" id="man-overboard-option3" value="option3"> To practice emergency procedures</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Capsize Recovery</h4>
+                <p class="mb-4">What is the "scoop method" used for?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="capsize-recovery-quiz" id="capsize-recovery-option1" value="option1"> Righting a capsized boat</li>
+                <li><input type="radio" name="capsize-recovery-quiz" id="capsize-recovery-option2" value="option2"> Recovering a man overboard</li>
+                <li><input type="radio" name="capsize-recovery-quiz" id="capsize-recovery-option3" value="option3"> Securing a mooring line</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Sail Trim</h4>
+                <p class="mb-4">What is the primary function of the outhaul on a mainsail?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="sail-trim-quiz" id="sail-trim-option1" value="option1"> To adjust the angle of the mast</li>
+                <li><input type="radio" name="sail-trim-quiz" id="sail-trim-option2" value="option2"> To control the tension along the foot of the sail</li>
+                <li><input type="radio" name="sail-trim-quiz" id="sail-trim-option3" value="option3"> To move the sail forward</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Collision Avoidance</h4>
+                <p class="mb-4">What should you do if you observe another boat remaining in the same relative position on your horizon but getting closer?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="collision-avoidance-quiz" id="collision-avoidance-option1" value="option1"> Maintain your course and speed</li>
+                <li><input type="radio" name="collision-avoidance-quiz" id="collision-avoidance-option2" value="option2"> Take immediate action to avoid collision</li>
+                <li><input type="radio" name="collision-avoidance-quiz" id="collision-avoidance-option3" value="option3"> Sound a warning signal</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Tidal Streams</h4>
+                <p class="mb-4">What is the primary function of a tidal stream atlas?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="tidal-streams-quiz" id="tidal-streams-option1" value="option1"> To predict the direction and speed of the tidal stream</li>
+                <li><input type="radio" name="tidal-streams-quiz" id="tidal-streams-option2" value="option2"> To measure wind speed</li>
+                <li><input type="radio" name="tidal-streams-quiz" id="tidal-streams-option3" value="option3"> To estimate wave height</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Weather Forecast</h4>
+                <p class="mb-4">Why is it important to obtain a weather forecast before sailing?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="weather-forecast-quiz" id="weather-forecast-option1" value="option1"> To decide whether to sail at all</li>
+                <li><input type="radio" name="weather-forecast-quiz" id="weather-forecast-option2" value="option2"> To choose appropriate sail area</li>
+                <li><input type="radio" name="weather-forecast-quiz" id="weather-forecast-option3" value="option3"> Both of the above</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Safety Planning</h4>
+                <p class="mb-4">Why is it important to tell someone where you are going and when you will be back?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="safety-planning-quiz" id="safety-planning-option1" value="option1"> To ensure someone can raise an alert if you don't return as expected</li>
+                <li><input type="radio" name="safety-planning-quiz" id="safety-planning-option2" value="option2"> To provide vital information for search and rescue efforts</li>
+                <li><input type="radio" name="safety-planning-quiz" id="safety-planning-option3" value="option3"> Both of the above</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+                <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Emergency Care</h4>
+                <p class="mb-4">What should you do if someone is very cold and showing signs of hypothermia?</p>
+                <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="emergency-care-quiz" id="emergency-care-option1" value="option1"> Remove wet clothing and wrap them in dry blankets</li>
+                <li><input type="radio" name="emergency-care-quiz" id="emergency-care-option2" value="option2"> Offer warm, sweet drinks if they are conscious</li>
+                <li><input type="radio" name="emergency-care-quiz" id="emergency-care-option3" value="option3"> Both of the above</li>
+                </ul>
+            </div>
+
+            <button type="button" onclick="submitCombinedQuiz()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit</button>
+            <p id="quiz-results" class="mt-4"></p>
+            </form>
+        </section>
+        <script>
+            function submitCombinedQuiz() {
+            const answers = {
+                'objective-quiz': 'option1',
+                'clothing-quiz': 'option2',
+                'rigging-quiz': 'option2',
+                'ropework-loop-quiz': 'option2',
+                'boat-trim-quiz': 'option1',
+                'sail-controls-quiz': 'option2',
+                'ropework-temp-quiz': 'option2',
+                'essentials-quiz': 'option3',
+                'docking-quiz': 'option3',
+                'man-overboard-quiz': 'option2',
+                'capsize-recovery-quiz': 'option1',
+                'sail-trim-quiz': 'option2',
+                'collision-avoidance-quiz': 'option2',
+                'tidal-streams-quiz': 'option1',
+                'weather-forecast-quiz': 'option3',
+                'safety-planning-quiz': 'option3',
+                'emergency-care-quiz': 'option3'
+            };
+
+            let score = 0;
+            let totalQuestions = Object.keys(answers).length;
+
+            for (let question in answers) {
+                const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+                const questionContainer = document.querySelector(`input[name="${question}"]`).closest('.quiz-container');
+                if (selectedOption && selectedOption.value === answers[question]) {
+                score++;
+                questionContainer.classList.remove('bg-red-100');
+                questionContainer.classList.add('bg-green-100');
+                } else {
+                questionContainer.classList.remove('bg-green-100');
+                questionContainer.classList.add('bg-red-100');
+                }
+            }
+
+            const resultsContainer = document.getElementById('quiz-results');
+            resultsContainer.textContent = `You scored ${score} out of ${totalQuestions}.`;
+            resultsContainer.classList.remove('text-green-500', 'text-red-500');
+            resultsContainer.classList.add(score === totalQuestions ? 'text-green-500' : 'text-red-500');
+            }
+        </script>
+    </main>
+    <button id="back-to-top" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 hidden" onclick="scrollToTop()">Back to Top</button>
+    <script>
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) {
+                backToTopButton.classList.remove('hidden');
+            } else {
+                backToTopButton.classList.add('hidden');
+            }
+        });
+    </script>
+   <footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <p class="text-lg font-semibold">&copy; 2025
+                <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+            </p>
+            <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+            <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.013 15.647 2 15.267 2 12s.012-3.584.07-4.85c.059-1.281.316-2.393 1.296-3.373.98-.98 2.092-1.237 3.373-1.296C8.332 2.175 8.741 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</footer></svg>
+</body>
+</html>

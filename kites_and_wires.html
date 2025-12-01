@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kites & Wires - Rathmullan sailing school notes</title>
+        <link rel="stylesheet" href="tailwind-ui.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    <style>
+        body.dark { background-color: #121212; color: #fff; }
+        body.dark a { color: #90caf9 }
+        .content-block { background: #fff; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0.5rem; border: 1px solid #e5e7eb }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Dropdown for Section Navigation -->
+    <div class="container mx-auto px-4 py-4">
+        <label for="section-select" class="block text-lg font-bold mb-2">Jump to Section:</label>
+        <select id="section-select" class="w-full p-2 border rounded-md" onchange="scrollToSection(this.value)">
+            <option value="">Select a section...</option>
+            <option value="introduction">Introduction</option>
+            <option value="clothing-equipment">Clothing & Equipment</option>
+            <option value="safety">Safety</option>
+            <option value="capsize-recovery">Capsize Recovery</option>
+            <option value="boat-handling">Boat Handling & Manoeuvres</option>
+            <option value="weather">Weather</option>
+            <option value="kites">Kites</option>
+            <option value="rigging">Rigging</option>
+            <option value="trapeze">Trapeze</option>
+            <option value="what-next">What Next</option>
+            <option value="instructor-notes">For Instructors</option>
+            <option value="quiz">Quiz</option>
+        </select>
+    </div>
+
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-8">Kites & Wires — Step-by-step learning guide</h2>
+
+        <section class="content-block" id="introduction">
+            <h3 class="section-heading">Introduction</h3>
+            <p>
+                Kites & Wires is the advanced dinghy module from Irish Sailing focused on two specialisms:
+                <strong>Kites</strong> (symmetric and asymmetric spinnakers) and <strong>Wires</strong> (trapeze).
+                This page provides step-by-step guidance for achieving each learning outcome from the official syllabus,
+                with practical procedures, safety checks, and instructor notes aligned to SBSS Advanced Instructor standards.
+            </p>
+
+            <h4 class="sub-section-heading mt-6">Learning Outcomes Overview</h4>
+            <p class="mb-4">By completing this module, you will be able to:</p>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Symmetric Spinnaker Skills:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>Name and correctly attach all parts of the symmetric spinnaker system</li>
+                    <li>Hoist, trim, gybe and drop a symmetric spinnaker with correct crew coordination</li>
+                    <li>Adjust pole height and angle for optimal trim in varying conditions</li>
+                    <li>Recognize and recover from near-broach situations</li>
+                    <li>Care for and maintain spinnaker equipment</li>
+                </ul>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Asymmetric Spinnaker Skills:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>Identify and rig asymmetric spinnaker equipment (bowsprit, tack line, continuous sheets)</li>
+                    <li>Hoist, trim, gybe and drop an asymmetric spinnaker</li>
+                    <li>Perform sheet-to-sheet gybes smoothly</li>
+                    <li>Execute windward, leeward, and letterbox drops</li>
+                    <li>Select optimal courses and recognize mode changes (heat up vs soak)</li>
+                </ul>
+            </div>
+
+            <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Trapeze Skills:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>Fit and adjust trapeze harness; perform pre-sail safety checks</li>
+                    <li>Hook on and off safely; move from sitting to full extension</li>
+                    <li>Maintain trim and balance on the wire in varying conditions</li>
+                    <li>Tack and gybe while on trapeze</li>
+                    <li>Manage capsize risk and participate in safe recovery</li>
+                </ul>
+            </div>
+
+            <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Safety & Seamanship:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>Conduct pre-sail safety briefings with clear crew communication</li>
+                    <li>Assess weather conditions and select appropriate sailing sessions</li>
+                    <li>Recover from capsizes with spinnaker set or while on trapeze</li>
+                    <li>Maintain and care for all spinnaker and trapeze equipment</li>
+                    <li>Demonstrate knowledge of appropriate clothing and safety equipment</li>
+                </ul>
+            </div>
+            <p class="mt-4">
+                <strong>What's what:</strong> External reference for clear comparison of gennaker vs spinnaker from North Sails:
+                <a href="https://www.northsails.com/blogs/north-sails-blog/difference-between-gennaker-and-spinnaker" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">North Sails — Difference between Gennaker and Spinnaker</a>.
+            </p>
+
+            <div class="my-6">
+                <h4 class="sub-section-heading">Official syllabus documents</h4>
+                <div class="mb-4">
+                    <p class="font-semibold">SBSS Advanced Instructor Handbook</p>
+                    <embed src="SBSS Advanced Instructor Handbook.pdf   " type="application/pdf" class="w-full h-[420px] rounded-lg shadow-lg" />
+                    <p class="text-sm text-gray-600 mt-2">Official SBSS Advanced Instructor Handbook — refer to this for complete certification requirements.</p>
+                </div>
+                <div class="mb-4">
+                    <p class="font-semibold">Irish Sailing — Kites & Wires syllabus</p>
+                    <embed src="IrishSailing-Syllabi-A4-Kites&Wires-V2.pdf" type="application/pdf" class="w-full h-[420px] rounded-lg shadow-lg" />
+                    <p class="text-sm text-gray-600 mt-2">Irish Sailing Kites & Wires syllabus — detailed learning outcomes and assessment matrix.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-block" id="clothing-equipment">
+            <h3 class="section-heading">Clothing & Equipment</h3>
+            <p class="mb-4">Proper clothing and equipment are essential for safe and comfortable sailing, especially when performing advanced manoeuvres with spinnakers and trapeze.</p>
+
+            <h4 class="sub-section-heading">Essential Clothing</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Wetsuit or Drysuit:</strong> Appropriate for water temperature and weather conditions</li>
+                <li><strong>Buoyancy Aid:</strong> Properly fitted and worn at all times on the water</li>
+                <li><strong>Sailing Boots/Shoes:</strong> Non-slip soles with good ankle support</li>
+                <li><strong>Gloves:</strong> Sailing gloves to protect hands when handling sheets and lines</li>
+                <li><strong>Hat and Sunglasses:</strong> Sun protection (with retaining strap for sunglasses)</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Trapeze-Specific Equipment</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Trapeze Harness:</strong> Properly fitted with secure hook and adjustment straps</li>
+                <li><strong>Helmet:</strong> Recommended for trapeze work, especially when learning</li>
+                <li><strong>Knife:</strong> Safety knife accessible in case of entanglement</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Boat Equipment Checklist</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Spinnaker system:</strong> Halyard, sheets, pole (for symmetric), bowsprit (for asymmetric)</li>
+                <li><strong>Trapeze system:</strong> Wires, rings, shock cord, adjusters</li>
+                <li><strong>Safety equipment:</strong> Paddle, bailer, anchor, whistle, towline</li>
+                <li><strong>Communication:</strong> Mobile phone in waterproof case or VHF radio</li>
+            </ul>
+        </section>
+
+        <section class="content-block" id="safety">
+            <h3 class="section-heading">Safety</h3>
+
+            <h4 class="sub-section-heading">Pre-Sail Safety Briefing</h4>
+            <p class="mb-4">Before every session involving spinnakers or trapeze, conduct a thorough safety briefing.</p>
+            <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Briefing checklist:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Role assignment:</strong> Confirm who calls hoists/gybes/drops; who manages which lines; who has primary lookout responsibility</li>
+                    <li><strong>Standard calls:</strong>
+                        <ul class="list-disc list-inside ml-6 mt-2">
+                            <li>"Hoisting" — crew begins hoist</li>
+                            <li>"Made" — halyard fully up and cleated</li>
+                            <li>"Ready to gybe" — prepare for manoeuvre</li>
+                            <li>"Gybe-ho!" — boom coming across</li>
+                            <li>"Dropping" — spinnaker takedown begins</li>
+                            <li>"Ease!" — emergency depower command</li>
+                        </ul>
+                    </li>
+                    <li><strong>Lookout protocol:</strong> Helm has obstructed view downwind; crew must call all boats, obstructions, and wind changes</li>
+                    <li><strong>Emergency signals:</strong> Agree on distress signal (continuous whistle, specific shout); confirm capsize recovery roles</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Crew Communication & Coordination</h4>
+            <p class="mb-4"><strong>Learning Outcome:</strong> Demonstrate effective communication between helm and crew during all manoeuvres.</p>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Essential communication skills:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Continuous dialogue:</strong> Helm and crew maintain constant communication about conditions, course, other boats</li>
+                    <li><strong>Clear commands:</strong> Use agreed standard calls; speak loudly and clearly</li>
+                    <li><strong>Confirmation:</strong> Crew confirms commands ("Ready" / "Made" / "Clear")</li>
+                    <li><strong>Wind calls:</strong> Crew calls gusts approaching: "Gust in 5... 4... 3..." gives helm time to prepare</li>
+                    <li><strong>Lookout calls:</strong> Crew calls all traffic, marks, hazards: "Boat to port!" / "Mark ahead!" / "Shallow water starboard!"</li>
+                    <li><strong>Trim feedback:</strong> Crew reports on sail shape: "Luff curling" / "Overtrimmed" / "Pole needs adjusting"</li>
+                    <li><strong>Problem alerts:</strong> Immediate call if lines foul, equipment fails, or crew in difficulty</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Risk Management</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Weather assessment:</strong> Check forecast; understand wind and wave conditions; know your limits</li>
+                <li><strong>Trapeze safety:</strong> Practice hook on/off on shore; check harness fit; verify wire condition; know quick-release procedures</li>
+                <li><strong>Spinnaker safety:</strong> Start in light winds; ensure all lines run clear; practice drops before hoists</li>
+                <li><strong>Communication:</strong> Maintain constant communication between helm and crew; establish clear signals</li>
+                <li><strong>Escape routes:</strong> Always have a plan to depower quickly (ease sheets, head up/down)</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Choosing Appropriate Conditions</h4>
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Wind strength guidelines:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><em>Light (0-10 knots):</em> Good for first-time spinnaker hoists and trapeze; focus on technique not power management</li>
+                    <li><em>Moderate (10-15 knots):</em> Ideal for developing skills; enough power to plane, manageable for mistakes</li>
+                    <li><em>Fresh (15-20 knots):</em> Only for competent crews; requires active trimming, quick reactions, strong hiking/trapezing</li>
+                    <li><em>Strong (20+ knots):</em> Advanced only; high capsize risk; consider reducing sail area or postponing advanced manoeuvres</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-block" id="capsize-recovery">
+            <h3 class="section-heading">Capsize Recovery</h3>
+            <p class="mb-4">Capsize recovery with spinnakers and trapeze requires additional considerations beyond standard recovery procedures.</p>
+
+            <h4 class="sub-section-heading">Capsize with Spinnaker Set</h4>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Recovery procedure:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Immediate actions:</strong> Ensure all crew are safe and accounted for; stay with the boat</li>
+                    <li><strong>Release spinnaker:</strong> If possible, release halyard to drop spinnaker; prevents sail filling with water or wrapping around mast</li>
+                    <li><strong>Standard recovery:</strong> Swim to centreboard; right boat using standard capsize recovery technique</li>
+                    <li><strong>Check lines:</strong> Before sailing away, ensure spinnaker sheets and guys haven't fouled rudder or centreboard</li>
+                    <li><strong>Assess damage:</strong> Check all spinnaker gear for damage or tangles before attempting to rehoist</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Capsize While on Trapeze</h4>
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Critical actions:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Unhook immediately:</strong> As boat starts to capsize, unhook from trapeze wire before hitting water</li>
+                    <li><strong>Swim clear:</strong> Get clear of wires and rigging; check harness hasn't snagged</li>
+                    <li><strong>Primary risk:</strong> Windward capsize occurs when crew weight too far out in lull; boat flips toward crew</li>
+                    <li><strong>Prevention:</strong> Watch for lulls; come in immediately if boat heels to windward; maintain communication</li>
+                    <li><strong>Equipment check:</strong> After recovery, verify trapeze wire hasn't tangled; check harness function; inspect hook</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Inverted Capsize Considerations</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Spinnaker complications:</strong> Spinnaker may wrap around mast or fill with water; may need to release completely</li>
+                <li><strong>Trapeze wires:</strong> Check wires haven't tangled with shrouds during inversion</li>
+                <li><strong>Breaking suction:</strong> May be harder with spinnaker; ensure all hatches sealed to prevent water entry</li>
+            </ul>
+        </section>
+
+        <section class="content-block" id="boat-handling">
+            <h3 class="section-heading">Boat Handling & Manoeuvres</h3>
+            <p class="mb-4">Advanced boat handling skills specific to sailing with spinnakers and trapeze.</p>
+
+            <h4 class="sub-section-heading">Recovering from Broach</h4>
+
+            <!-- SVG Diagram: Broach Recovery -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-4xl">
+                    <svg viewBox="0 0 700 350" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-white">
+                        <defs>
+                            <marker id="arrow-broach" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#1e40af" />
+                            </marker>
+                        </defs>
+
+                        <!-- Wind arrow -->
+                        <line x1="50" y1="30" x2="50" y2="90" stroke="#1e40af" stroke-width="3" marker-end="url(#arrow-broach)" />
+                        <text x="65" y="65" font-size="14" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Stage 1: Developing Broach -->
+                        <text x="80" y="30" font-size="15" font-weight="bold" fill="#dc2626">PROBLEM: Developing Broach</text>
+
+                        <!-- Boat heeling excessively -->
+                        <ellipse cx="180" cy="150" rx="60" ry="20" fill="#8b7355" stroke="#6b5945" stroke-width="2" transform="rotate(-35 180 150)" />
+                        <line x1="180" y1="90" x2="170" y2="150" stroke="#374151" stroke-width="5" />
+
+                        <!-- Spinnaker pulling boat over -->
+                        <path d="M 170 95 Q 120 100 100 140" fill="#ef4444" opacity="0.7" stroke="#dc2626" stroke-width="2" />
+
+                        <!-- Weather helm indicator -->
+                        <path d="M 200 155 Q 210 140 210 125" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow-broach)" />
+                        <text x="215" y="135" font-size="11" fill="#dc2626">Turning upwind</text>
+                        <text x="215" y="148" font-size="11" fill="#dc2626">uncontrollably</text>
+
+                        <!-- Warning signs -->
+                        <rect x="80" y="190" width="200" height="60" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2" />
+                        <text x="90" y="210" font-size="12" font-weight="bold" fill="#dc2626">Warning Signs:</text>
+                        <text x="95" y="226" font-size="11" fill="#374151">• Excessive heel to leeward</text>
+                        <text x="95" y="240" font-size="11" fill="#374151">• Heavy weather helm</text>
+
+                        <!-- Stage 2: Recovery Actions -->
+                        <text x="420" y="30" font-size="15" font-weight="bold" fill="#10b981">SOLUTION: Recovery Actions</text>
+
+                        <!-- Boat recovering (flatter) -->
+                        <ellipse cx="500" cy="150" rx="60" ry="20" fill="#8b7355" stroke="#6b5945" stroke-width="2" transform="rotate(-10 500 150)" />
+                        <line x1="500" y1="100" x2="495" y2="150" stroke="#374151" stroke-width="5" />
+
+                        <!-- Spinnaker luffing (eased) -->
+                        <path d="M 495 105 Q 460 115 440 135" fill="#ef4444" opacity="0.4" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 3" />
+                        <text x="410" y="130" font-size="11" fill="#10b981">Spinnaker</text>
+                        <text x="415" y="143" font-size="11" fill="#10b981">eased</text>
+
+                        <!-- Bearing away -->
+                        <path d="M 520 155 Q 530 165 535 180" fill="none" stroke="#10b981" stroke-width="3" marker-end="url(#arrow-broach)" />
+                        <text x="540" y="175" font-size="11" fill="#10b981">Bearing away</text>
+
+                        <!-- Crew weight forward -->
+                        <ellipse cx="480" cy="160" rx="15" ry="8" fill="#3b82f6" opacity="0.5" />
+                        <text x="465" y="180" font-size="10" fill="#3b82f6">Crew fwd</text>
+
+                        <!-- Recovery steps -->
+                        <rect x="400" y="190" width="280" height="85" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="2" />
+                        <text x="410" y="210" font-size="12" font-weight="bold" fill="#059669">Recovery Steps (in order):</text>
+                        <text x="415" y="228" font-size="11" fill="#374151"><tspan font-weight="bold">1.</tspan> Ease spinnaker sheet — let it luff</text>
+                        <text x="415" y="243" font-size="11" fill="#374151"><tspan font-weight="bold">2.</tspan> Bear away — push tiller to leeward</text>
+                        <text x="415" y="258" font-size="11" fill="#374151"><tspan font-weight="bold">3.</tspan> Crew weight windward & forward</text>
+                        <text x="415" y="273" font-size="11" fill="#374151"><tspan font-weight="bold">4.</tspan> Once stable, gradually re-trim</text>
+
+                        <!-- Prevention tip -->
+                        <rect x="20" y="280" width="660" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                        <text x="30" y="300" font-size="13" font-weight="bold" fill="#92400e">Prevention is better than cure:</text>
+                        <text x="35" y="318" font-size="11" fill="#78350f">• Keep boat flat at all times • Watch for gusts (dark patches on water)</text>
+                        <text x="35" y="333" font-size="11" fill="#78350f">• Be ready to ease sheet preemptively in strong puffs • Maintain good communication between helm and crew</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Broach recovery: recognize warning signs (excessive heel, weather helm), ease spinnaker sheet immediately, bear away, move weight windward/forward.</figcaption>
+                </figure>
+            </div>
+
+            <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Recovery steps:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Recognize signs:</strong> Excessive heel to leeward, heavy weather helm, boat turning uncontrollably upwind</li>
+                    <li><strong>Ease spinnaker sheet:</strong> Let spinnaker luff completely (primary depower action)</li>
+                    <li><strong>Bear away:</strong> Helm pushes tiller firmly to leeward to turn bow downwind and reduce heel</li>
+                    <li><strong>Crew weight:</strong> Move weight to windward and forward to help flatten boat</li>
+                    <li><strong>Re-establish control:</strong> Once upright and on course, gradually re-trim spinnaker sheet</li>
+                    <li><strong>Prevention:</strong> Keep boat flat; watch for gusts; ease sheet preemptively in strong puffs</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Manoeuvres with Trapeze</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Tacking:</strong> Come in before tack; unhook; cross boat; hook new side; go out on new tack</li>
+                <li><strong>Gybing:</strong> Option to stay on wire (light winds) or come in, cross, and go back out (stronger winds)</li>
+                <li><strong>Adjusting height:</strong> Come in during lulls; extend more in gusts; maintain communication with helm</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Course Selection with Asymmetric</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Best VMG angles:</strong> Asymmetric performs best on reaches (90-140° to true wind)</li>
+                <li><strong>"Heat up" mode:</strong> Sail higher (closer to wind), sheet harder, maximize boat speed</li>
+                <li><strong>"Soak" mode:</strong> Sail lower (deeper angle), ease sheet more, maximize distance made downwind</li>
+                <li><strong>Avoid dead downwind:</strong> Faster to gybe downwind on reaches than sail directly downwind</li>
+            </ul>
+        </section>
+
+        <section class="content-block" id="weather">
+            <h3 class="section-heading">Weather</h3>
+            <p class="mb-4">Understanding weather is crucial for safe spinnaker and trapeze sailing, as these techniques are more weather-dependent than basic sailing.</p>
+
+            <h4 class="sub-section-heading">Wind Considerations</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Wind strength:</strong> Know your limits; spinnakers and trapeze amplify the effects of strong winds</li>
+                <li><strong>Wind shifts:</strong> Anticipate shifts when planning spinnaker gybes; crucial for maintaining control</li>
+                <li><strong>Gusts and lulls:</strong> More critical with spinnaker (broach risk) and trapeze (windward capsize risk)</li>
+                <li><strong>Sea breeze effects:</strong> Typically builds through day; plan sessions for appropriate strength</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Forecast Interpretation</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Check multiple sources:</strong> Marine forecast, local conditions, visual observations</li>
+                <li><strong>Wind speed range:</strong> Understand "10-15 knots" means gusts could reach 18-20 knots</li>
+                <li><strong>Timing:</strong> Best conditions often morning (stable) or specific times for reliable sea breeze</li>
+                <li><strong>Trend awareness:</strong> Is wind building or dropping? Plan accordingly</li>
+            </ul>
+
+            <h4 class="sub-section-heading">On-Water Weather Signs</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Dark patches on water:</strong> Indicate approaching gusts; prepare to ease sheets</li>
+                <li><strong>Cloud development:</strong> Building cumulus can bring increased wind and squalls</li>
+                <li><strong>Wind direction changes:</strong> Watch flags, wind indicators; adjust course and trim</li>
+                <li><strong>When to come in:</strong> If conditions exceed your skill level, head for shore; don't push limits</li>
+            </ul>
+        </section>
+
+        <section class="content-block" id="kites">
+            <h3 class="section-heading">Kites</h3>
+            <p class="mb-4">Comprehensive guide to symmetric and asymmetric spinnakers ("kites").</p>
+
+            <h4 class="sub-section-heading">Symmetric Spinnaker</h4>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Name and correctly attach all parts of the symmetric spinnaker system.</p>
+
+            <!-- SVG Diagram: Symmetric Spinnaker Parts -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-3xl">
+                    <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-sky-50 to-blue-100">
+                        <defs>
+                            <marker id="arrow-kite" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#1e40af" />
+                            </marker>
+                        </defs>
+
+                        <!-- Wind arrow -->
+                        <line x1="50" y1="40" x2="50" y2="100" stroke="#1e40af" stroke-width="3" marker-end="url(#arrow-kite)" />
+                        <text x="65" y="75" font-size="14" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Mast -->
+                        <line x1="300" y1="100" x2="300" y2="400" stroke="#374151" stroke-width="6" />
+                        <ellipse cx="300" cy="400" rx="25" ry="8" fill="#6b7280" />
+
+                        <!-- Spinnaker sail shape -->
+                        <path d="M 300 120 Q 200 200 150 280 L 300 320 L 450 280 Q 400 200 300 120" fill="#ef4444" opacity="0.7" stroke="#dc2626" stroke-width="2" />
+
+                        <!-- Head (top) -->
+                        <circle cx="300" cy="120" r="6" fill="#1e40af" stroke="#1e3a8a" stroke-width="2" />
+                        <text x="245" y="105" font-size="13" font-weight="bold" fill="#1e40af">HEAD</text>
+
+                        <!-- Halyard -->
+                        <line x1="300" y1="120" x2="300" y2="100" stroke="#6b7280" stroke-width="2" stroke-dasharray="4 2" />
+                        <text x="310" y="110" font-size="12" fill="#374151">Halyard</text>
+
+                        <!-- Tack (pole end - port) -->
+                        <circle cx="150" cy="280" r="6" fill="#f59e0b" stroke="#d97706" stroke-width="2" />
+                        <text x="90" y="270" font-size="13" font-weight="bold" fill="#f59e0b">TACK</text>
+                        <text x="85" y="285" font-size="11" fill="#f59e0b">(pole end)</text>
+
+                        <!-- Clew (sheet end - starboard) -->
+                        <circle cx="450" cy="280" r="6" fill="#10b981" stroke="#059669" stroke-width="2" />
+                        <text x="465" y="275" font-size="13" font-weight="bold" fill="#10b981">CLEW</text>
+                        <text x="460" y="290" font-size="11" fill="#10b981">(sheet end)</text>
+
+                        <!-- Pole -->
+                        <line x1="280" y1="270" x2="150" y2="280" stroke="#8b4513" stroke-width="8" />
+                        <circle cx="280" cy="270" r="5" fill="#6b7280" />
+                        <text x="190" y="260" font-size="13" font-weight="bold" fill="#8b4513">POLE</text>
+
+                        <!-- Topping lift (uphaul) -->
+                        <line x1="280" y1="270" x2="300" y2="200" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5 3" />
+                        <text x="270" y="230" font-size="11" fill="#3b82f6">Topping</text>
+                        <text x="275" y="243" font-size="11" fill="#3b82f6">lift</text>
+
+                        <!-- Downhaul -->
+                        <line x1="280" y1="270" x2="290" y2="320" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 3" />
+                        <text x="260" y="310" font-size="11" fill="#dc2626">Downhaul</text>
+
+                        <!-- Guy (to tack) -->
+                        <path d="M 150 280 Q 120 350 100 420" fill="none" stroke="#f59e0b" stroke-width="3" />
+                        <text x="105" y="360" font-size="12" font-weight="bold" fill="#f59e0b">GUY</text>
+
+                        <!-- Sheet (from clew) -->
+                        <path d="M 450 280 Q 480 350 500 420" fill="none" stroke="#10b981" stroke-width="3" />
+                        <text x="480" y="360" font-size="12" font-weight="bold" fill="#10b981">SHEET</text>
+
+                        <!-- Crew positions -->
+                        <ellipse cx="100" cy="440" rx="35" ry="20" fill="#6b7280" opacity="0.3" />
+                        <text x="75" y="445" font-size="11" fill="#374151">Crew</text>
+                        <ellipse cx="500" cy="440" rx="35" ry="20" fill="#6b7280" opacity="0.3" />
+                        <text x="478" y="445" font-size="11" fill="#374151">Crew</text>
+
+                        <!-- Labels box -->
+                        <rect x="20" y="460" width="560" height="35" rx="6" fill="#f3f4f6" stroke="#d1d5db" />
+                        <text x="30" y="478" font-size="11" fill="#374151"><tspan font-weight="bold">Key:</tspan> Guy controls tack (pole end) | Sheet controls clew (free corner) | Topping lift raises pole | Downhaul lowers pole</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Symmetric spinnaker parts: Head attached to halyard, tack on pole (controlled by guy), clew flying free (controlled by sheet). Pole height adjusted by topping lift and downhaul.</figcaption>
+                </figure>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Step-by-step process:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Identify the three corners:</strong> Head (top), tack (pole end), clew (sheet end).</li>
+                    <li><strong>Attach the halyard:</strong> Connect halyard to head of spinnaker; ensure it runs outside shrouds and forestay.</li>
+                    <li><strong>Rig the pole:</strong> Attach pole to mast fitting (jaw or piston-style fitting). Check topping lift (uphaul) and downhaul are connected.</li>
+                    <li><strong>Run guy and sheet:</strong> Guy attaches to tack (pole end); sheet attaches to clew (free-flying corner). Both must run outside shrouds and jib sheets.</li>
+                    <li><strong>Pack the spinnaker:</strong> Fold or stuff into chute/bag with head at top; secure three corners with elastic bands or ties to prevent premature filling.</li>
+                    <li><strong>Final check:</strong> Trace each line from sail to crew position; confirm no twists, tangles or fouls around forestay or shrouds.</li>
+                </ol>
+            </div>
+
+            <h5 class="font-bold text-lg mt-4 mb-2">Hoist, trim, gybe and drop a symmetric spinnaker</h5>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Execute smooth, controlled hoists, gybes and drops with correct crew coordination.</p>
+
+            <div class="bg-green-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Hoisting procedure:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Pre-hoist checks:</strong> Bear away to broad reach; confirm pole height roughly horizontal; sheet and guy eased but ready.</li>
+                    <li><strong>Hoist:</strong> Crew pulls halyard smoothly and continuously; helm keeps boat steady on course.</li>
+                    <li><strong>Pole on:</strong> As sail reaches masthead, clip pole onto guy (tack); pull guy to bring pole back and square to wind.</li>
+                    <li><strong>Trim:</strong> Ease sheet until luff just starts to curl; adjust guy to keep pole perpendicular to apparent wind; set pole height so both clews are level.</li>
+                </ol>
+            </div>
+
+            <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Gybing procedure (end-for-end method):</p>
+
+                <!-- SVG Diagram: Symmetric Spinnaker Gybe Sequence -->
+                <div class="flex justify-center my-4">
+                    <figure class="w-full max-w-full">
+                        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-white">
+                            <defs>
+                                <marker id="arrow-gybe" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#1e40af" />
+                                </marker>
+                            </defs>
+
+                            <!-- Stage 1: Before Gybe -->
+                            <rect x="10" y="10" width="180" height="180" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="55" y="30" font-size="13" font-weight="bold" fill="#92400e">1. BEFORE</text>
+
+                            <line x1="100" y1="50" x2="100" y2="60" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-gybe)" />
+                            <text x="105" y="58" font-size="9" fill="#1e40af">Wind</text>
+
+                            <ellipse cx="100" cy="130" rx="40" ry="12" fill="#8b7355" />
+                            <line x1="100" y1="80" x2="100" y2="130" stroke="#374151" stroke-width="4" />
+                            <path d="M 100 85 Q 70 95 60 120" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                            <line x1="95" y1="110" x2="60" y2="120" stroke="#8b4513" stroke-width="5" />
+                            <text x="45" y="145" font-size="9" fill="#8b4513">Pole port</text>
+                            <text x="20" y="165" font-size="9" fill="#374151">Spinnaker</text>
+                            <text x="20" y="175" font-size="9" fill="#374151">centered</text>
+
+                            <!-- Stage 2: Unclip Old Side -->
+                            <rect x="210" y="10" width="180" height="180" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="235" y="30" font-size="13" font-weight="bold" fill="#92400e">2. UNCLIP</text>
+
+                            <line x1="300" y1="50" x2="300" y2="60" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-gybe)" />
+
+                            <ellipse cx="300" cy="130" rx="40" ry="12" fill="#8b7355" />
+                            <line x1="300" y1="80" x2="300" y2="130" stroke="#374151" stroke-width="4" />
+                            <path d="M 300 85 Q 280 95 270 115" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                            <line x1="295" y1="100" x2="275" y2="108" stroke="#8b4513" stroke-width="5" />
+                            <circle cx="275" cy="108" r="4" fill="#dc2626" />
+                            <text x="230" y="125" font-size="9" fill="#dc2626">Release</text>
+                            <text x="230" y="135" font-size="9" fill="#dc2626">pole</text>
+                            <text x="220" y="165" font-size="9" fill="#374151">Crew holds</text>
+                            <text x="220" y="175" font-size="9" fill="#374151">pole at mast</text>
+
+                            <!-- Stage 3: Gybe Mainsail -->
+                            <rect x="410" y="10" width="180" height="180" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                            <text x="440" y="30" font-size="13" font-weight="bold" fill="#92400e">3. GYBE MAIN</text>
+
+                            <line x1="500" y1="50" x2="500" y2="60" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-gybe)" />
+
+                            <ellipse cx="500" cy="130" rx="40" ry="12" fill="#8b7355" />
+                            <line x1="500" y1="80" x2="500" y2="130" stroke="#374151" stroke-width="4" />
+                            <path d="M 500 90 L 485 100" stroke="#6b7280" stroke-width="3" />
+                            <text x="485" y="95" font-size="9" fill="#6b7280">Boom</text>
+                            <path d="M 500 85 Q 510 95 515 110" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                            <line x1="495" y1="100" x2="480" y2="108" stroke="#8b4513" stroke-width="5" />
+                            <text x="435" y="165" font-size="9" fill="#374151">"Gybe-ho!"</text>
+                            <text x="420" y="175" font-size="9" fill="#374151">Boom crosses</text>
+
+                            <!-- Stage 4: Clip New Side -->
+                            <rect x="610" y="10" width="180" height="180" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="2" />
+                            <text x="640" y="30" font-size="13" font-weight="bold" fill="#059669">4. CLIP NEW</text>
+
+                            <line x1="700" y1="50" x2="700" y2="60" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-gybe)" />
+
+                            <ellipse cx="700" cy="130" rx="40" ry="12" fill="#8b7355" />
+                            <line x1="700" y1="80" x2="700" y2="130" stroke="#374151" stroke-width="4" />
+                            <path d="M 700 85 Q 720 95 730 115" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                            <line x1="705" y1="110" x2="730" y2="120" stroke="#8b4513" stroke-width="5" />
+                            <circle cx="730" cy="120" r="4" fill="#10b981" />
+                            <text x="735" y="125" font-size="9" fill="#10b981">Clip new</text>
+                            <text x="735" y="135" font-size="9" fill="#10b981">guy</text>
+                            <text x="640" y="165" font-size="9" fill="#059669">Pole now on</text>
+                            <text x="640" y="175" font-size="9" fill="#059669">starboard</text>
+
+                            <!-- Instructions -->
+                            <rect x="20" y="205" width="860" height="65" rx="6" fill="#f3f4f6" stroke="#d1d5db" />
+                            <text x="30" y="223" font-size="12" font-weight="bold" fill="#111827">End-for-End Gybe Sequence:</text>
+                            <text x="35" y="239" font-size="10" fill="#374151">1. Bear away, ease guy & sheet so spinnaker is forward and centered</text>
+                            <text x="35" y="252" font-size="10" fill="#374151">2. Crew unclips pole from old guy (now becoming sheet)</text>
+                            <text x="35" y="265" font-size="10" fill="#374151">3. Helm gybes mainsail ("Gybe-ho!") — boom crosses</text>
+                            <text x="450" y="239" font-size="10" fill="#374151">4. Crew swings pole to new side, clips onto new guy (was old sheet)</text>
+                            <text x="450" y="252" font-size="10" fill="#374151">5. Trim new guy to square pole; trim new sheet for luff curl</text>
+                            <text x="450" y="265" font-size="10" fill="#374151">6. Adjust pole height if needed; resume course</text>
+                        </svg>
+                        <figcaption class="text-center text-gray-600 mt-2 text-sm">Symmetric spinnaker end-for-end gybe: unclip pole from old guy, gybe mainsail, swing pole to new side, clip new guy, trim both sides.</figcaption>
+                    </figure>
+                </div>
+
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Prepare:</strong> Head downwind; ease both guy and sheet so spinnaker is forward and centered.</li>
+                    <li><strong>Release old side:</strong> Crew unclips pole from old guy (now becoming the sheet).</li>
+                    <li><strong>Gybe mainsail:</strong> Helm brings boom across; communicate "Gybe-ho!"</li>
+                    <li><strong>Transfer pole:</strong> Crew swings pole to new side and clips onto new guy (which was the old sheet).</li>
+                    <li><strong>Trim new side:</strong> Pull new guy to square pole; trim new sheet for optimal luff curl; adjust pole height if needed.</li>
+                    <li><strong>Common error recovery:</strong> If spinnaker collapses or wraps, ease sheets completely, head up slightly to fill, then re-trim.</li>
+                </ol>
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Dropping procedure:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Approach:</strong> Bear away to dead run; over-ease guy to bring pole forward and spinnaker behind mainsail (blanketed).</li>
+                    <li><strong>Release pole:</strong> Crew unclips pole from guy; stow pole.</li>
+                    <li><strong>Drop:</strong> Crew gathers clew (sheet corner) and pulls down into boat while easing halyard continuously.</li>
+                    <li><strong>Stow:</strong> Gather spinnaker into bag/chute with head last; keep three corners organized to avoid twists for next hoist.</li>
+                </ol>
+            </div>
+
+            <h5 class="font-bold text-lg mt-4 mb-2">Adjust pole height and angle for optimal trim</h5>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Set pole so both clews are level and luff shows even curl top to bottom.</p>
+
+            <!-- SVG Diagram: Pole Height & Angle Adjustments -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-4xl">
+                    <svg viewBox="0 0 750 400" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-white">
+                        <defs>
+                            <marker id="arrow-trim" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#1e40af" />
+                            </marker>
+                        </defs>
+
+                        <!-- Panel 1: Correct Trim -->
+                        <rect x="10" y="10" width="230" height="180" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="2" />
+                        <text x="80" y="30" font-size="14" font-weight="bold" fill="#059669">CORRECT</text>
+
+                        <!-- Mast -->
+                        <line x1="125" y1="50" x2="125" y2="170" stroke="#374151" stroke-width="4" />
+                        <!-- Spinnaker (correct) -->
+                        <path d="M 125 55 Q 90 90 70 130 L 125 150 L 180 130 Q 160 90 125 55" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                        <!-- Pole horizontal -->
+                        <line x1="115" y1="120" x2="70" y2="130" stroke="#8b4513" stroke-width="5" />
+                        <!-- Luff curl indicators (even) -->
+                        <path d="M 90 75 Q 85 75 85 78" fill="none" stroke="#10b981" stroke-width="2" />
+                        <path d="M 80 110 Q 75 110 75 113" fill="none" stroke="#10b981" stroke-width="2" />
+                        <text x="20" y="195" font-size="11" fill="#059669">✓ Both clews level</text>
+                        <text x="20" y="208" font-size="11" fill="#059669">✓ Even luff curl</text>
+
+                        <!-- Panel 2: Pole Too High -->
+                        <rect x="260" y="10" width="230" height="180" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2" />
+                        <text x="315" y="30" font-size="14" font-weight="bold" fill="#dc2626">POLE TOO HIGH</text>
+
+                        <!-- Mast -->
+                        <line x1="375" y1="50" x2="375" y2="170" stroke="#374151" stroke-width="4" />
+                        <!-- Spinnaker (clew high) -->
+                        <path d="M 375 55 Q 340 90 320 120 L 375 150 L 430 140 Q 410 90 375 55" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                        <!-- Pole angled up -->
+                        <line x1="365" y1="105" x2="320" y2="120" stroke="#8b4513" stroke-width="5" />
+                        <!-- Luff curl only at bottom -->
+                        <path d="M 330 110 Q 325 110 325 113" fill="none" stroke="#dc2626" stroke-width="2" />
+                        <text x="270" y="195" font-size="11" fill="#dc2626">✗ Clew higher than tack</text>
+                        <text x="270" y="208" font-size="11" fill="#dc2626">✗ Bottom luff curls first</text>
+
+                        <!-- Panel 3: Pole Too Far Forward -->
+                        <rect x="510" y="10" width="230" height="180" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2" />
+                        <text x="540" y="30" font-size="14" font-weight="bold" fill="#dc2626">POLE TOO FORWARD</text>
+
+                        <!-- Mast -->
+                        <line x1="625" y1="50" x2="625" y2="170" stroke="#374151" stroke-width="4" />
+                        <!-- Spinnaker (collapsed top) -->
+                        <path d="M 625 55 Q 590 85 570 125 L 625 150 L 680 125 Q 660 85 625 55" fill="#ef4444" opacity="0.6" stroke="#dc2626" stroke-width="1" />
+                        <!-- Pole forward -->
+                        <line x1="615" y1="120" x2="575" y2="110" stroke="#8b4513" stroke-width="5" />
+                        <!-- Luff curl at top -->
+                        <path d="M 595 70 Q 590 70 590 73" fill="none" stroke="#dc2626" stroke-width="2" />
+                        <text x="520" y="195" font-size="11" fill="#dc2626">✗ Top luff curls first</text>
+                        <text x="520" y="208" font-size="11" fill="#dc2626">→ Pull guy (pole aft)</text>
+
+                        <!-- Wind arrows -->
+                        <line x1="125" y1="220" x2="125" y2="260" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-trim)" />
+                        <line x1="375" y1="220" x2="375" y2="260" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-trim)" />
+                        <line x1="625" y1="220" x2="625" y2="260" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-trim)" />
+
+                        <!-- Adjustment guide -->
+                        <rect x="20" y="280" width="710" height="110" rx="8" fill="#f3f4f6" stroke="#d1d5db" />
+                        <text x="30" y="300" font-size="13" font-weight="bold" fill="#111827">Adjustment Guide:</text>
+
+                        <text x="40" y="320" font-size="12" fill="#374151"><tspan font-weight="bold">Pole Height:</tspan> Use topping lift (raise) and downhaul (lower)</text>
+                        <text x="50" y="335" font-size="11" fill="#374151">• Goal: Tack and clew at same height</text>
+                        <text x="50" y="348" font-size="11" fill="#374151">• In strong wind: Lower slightly to open leech and depower</text>
+
+                        <text x="390" y="320" font-size="12" fill="#374151"><tspan font-weight="bold">Pole Angle:</tspan> Adjust guy tension</text>
+                        <text x="400" y="335" font-size="11" fill="#374151">• Pole ≈ 90° to apparent wind</text>
+                        <text x="400" y="348" font-size="11" fill="#374151">• Top curls → ease guy (pole forward)</text>
+                        <text x="400" y="361" font-size="11" fill="#374151">• Bottom curls → pull guy (pole aft)</text>
+
+                        <text x="40" y="375" font-size="12" font-weight="bold" fill="#059669">✓ Perfect trim: Even, gentle luff curl from head to tack</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Pole height and angle adjustments: aim for both clews level and even luff curl. Adjust topping lift/downhaul for height; guy tension for angle.</figcaption>
+                </figure>
+            </div>
+
+            <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Adjustment technique:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Pole height:</strong> Use topping lift (raise) and downhaul (lower). Goal: tack and clew at same height. In stronger winds, lower slightly to open leech.</li>
+                    <li><strong>Pole angle:</strong> Adjust guy tension. Pole should be roughly square (90°) to apparent wind. If luff curls more at top, pull guy (pole aft); if bottom curls first, ease guy (pole forward).</li>
+                    <li><strong>Check:</strong> Spinnaker luff should show an even, gentle curl from head to tack when trimmed correctly.</li>
+                </ul>
+            </div>
+
+            <h5 class="font-bold text-lg mt-4 mb-2">Recover from near-broach situations</h5>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Recognize early warning signs and take corrective action to prevent loss of control.</p>
+            <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Recovery steps:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Recognize signs:</strong> Excessive heel to leeward, helm feels heavy weather helm, boat turning uncontrollably upwind.</li>
+                    <li><strong>Ease spinnaker sheet:</strong> Let spinnaker luff completely (this is the primary depower action).</li>
+                    <li><strong>Bear away:</strong> Helm pushes tiller firmly to leeward to turn bow downwind and reduce heel.</li>
+                    <li><strong>Crew weight:</strong> Move weight to windward and forward to help flatten boat.</li>
+                    <li><strong>Re-establish control:</strong> Once upright and on course, gradually re-trim spinnaker sheet.</li>
+                    <li><strong>Prevention:</strong> Keep boat flat, watch for gusts, be ready to ease sheet preemptively in strong puffs.</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Asymmetric Spinnaker</h4>
+
+            <h5 class="font-bold text-lg mt-4 mb-2">Identify and rig asymmetric spinnaker equipment</h5>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Set up bowsprit/prod, continuous sheets, and tack line correctly.</p>
+
+            <!-- SVG Diagram: Asymmetric Spinnaker Setup -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-3xl">
+                    <svg viewBox="0 0 600 450" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-sky-50 to-blue-100">
+                        <defs>
+                            <marker id="arrow-asym" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#1e40af" />
+                            </marker>
+                        </defs>
+
+                        <!-- Wind arrow -->
+                        <line x1="50" y1="30" x2="50" y2="90" stroke="#1e40af" stroke-width="3" marker-end="url(#arrow-asym)" />
+                        <text x="65" y="65" font-size="14" font-weight="bold" fill="#1e40af">WIND</text>
+
+                        <!-- Boat hull (simplified) -->
+                        <ellipse cx="300" cy="350" rx="120" ry="30" fill="#8b7355" stroke="#6b5945" stroke-width="2" />
+
+                        <!-- Mast -->
+                        <line x1="300" y1="120" x2="300" y2="350" stroke="#374151" stroke-width="6" />
+
+                        <!-- Bowsprit extended forward -->
+                        <line x1="300" y1="350" x2="200" y2="320" stroke="#8b4513" stroke-width="7" />
+                        <circle cx="200" cy="320" r="5" fill="#6b7280" />
+                        <text x="220" y="305" font-size="13" font-weight="bold" fill="#8b4513">BOWSPRIT</text>
+
+                        <!-- Asymmetric spinnaker shape -->
+                        <path d="M 300 140 Q 220 200 200 280 L 300 300 L 480 240 Q 420 180 300 140" fill="#3b82f6" opacity="0.7" stroke="#1e40af" stroke-width="2" />
+
+                        <!-- Head -->
+                        <circle cx="300" cy="140" r="6" fill="#1e40af" stroke="#1e3a8a" stroke-width="2" />
+                        <text x="250" y="125" font-size="13" font-weight="bold" fill="#1e40af">HEAD</text>
+
+                        <!-- Halyard -->
+                        <line x1="300" y1="140" x2="300" y2="120" stroke="#6b7280" stroke-width="2" stroke-dasharray="4 2" />
+                        <text x="310" y="130" font-size="12" fill="#374151">Halyard</text>
+
+                        <!-- Tack (on bowsprit) -->
+                        <circle cx="200" cy="280" r="6" fill="#f59e0b" stroke="#d97706" stroke-width="2" />
+                        <text x="140" y="270" font-size="13" font-weight="bold" fill="#f59e0b">TACK</text>
+                        <text x="130" y="285" font-size="11" fill="#f59e0b">(on bowsprit)</text>
+
+                        <!-- Tack line -->
+                        <line x1="200" y1="280" x2="200" y2="320" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3" />
+                        <text x="165" y="305" font-size="11" fill="#f59e0b">Tack line</text>
+
+                        <!-- Port clew -->
+                        <circle cx="240" cy="260" r="5" fill="#10b981" stroke="#059669" stroke-width="2" />
+                        <text x="195" y="250" font-size="12" font-weight="bold" fill="#10b981">Port CLEW</text>
+
+                        <!-- Starboard clew -->
+                        <circle cx="480" cy="240" r="5" fill="#10b981" stroke="#059669" stroke-width="2" />
+                        <text x="490" y="235" font-size="12" font-weight="bold" fill="#10b981">Stbd CLEW</text>
+
+                        <!-- Continuous sheet (port side - active) -->
+                        <path d="M 240 260 Q 250 290 260 340" fill="none" stroke="#10b981" stroke-width="3" />
+                        <text x="265" y="310" font-size="12" font-weight="bold" fill="#10b981">SHEET</text>
+                        <text x="265" y="323" font-size="11" fill="#10b981">(active)</text>
+
+                        <!-- Continuous sheet (starboard side - lazy) -->
+                        <path d="M 480 240 Q 490 280 500 340" fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="6 4" />
+                        <text x="505" y="300" font-size="11" fill="#6b7280">Lazy sheet</text>
+
+                        <!-- Crew positions -->
+                        <ellipse cx="270" cy="365" rx="30" ry="15" fill="#6b7280" opacity="0.4" />
+                        <text x="255" y="370" font-size="10" fill="#374151">Crew</text>
+                        <ellipse cx="500" cy="365" rx="30" ry="15" fill="#6b7280" opacity="0.4" />
+                        <text x="485" y="370" font-size="10" fill="#374151">Crew</text>
+
+                        <!-- Labels box -->
+                        <rect x="20" y="390" width="560" height="50" rx="6" fill="#f3f4f6" stroke="#d1d5db" />
+                        <text x="30" y="408" font-size="11" fill="#374151"><tspan font-weight="bold">Key differences from symmetric:</tspan></text>
+                        <text x="30" y="423" font-size="11" fill="#374151">• Tack fixed to bowsprit (not on pole) • Continuous sheets run through both clews</text>
+                        <text x="30" y="436" font-size="11" fill="#374151">• Active sheet = windward side • No pole to move during gybe • Best on reaches (90-140° TWA)</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Asymmetric spinnaker: tack fixed to bowsprit, continuous sheet through both clews, head on halyard. No pole required; sheet-to-sheet gybes.</figcaption>
+                </figure>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Step-by-step process:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Identify corners:</strong> Head (top, attached to halyard), tack (forward point, to bowsprit), two clews (port and starboard sheet corners).</li>
+                    <li><strong>Extend bowsprit:</strong> Push out or secure bowsprit/prod; attach tack line to end fitting.</li>
+                    <li><strong>Attach tack:</strong> Connect tack of spinnaker to tack line on bowsprit end.</li>
+                    <li><strong>Rig continuous sheets:</strong> Run single line through both clews, outside all rigging; ensure each end is accessible to crew on each side.</li>
+                    <li><strong>Halyard attachment:</strong> Connect halyard to head; run outside all rigging.</li>
+                    <li><strong>Pack sail:</strong> Stuff into chute or bag with head accessible; tack secured to bowsprit ready to deploy.</li>
+                </ol>
+            </div>
+
+            <h5 class="font-bold text-lg mt-4 mb-2">Hoist, trim, gybe and drop an asymmetric spinnaker</h5>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Perform sheet-to-sheet gybes and controlled takedowns (windward, leeward, or letterbox drop).</p>
+
+            <div class="bg-green-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Hoisting procedure:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Course:</strong> Bear away to reach or broad reach (asymmetric works best at 90-140° to true wind).</li>
+                    <li><strong>Hoist:</strong> Pull halyard smoothly; sail deploys forward and fills as it rises.</li>
+                    <li><strong>Trim:</strong> Pull active sheet (windward side) until luff just begins to curl; keep tack line tight.</li>
+                </ol>
+            </div>
+
+            <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Gybing procedure (sheet-to-sheet):</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Approach:</strong> Bear away toward dead downwind; ease active sheet slightly so sail moves forward.</li>
+                    <li><strong>Gybe mainsail:</strong> Helm brings boom across; call "Gybe-ho!"</li>
+                    <li><strong>Sheet transfer:</strong> As boom crosses, spinnaker naturally moves to new leeward side; crew releases old sheet and trims new sheet (what was lazy sheet becomes active).</li>
+                    <li><strong>Shape:</strong> Re-trim for optimal luff curl on new gybe.</li>
+                    <li><strong>No pole movement needed</strong> — the asymmetric flies from fixed bowsprit and sheets to each side.</li>
+                </ol>
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Dropping procedures:</p>
+                <p class="font-semibold">Windward drop:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2 mb-4">
+                    <li>Bear away; ease sheet fully so sail is flying free to leeward.</li>
+                    <li>Crew gathers windward (lazy) clew first, pulling sail around forestay to windward side of boat.</li>
+                    <li>Ease halyard as crew retrieves sail into cockpit; mainsail keeps spinnaker blanketed.</li>
+                </ol>
+                <p class="font-semibold">Leeward drop:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2 mb-4">
+                    <li>Head up to close reach; sheet spinnaker in hard.</li>
+                    <li>Crew releases halyard; gather leeward clew (active sheet side) and pull down under boom.</li>
+                    <li>Pull entire sail down to leeward into cockpit.</li>
+                </ol>
+                <p class="font-semibold">Letterbox drop:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li>Bear away to run; spinnaker flies forward of mainsail.</li>
+                    <li>Release halyard slowly; crew gathers foot of sail and pulls down into the gap ("letterbox") between boom and mainsail.</li>
+                    <li>Retrieve entire sail through this gap into cockpit; prevents sail going in water.</li>
+                </ol>
+            </div>
+
+            <h5 class="font-bold text-lg mt-4 mb-2">Select optimal courses and recognize mode changes</h5>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Understand when to sail high and fast ("heat up" mode) vs low and deep ("soak" mode).</p>
+            <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Course selection guide:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Best VMG angles:</strong> Asymmetric performs best on reaches (90-140° to true wind). Avoid dead downwind — you'll be faster gybing downwind on reaches.</li>
+                    <li><strong>"Heat up" mode:</strong> Sail higher (closer to wind), sheet harder, maximize boat speed. Use in moderate to strong wind or when you need speed.</li>
+                    <li><strong>"Soak" mode:</strong> Sail lower (deeper angle), ease sheet more, maximize distance made downwind. Use in light winds or when the next mark is dead downwind.</li>
+                    <li><strong>Decision factors:</strong> Wind strength, sea state, point-to-point course requirements, boat handling confidence.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-block" id="rigging">
+            <h3 class="section-heading">Rigging</h3>
+            <p class="mb-4">Proper rigging of spinnaker and trapeze equipment is essential for safe and effective sailing.</p>
+
+            <h4 class="sub-section-heading">Initial Boat Setup for Kites & Wires</h4>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Setup considerations for advanced sailing:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Mast rake:</strong> Slightly more rake (mast tilted aft) can help with downwind stability when flying spinnaker; reduces weather helm</li>
+                    <li><strong>Shroud tension:</strong> Firm enough to support trapeze loading; check for excessive mast bend or wobble</li>
+                    <li><strong>Jib/foresail setup:</strong> If sailing with spinnaker and jib simultaneously, ensure jib sheets don't interfere with spinnaker sheets</li>
+                    <li><strong>Centreboard position:</strong> Partially raised when running with spinnaker (reduces wetted surface); fully down when reaching or trapezing upwind</li>
+                    <li><strong>Weight distribution:</strong> With trapeze, crew weight is further out and higher; may need to adjust helm position slightly aft for trim</li>
+                    <li><strong>Control line organization:</strong> Ensure all spinnaker sheets, guys, and trapeze adjusters are clearly labeled and run to accessible positions</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Spinnaker Equipment Care</h4>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Post-sailing care procedure:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Rinse with fresh water:</strong> Immediately after sailing in saltwater; hang or lay out to drain</li>
+                    <li><strong>Check for damage:</strong> Inspect all seams, corners, and fabric for tears, chafe, or wear</li>
+                    <li><strong>Dry completely:</strong> Never pack a wet spinnaker (causes mildew and rot); hang in well-ventilated area until fully dry</li>
+                    <li><strong>Pack systematically:</strong>
+                        <ul class="list-disc list-inside ml-6 mt-2">
+                            <li><strong>For bag:</strong> Lay flat; find center seam; accordion-fold side to side, keeping three corners separate and identifiable. Stuff into bag with head accessible for halyard attachment</li>
+                            <li><strong>For chute:</strong> Feed head first into chute, followed by body, with tack and clew last. Use rubber bands or turtle to secure corners and prevent premature deployment</li>
+                        </ul>
+                    </li>
+                    <li><strong>Store in dry location:</strong> Keep in sail bag or chute; avoid prolonged UV exposure and damp environments</li>
+                    <li><strong>Periodic inspection:</strong> Before each season, re-inspect all seams and repair any minor damage before it worsens</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Line Management</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Check all lines:</strong> Inspect sheets, guys, halyards for wear, fraying, or damage</li>
+                <li><strong>Proper routing:</strong> Ensure all lines run outside shrouds and forestay; check for chafe points</li>
+                <li><strong>Knots and attachments:</strong> Verify all knots are secure; check shackles, clips, and fittings</li>
+                <li><strong>Coil and stow:</strong> After sailing, coil all lines neatly to prevent tangles for next use</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Pole and Bowsprit Maintenance</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Symmetric pole:</strong> Check end fittings for wear; ensure topping lift and downhaul are functioning; rinse after saltwater use</li>
+                <li><strong>Asymmetric bowsprit:</strong> Check extension/retraction mechanism; verify tack attachment point; ensure secure mounting</li>
+                <li><strong>Storage:</strong> Store poles/bowsprits protected from damage; avoid leaving under tension when not in use</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Trapeze System Maintenance</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Wire inspection:</strong> Check for broken strands, kinks, or corrosion; replace if any damage found</li>
+                <li><strong>Rings and handles:</strong> Inspect for wear, cracks, or sharp edges; ensure secure attachment to wire</li>
+                <li><strong>Shock cord:</strong> Check elastic is providing proper tension; replace if stretched or perished</li>
+                <li><strong>Harness care:</strong> Rinse with fresh water; check stitching and webbing; store dry; inspect hook regularly</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Troubleshooting Common Problems</h4>
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Spinnaker won't fill or keeps collapsing:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Cause:</strong> Sailing too deep (dead downwind with asymmetric), sheets too tight, or twist in spinnaker</li>
+                    <li><strong>Solution:</strong> Head up 10-20° to better angle; ease sheets; if twisted, drop and check rigging</li>
+                </ul>
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Spinnaker wraps around forestay ("hourglass"):</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Cause:</strong> Lines twisted during packing, or sheet crossed under guy before hoist</li>
+                    <li><strong>Solution:</strong> Ease all lines completely; gybe mainsail to opposite tack; spinnaker may unwrap; if not, lower and repack carefully</li>
+                </ul>
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Can't release trapeze hook:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Cause:</strong> Hook loaded under tension, gate jammed</li>
+                    <li><strong>Solution:</strong> Come in slightly to reduce load on hook; lift ring with one hand while opening gate; if jammed, crew should assist or use safety knife as last resort</li>
+                    <li><strong>Prevention:</strong> Regular inspection and lubrication of hook mechanism; practice unhooking in calm conditions</li>
+                </ul>
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Excessive weather helm with spinnaker:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Cause:</strong> Crew weight too far aft, or mainsail overtrimmed</li>
+                    <li><strong>Solution:</strong> Move crew weight forward; ease mainsheet; raise centreboard slightly; consider reducing main twist with vang</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-block" id="trapeze">
+            <h3 class="section-heading">Trapeze</h3>
+
+            <h4 class="sub-section-heading">Fit and adjust trapeze harness; perform safety checks</h4>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Wear harness correctly and verify all safety systems before going afloat.</p>
+
+            <!-- SVG Diagram: Trapeze Position & Safety -->
+            <div class="flex justify-center my-6">
+                <figure class="w-full max-w-4xl">
+                    <svg viewBox="0 0 700 450" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto border border-gray-300 rounded-lg bg-gradient-to-b from-sky-50 to-blue-100">
+                        <defs>
+                            <marker id="arrow-trap" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#dc2626" />
+                            </marker>
+                        </defs>
+
+                        <!-- Left panel: Correct Position -->
+                        <rect x="10" y="10" width="330" height="320" rx="8" fill="#f0fdf4" stroke="#10b981" stroke-width="2" />
+                        <text x="110" y="35" font-size="16" font-weight="bold" fill="#059669">CORRECT POSITION</text>
+
+                        <!-- Boat side view -->
+                        <line x1="50" y1="250" x2="250" y2="250" stroke="#8b7355" stroke-width="8" />
+                        <line x1="150" y1="100" x2="150" y2="250" stroke="#374151" stroke-width="5" />
+
+                        <!-- Trapeze wire -->
+                        <line x1="150" y1="120" x2="240" y2="200" stroke="#6b7280" stroke-width="3" />
+                        <circle cx="150" cy="120" r="4" fill="#374151" />
+
+                        <!-- Crew on trapeze (correct) -->
+                        <circle cx="235" cy="195" r="12" fill="#fbbf24" />
+                        <line x1="235" y1="207" x2="235" y2="240" stroke="#3b82f6" stroke-width="4" />
+                        <line x1="235" y1="220" x2="220" y2="235" stroke="#3b82f6" stroke-width="3" />
+                        <line x1="235" y1="220" x2="250" y2="235" stroke="#3b82f6" stroke-width="3" />
+                        <line x1="235" y1="240" x2="220" y2="255" stroke="#3b82f6" stroke-width="3" />
+                        <line x1="235" y1="240" x2="250" y2="255" stroke="#3b82f6" stroke-width="3" />
+
+                        <!-- Hook point -->
+                        <circle cx="235" cy="207" r="3" fill="#ef4444" />
+
+                        <!-- Body angle indicator -->
+                        <line x1="250" y1="250" x2="235" y2="207" stroke="#dc2626" stroke-width="2" stroke-dasharray="4 2" />
+                        <path d="M 245 250 A 15 15 0 0 1 238 215" fill="none" stroke="#dc2626" stroke-width="2" />
+                        <text x="255" y="235" font-size="11" fill="#dc2626">90°</text>
+
+                        <!-- Annotations -->
+                        <text x="50" y="285" font-size="11" fill="#059669">✓ Body perpendicular to boat</text>
+                        <text x="50" y="300" font-size="11" fill="#059669">✓ Knees slightly bent</text>
+                        <text x="50" y="315" font-size="11" fill="#059669">✓ Weight on feet & harness</text>
+
+                        <!-- Right panel: Common Errors -->
+                        <rect x="360" y="10" width="330" height="320" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2" />
+                        <text x="435" y="35" font-size="16" font-weight="bold" fill="#dc2626">COMMON ERRORS</text>
+
+                        <!-- Error 1: Leaning too far back -->
+                        <text x="375" y="65" font-size="13" font-weight="bold" fill="#dc2626">1. Leaning too far back</text>
+                        <line x1="400" y1="150" x2="500" y2="150" stroke="#8b7355" stroke-width="6" />
+                        <line x1="450" y1="80" x2="450" y2="150" stroke="#374151" stroke-width="4" />
+                        <line x1="450" y1="90" x2="530" y2="125" stroke="#6b7280" stroke-width="2" />
+                        <circle cx="530" cy="125" r="8" fill="#fbbf24" />
+                        <line x1="530" y1="133" x2="530" y2="155" stroke="#3b82f6" stroke-width="3" />
+                        <line x1="530" y1="155" x2="515" y2="168" stroke="#3b82f6" stroke-width="2" />
+                        <line x1="530" y1="155" x2="545" y2="168" stroke="#3b82f6" stroke-width="2" />
+                        <text x="545" y="135" font-size="10" fill="#dc2626">✗ Unstable</text>
+
+                        <!-- Error 2: Not extended enough -->
+                        <text x="375" y="195" font-size="13" font-weight="bold" fill="#dc2626">2. Not extended enough</text>
+                        <line x1="400" y1="280" x2="500" y2="280" stroke="#8b7355" stroke-width="6" />
+                        <line x1="450" y1="210" x2="450" y2="280" stroke="#374151" stroke-width="4" />
+                        <line x1="450" y1="220" x2="485" y2="250" stroke="#6b7280" stroke-width="2" />
+                        <circle cx="485" cy="250" r="8" fill="#fbbf24" />
+                        <line x1="485" y1="258" x2="485" y2="273" stroke="#3b82f6" stroke-width="3" />
+                        <text x="495" y="260" font-size="10" fill="#dc2626">✗ Less leverage</text>
+
+                        <!-- Equipment check box -->
+                        <rect x="20" y="350" width="660" height="90" rx="8" fill="#f3f4f6" stroke="#d1d5db" />
+                        <text x="30" y="370" font-size="13" font-weight="bold" fill="#111827">Pre-Sail Safety Checks:</text>
+
+                        <text x="40" y="388" font-size="11" fill="#374151">• <tspan font-weight="bold">Harness:</tspan> Snug fit on hips, hook at navel height, leg straps firm but not restrictive</text>
+                        <text x="40" y="403" font-size="11" fill="#374151">• <tspan font-weight="bold">Hook:</tspan> Inspect for wear/cracks, spring gate closes fully, no sharp edges</text>
+                        <text x="40" y="418" font-size="11" fill="#374151">• <tspan font-weight="bold">Wire & Handle:</tspan> No broken strands, ring secure, handle not frayed, shock cord intact</text>
+                        <text x="40" y="433" font-size="11" fill="#374151">• <tspan font-weight="bold">Practice:</tspan> Hook/unhook on shore several times before launching</text>
+                    </svg>
+                    <figcaption class="text-center text-gray-600 mt-2 text-sm">Correct trapeze position: body perpendicular to boat, knees slightly bent, weight balanced. Always perform safety checks before sailing.</figcaption>
+                </figure>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Fitting and safety check procedure:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Choose correct size:</strong> Harness should sit snugly on hips, hook at navel height when standing.</li>
+                    <li><strong>Adjust leg straps:</strong> Firm but not restrictive; you should be able to get two fingers under straps.</li>
+                    <li><strong>Check hook:</strong> Inspect for wear, cracks, sharp edges; ensure spring-loaded gate closes fully.</li>
+                    <li><strong>Check trapeze wire:</strong> Inspect ring for wear; check handle is secure and not frayed; verify shock cord/elastic is intact.</li>
+                    <li><strong>Practice hook on/off on shore:</strong> Hook and unhook from wire several times to confirm smooth operation and build muscle memory.</li>
+                    <li><strong>Quick-release test:</strong> If harness has quick-release buckles, confirm you can open them quickly while wearing harness.</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Hook on/off safely; move from sitting to full extension</h4>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Execute smooth, safe transitions in and out of trapeze with correct sequence.</p>
+            <div class="bg-green-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Going out (hooking on) sequence:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Communication:</strong> Crew calls "Ready to trapeze"; helm confirms wind strength and steadies boat.</li>
+                    <li><strong>Sit on side deck:</strong> Face forward, feet in toe straps or on gunwale edge.</li>
+                    <li><strong>Hook on:</strong> Reach up, grab trapeze handle, pull ring down and hook it firmly onto harness hook. Confirm it's seated properly.</li>
+                    <li><strong>Grab handle with both hands:</strong> Keep weight low initially.</li>
+                    <li><strong>Step out:</strong> Place back foot on gunwale, then front foot; keep knees bent and weight on handle.</li>
+                    <li><strong>Extend:</strong> Gradually straighten legs, leaning back as you extend; keep body perpendicular to boat, knees slightly bent.</li>
+                    <li><strong>Release one hand:</strong> Once stable, one hand on handle for balance; free hand controls jib sheet.</li>
+                </ol>
+                <p class="font-semibold mt-4 mb-2">Coming in (hooking off) sequence:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Both hands on handle:</strong> Transfer sheet control; grip handle with both hands.</li>
+                    <li><strong>Bend knees:</strong> Crouch down toward gunwale edge, keeping hook engaged.</li>
+                    <li><strong>Step in:</strong> Bring back foot into cockpit first, then front foot.</li>
+                    <li><strong>Sit on side deck:</strong> Keep handle in hand while sitting down.</li>
+                    <li><strong>Unhook:</strong> Lift ring off hook with one hand; guide wire back out smoothly.</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Maintain trim and balance on the wire</h4>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Adjust body position and height to keep boat flat and respond to gusts and lulls.</p>
+            <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Balance and adjustment technique:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Body position:</strong> Hips out, body perpendicular to boat; knees slightly bent for shock absorption. Back straight, look ahead not down.</li>
+                    <li><strong>Height adjustment:</strong> Most systems allow adjusting ring height on wire. Lower position = more leverage (for strong wind); higher = less leverage (for moderate wind).</li>
+                    <li><strong>In a gust:</strong> Move weight further out (extend legs more) or ease jib sheet slightly; if overpowered, come in partially or fully.</li>
+                    <li><strong>In a lull:</strong> Move weight inboard (bend knees, shift hips toward boat) to prevent heeling to windward; keep jib trimmed for power.</li>
+                    <li><strong>Fore-aft trim:</strong> Move forward for better bow-down trim in light winds and flat water; move aft in waves or strong wind to lift bow.</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Tack and gybe on/off the wire</h4>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Execute smooth manoeuvres with safe footwork, hand transitions, and timing.</p>
+            <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Tacking sequence (for crew on trapeze):</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Pre-tack:</strong> Helm calls "Ready about"; crew confirms "Ready"; come in partially, both hands on handle.</li>
+                    <li><strong>Release jib sheet:</strong> As helm pushes tiller ("Helms-a-lee"), release old jib sheet.</li>
+                    <li><strong>Come in fully:</strong> Crouch and step into cockpit, unhook quickly.</li>
+                    <li><strong>Cross boat:</strong> Move across centerline while boat turns through wind; duck under boom if needed.</li>
+                    <li><strong>Hook on new side:</strong> Sit on new side deck, hook new trapeze wire, grab new jib sheet.</li>
+                    <li><strong>Trim new jib:</strong> Pull new sheet as boat bears away onto new tack.</li>
+                    <li><strong>Go out:</strong> Follow standard going-out sequence onto new trapeze wire.</li>
+                </ol>
+                <p class="font-semibold mt-4 mb-2">Gybing sequence (for crew on trapeze):</p>
+                <ol class="list-decimal list-inside ml-4 space-y-2">
+                    <li><strong>Pre-gybe:</strong> Helm calls "Ready to gybe"; come in slightly, prepare to move quickly.</li>
+                    <li><strong>Gybe mainsail:</strong> Helm brings boom across ("Gybe-ho!"); watch for boom.</li>
+                    <li><strong>Stay on wire (option A):</strong> In light-moderate winds, experienced crew can stay hooked, duck under boom, and swap trapeze wires while remaining extended.</li>
+                    <li><strong>Come in (option B):</strong> In strong winds or less experienced, unhook, come in, cross boat in crouch, hook new wire, go back out.</li>
+                    <li><strong>Sheet transition:</strong> Release old sheet, trim new sheet as you establish position on new gybe.</li>
+                </ol>
+            </div>
+
+            <h4 class="sub-section-heading">Manage capsize risk and participate in safe recovery</h4>
+            <p class="mb-4"><strong>What you need to achieve:</strong> Understand capsize causes when using trapeze; know how to recover safely.</p>
+            <div class="bg-red-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Capsize prevention and recovery:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Primary risk:</strong> Crew too far out in lull causes windward capsize; helm loses steering and boat flips to windward.</li>
+                    <li><strong>Prevention:</strong> Watch for lulls; come in immediately if boat starts heeling to windward; maintain communication with helm.</li>
+                    <li><strong>If capsize occurs:</strong> Unhook immediately as you hit water; swim clear of wire; check helm is safe.</li>
+                    <li><strong>Righting:</strong> Helm and crew work together using standard capsize recovery; trapeze crew can assist by pushing down on gunwale or pulling on centreboard.</li>
+                    <li><strong>Re-board:</strong> Helm enters first and steadies boat; crew enters from leeward side; check all equipment before continuing.</li>
+                    <li><strong>Equipment check post-capsize:</strong> Verify trapeze wire hasn't tangled with rigging; check harness hasn't twisted; confirm hook still functions correctly.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-block" id="what-next">
+            <h3 class="section-heading">What Next</h3>
+            <p class="mb-4">Having completed Kites & Wires, you've mastered advanced dinghy sailing techniques. Here are your options for continued sailing development:</p>
+
+            <h4 class="sub-section-heading">Practical Assessment Checklist</h4>
+            <p class="mb-4">Use this checklist to track your progress and ensure all learning outcomes are met:</p>
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <p class="font-semibold mb-3">Symmetric Spinnaker Competencies:</p>
+                <ul class="list-none ml-4 space-y-1">
+                    <li>☐ Can name all three corners (head, tack, clew) and their attachments</li>
+                    <li>☐ Can attach halyard, guy, sheet correctly with lines running clear</li>
+                    <li>☐ Can rig pole with topping lift and downhaul functioning</li>
+                    <li>☐ Can pack spinnaker systematically for clean hoist</li>
+                    <li>☐ Can hoist smoothly with pole attached at correct time</li>
+                    <li>☐ Can trim for optimal luff curl (not over or under-trimmed)</li>
+                    <li>☐ Can adjust pole height so both clews are level</li>
+                    <li>☐ Can adjust pole angle (guy tension) for even luff curl</li>
+                    <li>☐ Can perform end-for-end gybe with coordination and timing</li>
+                    <li>☐ Can drop cleanly by blanketing behind mainsail</li>
+                    <li>☐ Can recognize broach early and take corrective action</li>
+                </ul>
+
+                <p class="font-semibold mb-3 mt-4">Asymmetric Spinnaker Competencies:</p>
+                <ul class="list-none ml-4 space-y-1">
+                    <li>☐ Can identify head, tack, and two clews correctly</li>
+                    <li>☐ Can rig bowsprit and tack line securely</li>
+                    <li>☐ Can run continuous sheets correctly outside all rigging</li>
+                    <li>☐ Can hoist on appropriate course angle (reach, not dead run)</li>
+                    <li>☐ Can trim for slight luff curl on windward edge</li>
+                    <li>☐ Can perform sheet-to-sheet gybe smoothly</li>
+                    <li>☐ Can execute windward drop cleanly</li>
+                    <li>☐ Can execute leeward drop cleanly</li>
+                    <li>☐ Can execute letterbox drop cleanly</li>
+                    <li>☐ Understands difference between "heat up" and "soak" modes</li>
+                    <li>☐ Can select optimal course for conditions and objectives</li>
+                </ul>
+
+                <p class="font-semibold mb-3 mt-4">Trapeze Competencies:</p>
+                <ul class="list-none ml-4 space-y-1">
+                    <li>☐ Can fit harness correctly with proper leg strap adjustment</li>
+                    <li>☐ Can perform pre-sail safety checks on harness and wire</li>
+                    <li>☐ Can hook on safely from sitting position</li>
+                    <li>☐ Can move smoothly from sitting to full extension</li>
+                    <li>☐ Can maintain balance with body perpendicular to boat</li>
+                    <li>☐ Can adjust position in response to gusts and lulls</li>
+                    <li>☐ Can come in safely and unhook without assistance</li>
+                    <li>☐ Can tack while managing trapeze wire change</li>
+                    <li>☐ Can gybe while staying on wire (or safely coming in as appropriate)</li>
+                    <li>☐ Understands capsize risks (especially windward capsize)</li>
+                    <li>☐ Can unhook immediately if capsize occurs</li>
+                </ul>
+
+                <p class="font-semibold mb-3 mt-4">Safety & Seamanship:</p>
+                <ul class="list-none ml-4 space-y-1">
+                    <li>☐ Can conduct pre-sail safety briefing with crew</li>
+                    <li>☐ Can assess weather conditions and determine suitability</li>
+                    <li>☐ Knows wind strength limits for skill level</li>
+                    <li>☐ Can recover from capsize with spinnaker set</li>
+                    <li>☐ Can recover from capsize while on trapeze</li>
+                    <li>☐ Can care for and maintain spinnaker (rinse, dry, pack)</li>
+                    <li>☐ Can inspect trapeze equipment for wear and damage</li>
+                    <li>☐ Demonstrates appropriate clothing and equipment choices</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Further Irish Sailing Courses</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Day Sailing:</strong> Develop coastal navigation and passage planning skills</li>
+                <li><strong>Performance Sailing:</strong> Focus on racing techniques and boat speed optimization</li>
+                <li><strong>Seamanship:</strong> Advanced boat handling and emergency procedures</li>
+                <li><strong>Instructor Training:</strong> Share your skills by becoming a certified instructor</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Racing and Competition</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Club racing:</strong> Join your local sailing club's race program</li>
+                <li><strong>Class racing:</strong> Compete in one-design class championships</li>
+                <li><strong>Team racing:</strong> Develop tactical skills in team-based competition</li>
+                <li><strong>Match racing:</strong> One-on-one tactical sailing</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Boat Ownership</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Choose your boat:</strong> Consider symmetric vs asymmetric, trapeze or not, based on your preferences</li>
+                <li><strong>Maintenance skills:</strong> Learn to maintain and repair your own equipment</li>
+                <li><strong>Boat tuning:</strong> Develop expertise in optimizing your specific boat</li>
+                <li><strong>Club membership:</strong> Join a club for facilities, storage, and community</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Expanding Your Skills</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li><strong>Keelboat sailing:</strong> Transition to larger, heavier boats</li>
+                <li><strong>Catamaran sailing:</strong> Experience multihull performance</li>
+                <li><strong>Coastal cruising:</strong> Extend your range with navigation and anchoring skills</li>
+                <li><strong>Offshore sailing:</strong> Build towards longer passages and ocean sailing</li>
+            </ul>
+
+            <div class="bg-blue-50 p-4 rounded-lg mt-6">
+                <p class="font-semibold mb-2">Remember:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li>Continue to sail regularly to maintain and develop your skills</li>
+                    <li>Sail with more experienced sailors when possible to learn from them</li>
+                    <li>Share your knowledge with newcomers as you progress</li>
+                    <li>Stay current with safety practices and weather knowledge</li>
+                    <li>Most importantly, keep enjoying your time on the water!</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-block" id="instructor-notes">
+            <h3 class="section-heading">For Instructors — SBSS Advanced Instructor alignment</h3>
+            <p class="mb-4">If you're coaching toward Kites & Wires or preparing for SBSS Advanced Instructor assessment, focus on:</p>
+
+            <h4 class="sub-section-heading">Teaching Methodology</h4>
+            <ul class="list-disc list-inside ml-4 space-y-2 mb-4">
+                <li><strong>Session planning:</strong> Clear learning outcomes for each session (e.g., "Today: symmetric hoist and drop only" or "Trapeze: hook on/off and balance").</li>
+                <li><strong>Risk management:</strong> Conduct site risk assessment; check equipment before each session; brief emergency procedures; maintain rescue boat cover if available.</li>
+                <li><strong>Progression:</strong> Shore-based demo → coach talk-through → coach assisted attempts → independent practice → refinement. Don't rush.</li>
+                <li><strong>Error detection and correction:</strong> Watch for common faults (pole too high/low, luff not trimmed, crew hooking on incorrectly); provide immediate, specific feedback.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Assessment Criteria & Sign-Off</h4>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Students must demonstrate:</p>
+                <ul class="list-disc list-inside ml-4 space-y-2">
+                    <li><strong>Consistent competence:</strong> Able to repeat skills successfully in appropriate conditions (not just once)</li>
+                    <li><strong>Independent operation:</strong> Can perform tasks without prompting or constant supervision</li>
+                    <li><strong>Safety awareness:</strong> Recognizes hazards, communicates effectively, makes sound decisions</li>
+                    <li><strong>Equipment knowledge:</strong> Names parts correctly, rigs/de-rigs without errors, performs maintenance checks</li>
+                    <li><strong>Adaptability:</strong> Adjusts technique for varying wind/sea conditions</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Common Faults & Corrections</h4>
+            <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Symmetric Spinnaker:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Pole too high:</strong> Clew flies higher than tack → lower pole with downhaul</li>
+                    <li><strong>Pole too far forward:</strong> Bottom luff curls first → pull guy to move pole aft</li>
+                    <li><strong>Sheet over-trimmed:</strong> Spinnaker stalls, no visible luff curl → ease sheet until curl appears</li>
+                    <li><strong>Twisted spinnaker:</strong> Lines crossed around forestay → check pre-hoist; may need to drop and repack</li>
+                </ul>
+            </div>
+
+            <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Asymmetric Spinnaker:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Sailing too low:</strong> Spinnaker collapses or wraps → head up 10-20° to optimal reach angle</li>
+                    <li><strong>Sheet too tight:</strong> Sail stalls, no forward drive → ease sheet, look for slight luff curl</li>
+                    <li><strong>Poor gybe:</strong> Spinnaker fills behind mainsail → bear away more before gybing; time boom cross with spinnaker movement</li>
+                </ul>
+            </div>
+
+            <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">Trapeze:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Hooking on incorrectly:</strong> Hook not fully engaged → practice on shore; check audible click</li>
+                    <li><strong>Body position:</strong> Leaning back too far or not enough → body perpendicular to boat, hips out, knees bent</li>
+                    <li><strong>Slow transitions:</strong> Taking too long to come in/go out → practice sequence; use both hands on handle initially</li>
+                    <li><strong>Not responding to conditions:</strong> Too far out in lull or not far enough in gust → watch wind, communicate with helm</li>
+                </ul>
+            </div>
+
+            <h4 class="sub-section-heading">Debrief & Progression</h4>
+            <ul class="list-disc list-inside ml-4 space-y-2">
+                <li><strong>Debrief:</strong> After each session, review what went well, what needs work, and set goals for next session; log any incidents or near-misses.</li>
+                <li><strong>Logbook:</strong> Record conditions, skills practiced, competence level, areas for improvement</li>
+                <li><strong>Sign-off:</strong> Only sign when student demonstrates consistent, independent competence in appropriate conditions</li>
+            </ul>
+
+            <p class="text-sm text-gray-600 mt-4">For full SBSS instructor competencies, refer to the SBSS Advanced Instructor Handbook embedded in the Introduction section above.</p>
+        </section>
+
+        <section class="content-block" id="quiz">
+            <h3 class="section-heading">Quiz — Kites & Wires</h3>
+            <form id="quiz-form" class="space-y-6">
+                <div>
+                    <label class="block font-bold">1. Which control primarily sets the height of a symmetric spinnaker pole?</label>
+                    <input type="radio" name="q1" value="a" id="q1a"> <label for="q1a">Topping lift (uphaul)</label><br>
+                    <input type="radio" name="q1" value="b" id="q1b"> <label for="q1b">Halyard</label><br>
+                    <input type="radio" name="q1" value="c" id="q1c"> <label for="q1c">Mainsheet</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">2. In a symmetric spinnaker gybe on a dinghy, the pole is usually:</label>
+                    <input type="radio" name="q2" value="a" id="q2a"> <label for="q2a">End-for-end swapped</label><br>
+                    <input type="radio" name="q2" value="b" id="q2b"> <label for="q2b">Dip-pole transferred under the forestay</label><br>
+                    <input type="radio" name="q2" value="c" id="q2c"> <label for="q2c">Left on the same side</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">3. An asymmetric spinnaker is typically gybed by:</label>
+                    <input type="radio" name="q3" value="a" id="q3a"> <label for="q3a">Dropping and re-hoisting</label><br>
+                    <input type="radio" name="q3" value="b" id="q3b"> <label for="q3b">Sheet-to-sheet across the forestay</label><br>
+                    <input type="radio" name="q3" value="c" id="q3c"> <label for="q3c">Moving the pole across the mast</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">4. The best general point of sail for an asymmetric spinnaker in moderate breeze is:</label>
+                    <input type="radio" name="q4" value="a" id="q4a"> <label for="q4a">Broad reach</label><br>
+                    <input type="radio" name="q4" value="b" id="q4b"> <label for="q4b">Close-hauled</label><br>
+                    <input type="radio" name="q4" value="c" id="q4c"> <label for="q4c">Dead downwind by-the-lee</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">5. Before a spinnaker hoist the helm should usually:</label>
+                    <input type="radio" name="q5" value="a" id="q5a"> <label for="q5a">Head up to close-hauled</label><br>
+                    <input type="radio" name="q5" value="b" id="q5b"> <label for="q5b">Bear away to a reach/broad reach</label><br>
+                    <input type="radio" name="q5" value="c" id="q5c"> <label for="q5c">Stop the boat</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">6. A “letterbox drop” is:</label>
+                    <input type="radio" name="q6" value="a" id="q6a"> <label for="q6a">Dropping the jib under the boom</label><br>
+                    <input type="radio" name="q6" value="b" id="q6b"> <label for="q6b">Retrieving the spinnaker between boom and mainsail</label><br>
+                    <input type="radio" name="q6" value="c" id="q6c"> <label for="q6c">Hoisting the spinnaker from the hatch</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">7. In a gust while on the wire, the crew should first:</label>
+                    <input type="radio" name="q7" value="a" id="q7a"> <label for="q7a">Sheet in harder</label><br>
+                    <input type="radio" name="q7" value="b" id="q7b"> <label for="q7b">Ease sheet and/or move further out</label><br>
+                    <input type="radio" name="q7" value="c" id="q7c"> <label for="q7c">Sit in immediately regardless of heel</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">8. The safe sequence to go onto the trapeze is:</label>
+                    <input type="radio" name="q8" value="a" id="q8a"> <label for="q8a">Grab handle, step out, then hook on</label><br>
+                    <input type="radio" name="q8" value="b" id="q8b"> <label for="q8b">Sit on gunwale, hook on, take handle, then extend</label><br>
+                    <input type="radio" name="q8" value="c" id="q8c"> <label for="q8c">Jump directly to full extension</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">9. Adjusting trapeze height primarily affects:</label>
+                    <input type="radio" name="q9" value="a" id="q9a"> <label for="q9a">Sail depth</label><br>
+                    <input type="radio" name="q9" value="b" id="q9b"> <label for="q9b">Crew leverage and heel control</label><br>
+                    <input type="radio" name="q9" value="c" id="q9c"> <label for="q9c">Mast rake</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">10. To recover from a developing spinnaker broach the crew should first:</label>
+                    <input type="radio" name="q10" value="a" id="q10a"> <label for="q10a">Sheet in hard</label><br>
+                    <input type="radio" name="q10" value="b" id="q10b"> <label for="q10b">Ease spinnaker sheet and bear away</label><br>
+                    <input type="radio" name="q10" value="c" id="q10c"> <label for="q10c">Tack immediately</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">11. In a gust while on the wire, the crew should:</label>
+                    <input type="radio" name="q11" value="a" id="q11a"> <label for="q11a">Sheet in harder</label><br>
+                    <input type="radio" name="q11" value="b" id="q11b"> <label for="q11b">Ease sheet and/or move further out</label><br>
+                    <input type="radio" name="q11" value="c" id="q11c"> <label for="q11c">Come in immediately</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">12. What wind strength is ideal for developing spinnaker and trapeze skills?</label>
+                    <input type="radio" name="q12" value="a" id="q12a"> <label for="q12a">0-5 knots (very light)</label><br>
+                    <input type="radio" name="q12" value="b" id="q12b"> <label for="q12b">10-15 knots (moderate)</label><br>
+                    <input type="radio" name="q12" value="c" id="q12c"> <label for="q12c">20-25 knots (strong)</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">13. Essential trapeze harness checks include (select all that apply):</label>
+                    <input type="checkbox" name="q13" value="a" id="q13a"> <label for="q13a">Hook inspected for wear and proper closure</label><br>
+                    <input type="checkbox" name="q13" value="b" id="q13b"> <label for="q13b">Leg straps properly adjusted</label><br>
+                    <input type="checkbox" name="q13" value="c" id="q13c"> <label for="q13c">Safety knife accessible</label><br>
+                    <input type="checkbox" name="q13" value="d" id="q13d"> <label for="q13d">Wire and handle inspected for damage</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">14. Pre-hoist checks for a symmetric spinnaker include (select all that apply):</label>
+                    <input type="checkbox" name="q14" value="a" id="q14a"> <label for="q14a">Sheets and guys run outside shrouds</label><br>
+                    <input type="checkbox" name="q14" value="b" id="q14b"> <label for="q14b">Pole attached correctly to mast</label><br>
+                    <input type="checkbox" name="q14" value="c" id="q14c"> <label for="q14c">Three corners secured to prevent premature filling</label><br>
+                    <input type="checkbox" name="q14" value="d" id="q14d"> <label for="q14d">Mainsail fully reefed</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">15. When sailing with an asymmetric spinnaker, "heat up mode" means:</label>
+                    <input type="radio" name="q15" value="a" id="q15a"> <label for="q15a">Sail higher and faster, closer to the wind</label><br>
+                    <input type="radio" name="q15" value="b" id="q15b"> <label for="q15b">Sail lower and deeper downwind</label><br>
+                    <input type="radio" name="q15" value="c" id="q15c"> <label for="q15c">Reduce sail area due to heat</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">16. The primary risk when trapezing that can cause a windward capsize is:</label>
+                    <input type="radio" name="q16" value="a" id="q16a"> <label for="q16a">Being too far out during a lull</label><br>
+                    <input type="radio" name="q16" value="b" id="q16b"> <label for="q16b">Not being far enough out in a gust</label><br>
+                    <input type="radio" name="q16" value="c" id="q16c"> <label for="q16c">Hooking on too quickly</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">17. When packing a spinnaker for storage, the correct method is:</label>
+                    <input type="radio" name="q17" value="a" id="q17a"> <label for="q17a">Roll tightly from head to foot</label><br>
+                    <input type="radio" name="q17" value="b" id="q17b"> <label for="q17b">Stuff randomly into the bag</label><br>
+                    <input type="radio" name="q17" value="c" id="q17c"> <label for="q17c">Accordion-fold or stuff with head accessible, keeping three corners separate</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">18. Dark patches on the water ahead indicate:</label>
+                    <input type="radio" name="q18" value="a" id="q18a"> <label for="q18a">Shallow water</label><br>
+                    <input type="radio" name="q18" value="b" id="q18b"> <label for="q18b">Approaching gusts</label><br>
+                    <input type="radio" name="q18" value="c" id="q18c"> <label for="q18c">Calmer conditions</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">19. If the spinnaker wraps around the forestay during a hoist, you should:</label>
+                    <input type="radio" name="q19" value="a" id="q19a"> <label for="q19a">Pull the halyard harder</label><br>
+                    <input type="radio" name="q19" value="b" id="q19b"> <label for="q19b">Ease sheets completely, head up to fill, then re-trim</label><br>
+                    <input type="radio" name="q19" value="c" id="q19c"> <label for="q19c">Immediately gybe</label><br>
+                </div>
+                <div>
+                    <label class="block font-bold">20. The standard call when the spinnaker halyard is fully raised is:</label>
+                    <input type="radio" name="q20" value="a" id="q20a"> <label for="q20a">"Hoisting!"</label><br>
+                    <input type="radio" name="q20" value="b" id="q20b"> <label for="q20b">"Made!"</label><br>
+                    <input type="radio" name="q20" value="c" id="q20c"> <label for="q20c">"Ready!"</label><br>
+                </div>
+                <button type="button" onclick="submitQuiz()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Submit Quiz</button>
+                <div id="quiz-results" class="mt-6"></div>
+            </form>
+        </section>
+
+        <div class="text-sm text-gray-600 mt-8">
+            This guide is based on the Irish Sailing Kites & Wires V2 syllabus with step-by-step procedures to help you achieve each learning outcome.
+            For exact assessment criteria and official wording, always refer to the PDFs in the Overview section above.
+            Test your knowledge with the quiz below.
+        </div>
+    </main>
+    <script>
+        const answers = {
+            q1: "a",
+            q2: "a",
+            q3: "b",
+            q4: "a",
+            q5: "b",
+            q6: "b",
+            q7: "b",
+            q8: "b",
+            q9: "b",
+            q10: "a",
+            q11: "b",
+            q12: "b",
+            q13: ["a", "b", "c", "d"],
+            q14: ["a", "b", "c"],
+            q15: "a",
+            q16: "a",
+            q17: "c",
+            q18: "b",
+            q19: "b",
+            q20: "b"
+        };
+
+        function submitQuiz() {
+            const form = document.getElementById("quiz-form");
+            const resultsDiv = document.getElementById("quiz-results");
+            let score = 0;
+            let total = Object.keys(answers).length;
+            resultsDiv.innerHTML = "";
+
+            // reset background highlights
+            Array.from(form.querySelectorAll('label')).forEach(l => l.parentElement.style.backgroundColor = "");
+
+            for (let key in answers) {
+                const correct = answers[key];
+                const inputs = form.querySelectorAll(`[name="${key}"]`);
+                if (!inputs.length) continue;
+
+                if (Array.isArray(correct)) {
+                    const selected = Array.from(inputs).filter(i => i.checked).map(i => i.value).sort();
+                    const expected = [...correct].sort();
+                    const isCorrect = JSON.stringify(selected) === JSON.stringify(expected);
+                    if (isCorrect) {
+                        score++;
+                        Array.from(inputs).forEach(i => { if (i.checked) i.parentElement.style.backgroundColor = "rgba(0,128,0,0.2)"; });
+                    } else {
+                        Array.from(inputs).forEach(i => { if (i.checked) i.parentElement.style.backgroundColor = "rgba(255,0,0,0.2)"; });
+                    }
+                } else {
+                    const chosen = Array.from(inputs).find(i => i.checked);
+                    if (chosen) {
+                        if (chosen.value === correct) {
+                            score++;
+                            chosen.parentElement.style.backgroundColor = "rgba(0,128,0,0.2)";
+                        } else {
+                            chosen.parentElement.style.backgroundColor = "rgba(255,0,0,0.2)";
+                        }
+                    }
+                }
+            }
+
+            resultsDiv.innerHTML = `<p class="text-lg font-bold">Your score: ${score} / ${total}</p>`;
+        }
+
+        // Show/hide "Back to Top" button
+        window.addEventListener('scroll', () => {
+            const button = document.getElementById('back-to-top');
+            if (window.scrollY > 200) {
+                button.classList.remove('hidden');
+            } else {
+                button.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <button id="back-to-top" onclick="scrollToTop()" class="hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-blue-700">Back to Top</button>
+
+    <footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <p class="text-lg font-semibold">&copy; 2025
+                <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+            </p>
+            <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+            <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.782 2.295 7.148 2.233 8.414 2.175 8.794 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

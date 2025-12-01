@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irish Sailing Course Notes</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+    </script>
+    <style>
+        body.dark {
+            background-color: #121212;
+            color: #36b5db;
+        }
+
+        body.dark a {
+            color: #60a3da;
+        }
+
+        body.dark header {
+            background-color: #1f1f1f;
+        }
+
+        body.dark footer {
+            background-color: #1f1f1f;
+        }
+
+        body.dark .content-block {
+            background-color: #1f1f1f;
+            border-color: #333333;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- Header/Navigation Bar -->
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing
+                    school notes</a></h1>
+            <div class="flex items-center">
+                <nav>
+                    <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                    <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                    <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                    <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                    <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                    <a href="instructors.html" class="nav-link">Instructors</a>
+                </nav>
+                <button onclick="toggleDarkMode()"
+                    class="ml-4 bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 text-sm">Dark Mode</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6 flex-grow">
+        <!-- Windfinder Section -->
+        <section class="bg-blue-100 p-6 shadow-lg border border-blue-300 rounded-lg mb-8 w-full">
+            <h3 class="text-2xl font-semibold text-blue-800 mb-4 text-center">Real-Time Wind in Rathmullan</h3>
+            <div class="bg-white p-4 rounded-lg border border-blue-200 shadow-md max-w-3xl mx-auto">
+                <iframe src="https://www.windfinder.com/widget/forecast/rathmullan?tabs=wind" width="100%" height="400px"
+                    frameborder="0"
+                    class="rounded-lg border border-gray-300 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
+                </iframe>
+                <p class="text-sm text-gray-800 mt-4 text-center">
+                    Powered by <a href="https://www.windfinder.com/" target="_blank"
+                        class="text-blue-600 hover:underline font-medium">Windfinder</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- External Tides Chart iframe removed -->
+        <!-- Live Tides (tidesnear.me JSON) -->
+        <section class="bg-blue-50 p-6 shadow-lg border border-blue-200 rounded-lg mb-8 w-full">
+            <h3 class="text-2xl font-semibold text-blue-800 mb-4 text-center">Live Tides (tidesnear.me)</h3>
+            <div id="tides-nearme" class="text-center text-gray-700">Loading Rathmullan tide data...</div>
+            <p class="text-xs text-gray-500 mt-4 text-center">Source: <a href="https://tidesnear.me/tide_stations/3459" target="_blank" class="text-blue-600 hover:underline">tidesnear.me station 3459</a></p>
+        </section>
+        <br>
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="card text-center">
+                <h3 class="text-xl font-semibold text-blue-700 mb-3">Taste of Sailing</h3>
+                <p class="text-gray-600 mb-4">Your very first introduction to the exciting world of sailing. Have fun
+                    and learn the absolute basics!</p>
+                <a href="taste_of_sailing.html"
+                    class="inline-block bg-blue-500 text-white px-5 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Explore
+                    Level 1</a>
+            </div>
+
+            <div class="card text-center">
+                <h3 class="text-xl font-semibold text-blue-700 mb-3">Start Sailing</h3>
+                <p class="text-gray-600 mb-4">Your first official course! Start sailing mostly on your own in gentle
+                    winds, with a little instructor help.</p>
+                <a href="start_sailing.html"
+                    class="inline-block bg-blue-500 text-white px-5 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Explore
+                    Level 2</a>
+            </div>
+
+            <div class="card text-center">
+                <h3 class="text-xl font-semibold text-blue-700 mb-3">Basic Skills</h3>
+                <p class="text-gray-600 mb-4">Become a confident sailor, setting up and handling your boat effectively
+                    in light wind conditions.</p>
+                <a href="basic_skills.html"
+                    class="inline-block bg-blue-500 text-white px-5 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Explore
+                    Level 3</a>
+            </div>
+
+            <div class="card text-center">
+                <h3 class="text-xl font-semibold text-blue-700 mb-3">Improving Skills</h3>
+                <p class="text-gray-600 mb-4">Develop advanced techniques and knowledge to sail more effectively in
+                    moderate conditions.</p>
+                <a href="improving_skills.html"
+                    class="inline-block bg-blue-500 text-white px-5 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Explore
+                    Level 4</a>
+            </div>
+        </section>
+        <br>
+
+        <!-- Embedded Quiz Section -->
+        <section id="sailing-quiz" class="my-12">
+            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                <div class="bg-blue-600 p-6 text-white text-center">
+                    <h2 class="text-3xl font-bold">Sailing Knowledge Quiz</h2>
+                    <p class="mt-2 opacity-90">Test your knowledge of knots, right of way, and boat parts!</p>
+                </div>
+
+                <div id="quiz-container" class="p-8">
+                    <!-- Start Screen -->
+                    <div id="start-screen" class="text-center">
+                        <p class="text-lg mb-6">Are you ready to test your sailing skills? This quiz consists of 10
+                            questions.</p>
+                        <button id="start-btn"
+                            class="bg-blue-600 text-white px-8 py-3 rounded-lg text-xl font-semibold hover:bg-blue-700 transition transform hover:scale-105 shadow-md">Start
+                            Quiz</button>
+                    </div>
+
+                    <!-- Question Screen -->
+                    <div id="question-screen" class="hidden">
+                        <div class="flex justify-between items-center mb-6 text-sm text-gray-500">
+                            <span id="question-counter">Question 1 of 10</span>
+                            <span id="score-display" class="font-bold text-blue-600">Score: 0</span>
+                        </div>
+
+                        <h3 id="question-text" class="text-xl font-bold mb-6 text-gray-800">Question goes here?</h3>
+
+                        <div id="options-container" class="space-y-3">
+                            <!-- Options will be injected here -->
+                        </div>
+
+                        <div id="feedback" class="mt-6 hidden p-4 rounded-lg text-center font-semibold"></div>
+
+                        <button id="next-btn"
+                            class="mt-6 w-full bg-gray-200 text-gray-500 px-6 py-3 rounded-lg font-semibold cursor-not-allowed"
+                            disabled>Next Question</button>
+                    </div>
+
+                    <!-- Results Screen -->
+                    <div id="results-screen" class="hidden text-center">
+                        <h3 class="text-2xl font-bold mb-4 text-gray-800">Quiz Completed!</h3>
+                        <div class="text-6xl font-bold text-blue-600 mb-4" id="final-score">8/10</div>
+                        <div id="result-message" class="text-lg mb-8 text-gray-600">Great job!</div>
+                        <button id="restart-btn"
+                            class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition shadow-md">Try
+                            Again</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="bg-gray-50 p-6 rounded-lg shadow-lg border border-gray-200" id="course-notes">
+            <h3 class="text-2xl font-semibold text-blue-800 mb-4">Course Notes</h3>
+            <iframe src="all_notes.pdf" width="100%" height="600px"
+                class="rounded-lg border border-gray-400 shadow-md hover:shadow-lg transition-shadow duration-300"></iframe>
+            <div class="mt-4"></div>
+        </div>
+    </main>
+    <footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div class="mb-4 md:mb-0">
+                <p class="text-lg font-semibold">&copy; 2025
+                    <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James
+                        Cassidy</a> |
+                    <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition"
+                        target="_blank">Rathmullan Sailing School</a>
+                </p>
+                <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/"
+                    target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                    <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0" />
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram"
+                    class="hover:text-pink-400 transition">
+                    <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.013 15.668 2 15.077 2 12c0-5.923.013-6.332.072-7.612.059-1.281.316-2.393 1.296-3.373.98.98 2.092-1.237 3.373-1.296C8.332 2.987 8.741 2.975 12 2.975zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+    <script src="js/tides.js?v=20251125"></script>
+    <script src="js/quiz.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,757 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Sailing - Irish Sailing Course</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+    </script>
+    <style>
+        body.dark {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark a {
+            color: #90caf9;
+        }
+        body.dark header {
+            background-color: #1f1f1f;
+        }
+        body.dark footer {
+            background-color: #1f1f1f;
+        }
+        body.dark .content-block {
+            background-color: #1f1f1f;
+            border-color: #333333;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header/Navigation Bar -->
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+            <button onclick="toggleDarkMode()" class="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400">Toggle Dark Mode</button>
+        </div>
+    </header>
+
+    <!-- Dropdown for Section Navigation -->
+    <div class="container mx-auto px-4 py-4">
+        <label for="section-select" class="block text-lg font-bold mb-2">Jump to Section:</label>
+        <select id="section-select" class="w-full p-2 border rounded-md" onchange="scrollToSection(this.value)">
+            <option value="">Select a section...</option>
+            <option value="objective">Objective</option>
+            <option value="clothing-equipment">Clothing & Equipment</option>
+            <option value="rigging">Rigging</option>
+            <option value="ropework">Ropework</option>
+            <option value="launch-recovery">Launch & Recovery</option>
+            <option value="sailing-techniques">Sailing Techniques & Manoeuvres</option>
+            <option value="capsize-recovery">Capsize Recovery</option>
+            <option value="sailing-knowledge">Sailing Knowledge</option>
+            <option value="coastal-knowledge">Coastal Knowledge</option>
+            <option value="weather-safety">Weather & Safety</option>
+            <option value="quiz-section">Quiz</option>
+        </select>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Start Sailing</h2>
+
+        <section id="objective" class="content-block">
+            <h3 class="section-heading">Objective</h3>
+            <p class="mb-4">You're ready to sail mostly on your own in gentle winds, with a little help from your instructor! This is your first official sailing course! <a href="taste_of_sailing.html#objective" class="text-blue-600 hover:underline">Review the Taste of Sailing Objective</a> to see how this builds on your introduction to sailing.</p>
+        </section>
+
+        <section id="clothing-equipment" class="content-block">
+            <h3 class="section-heading">Clothing & Equipment</h3>
+            <p class="mb-4">To prepare for your sail, you'll learn to look at the weather and decide what clothes are best. <a href="taste_of_sailing.html#clothing-&-equipment" class="text-blue-600 hover:underline">Review Clothing & Equipment</a> from the Taste of Sailing course for initial preparation tips.</p>
+
+            <h4 class="sub-section-heading">What to Wear & Why</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Why to Wear</th>
+                            <th>Why Not to Wear</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Hat – beanie</td>
+                            <td>To stop your head getting cold (lots of heat escapes from your head!)</td>
+                            <td>N/A</td>
+                        </tr>
+                        <tr>
+                            <td>Sun hat</td>
+                            <td>To keep the sun out of your eyes and off your face. Try and get one with a clip so it doesn’t blow off.</td>
+                            <td>N/A</td>
+                        </tr>
+                        <tr>
+                            <td>Sunglasses</td>
+                            <td>To protect your eyes from the bright sun reflecting off the water. It can be super glary! (clip if possible)</td>
+                            <td>If it's dark or cloudy</td>
+                        </tr>
+                        <tr>
+                            <td>Footwear</td>
+                            <td>Closed-toe shoes with good grip! This keeps your feet safe from bumps and stops you from slipping on wet decks.</td>
+                            <td>Flip-flops or sandals. They offer no protection, and you'll slip and slide!</td>
+                        </tr>
+                        <tr>
+                            <td>Gloves</td>
+                            <td>To protect your hands from ropes and to help you grip things better, especially when it's cold.</td>
+                            <td>N/A</td>
+                        </tr>
+                        <tr>
+                            <td>Wetsuits</td>
+                            <td>If the water is cold! They trap a thin layer of water that your body warms up, keeping you cosy even when you're wet.</td>
+                            <td>If the water is warm, you'll get too hot!</td>
+                        </tr>
+                        <tr>
+                            <td>Drysuit</td>
+                            <td>They completely block water and keep you fully dry even if you fall in - wear if you want to stay fully dry.</td>
+                            <td>If you plan to get wet</td>
+                        </tr>
+                        <tr>
+                            <td>Waterproofs</td>
+                            <td>If you know you will not enter the water e.g. on larger yachts</td>
+                            <td>If you plan to get into the water</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="sub-section-heading">Types of Materials</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Benefit</th>
+                            <th>Drawback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cotton</td>
+                            <td>When you're completely dry and it's warm.</td>
+                            <td>When cotton gets wet, it stays wet, gets heavy, and makes you cold.</td>
+                        </tr>
+                        <tr>
+                            <td>Wool</td>
+                            <td>Keeps you warm even when it's wet! It also breathes well.</td>
+                            <td>N/A</td>
+                        </tr>
+                        <tr>
+                            <td>Synthetic fibre</td>
+                            <td>Good for sailing: These materials are great because they <strong>dry fast</strong> and move sweat away from your skin, keeping you dry and warm.</td>
+                            <td>N/A</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="sub-section-heading">Buoyancy Aid vs Lifejacket</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Buoyancy Aid (50N)</th>
+                            <th>Lifejacket (100N, 150N, 275N)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>What it does</td>
+                            <td>Helps you float easily if you fall in, but you need to be able to swim a bit. It <strong>won't turn you onto your back</strong> if you're knocked out.</td>
+                            <td>Designed to <strong>turn you onto your back</strong> so your face is out of the water, even if you're unconscious (knocked out).</td>
+                        </tr>
+                        <tr>
+                            <td>When we use them</td>
+                            <td>For most sailing activities where you're active and can swim.</td>
+                            <td>For people who can't swim well, or if we're sailing far from shore or in rougher conditions where it's more dangerous.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="image-container">
+                <img src="images/image7.png" alt="50N Buoyancy Aid Symbol">
+            </div>
+
+            <h4 class="sub-section-heading">What the Numbers and Pictures Mean</h4>
+            <p class="mb-2">Imagine it like a secret code that helps you know your gear is safe!</p>
+            <ul class="list-disc list-inside ml-4">
+                <li class="list-item"><strong>ISO/EN Number (like "ISO 12402"):</strong>
+                    <ul class="list-disc list-inside ml-4">
+                        <li class="list-item"><strong>ISO</strong> stands for <strong>International Organization for Standardization</strong>. Think of it as a <strong>worldwide club</strong> that sets rules for how good and safe products should be.</li>
+                        <li class="list-item"><strong>EN</strong> stands for <strong>European Norm</strong>. This means it also meets special safety rules for <strong>Europe</strong>.</li>
+                        <li class="list-item">When you see an ISO/EN number, it's like a <strong>"safety stamp"</strong>. It tells you that your buoyancy aid or lifejacket has been <strong>tested and passed strict safety checks</strong>, so you know it's superior quality and will do its job to keep you safe!</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Pictures (Pictograms):</strong>
+                    <ul class="list-disc list-inside ml-4">
+                        <li class="list-item">These are like <strong>small, quick drawings</strong> that give you essential information without needing words.</li>
+                        <li class="list-item"><strong>"50N," "100N," etc.:</strong> The "N" stands for <strong>Newtons</strong>, which is a way of measuring how much your PFD helps you float. A higher number means it helps you float more!</li>
+                        <li class="list-item"><strong>Weight Range (e.g., "25-40kg"):</strong> This picture tells you the <strong>weight of the person</strong> the PFD is designed for. It's super important to wear one that fits your weight to keep you safe!</li>
+                        <li class="list-item">You might also see other pictures showing <strong>how to put it on</strong> correctly or <strong>how to look after it</strong> (like washing it).</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="rigging" class="content-block">
+            <h3 class="section-heading">Rigging</h3>
+            <p class="mb-4">Before you put up your sails, you'll learn to point the front of your boat directly into the wind, which is called <strong>head to wind</strong>. <a href="taste_of_sailing.html#sailing-techniques-&-manoeuvres" class="text-blue-600 hover:underline">Review Sailing Techniques & Manoeuvres</a> from the Taste of Sailing course for foundational steering and sail handling skills.</p>
+            <div class="image-container">
+                <img src="images/image8.png" alt=" Rigging Diagram with Labels">
+            </div>
+            <div class="embed-container mt-4 mb-4 border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                <iframe src="boat_diagram.html" width="100%" height="600" frameborder="0" class="rounded-lg"></iframe>
+            </div></section>
+
+        <section id="ropework" class="content-block">
+            <h3 class="section-heading">Ropework</h3>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>figure of eight knot:</strong>
+                    <p class="mb-2"><strong>When to use it:</strong> You use it to stop a rope from slipping through a block (a pulley) or fairlead (a guide) on the boat. It's also super useful to prevent the end of a rope from fraying.
+
+                <div class="embed-container mt-4 mb-4 border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                    <iframe src="https://knots3d.com/en/figure-eight-knot" width="100%" height="700" frameborder="0" class="rounded-lg"></iframe>
+                </div>
+                </li>
+                <li class="list-item"><strong>round turn and two half hitches:</strong>
+                    <p class="mb-2"><strong>When to use it:</strong> This is often used for tying a boat up to something strong, like a mooring buoy or a post on a dock, because it holds very well under strain but is still easy to undo. </p>
+
+                        <div class="embed-container mt-4 mb-4 border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                            <iframe src="https://knots3d.com/en/round-turn-two-half-hitches-knot" width="100%" height="700" frameborder="0" class="rounded-lg"></iframe>
+                        </div>
+
+
+
+                    </li>
+                <li class="list-item"><strong>Secure a rope using a Cam Cleat:</strong> (as used on jib & main sheets)
+                    <p class="mb-2"><strong>When to use it:</strong> Cam cleats are commonly used for securing sheets (ropes that control sails) like the jib sheet and main sheet. They use a spring-loaded cam mechanism to grip the rope, allowing for quick adjustment and release.</p>
+                </li>
+                <li class="list-item"><strong>Can secure a rope using a Horned cleat:</strong> (as on marinas)
+                    <p class="mb-2">You'll usually see these on <strong>marinas</strong> (docks where boats are tied up) or on bigger boats. They're used for tying up your boat securely when you're finished sailing. You'll learn the proper figure-eight pattern to secure a line to a horned cleat.</p>
+                </li>
+                <li class="list-item"><strong>Can secure a rope using a Jam cleat:</strong> (often used on tiller to hold down rudder)
+                    <p class="mb-2">Often used on the <strong>tiller</strong> (the stick you steer with) to hold down the rudder. This can keep the rudder in a fixed position, which is handy sometimes. Jam cleats use a simple V-shaped slot to pinch the rope.</p>
+                </li>
+                <li class="list-item"><strong>Can coil a line by flaking it into one hand and secure it to stop it uncoiling.</strong>
+
+                </li>
+                <li class="list-item"><strong>Can throw one end of a coiled line.</strong>
+                    <p class="mb-2">You'll practice the technique of throwing one end of a coiled line accurately to a person on shore or another boat, essential for docking or passing lines.</p>
+                </li>
+            </ul>
+        </section>
+
+        <section id="launch-recovery" class="content-block">
+            <h3 class="section-heading">Launch & Recovery: Getting In & Out of the Water!</h3>
+            <p class="mb-4">You'll learn how to safely push and pull your boat on its <strong>trolley</strong> around the boat park, making sure you don't bump into other boats or people and watch out for overhead wires. When lifting heavier parts like the mast or even the boat itself with help, you'll learn how to work with others to lift safely. You'll be taught to always look up and be aware of any overhead wires or cables when moving your boat, as they can be dangerous. With guidance, you'll practice pushing your boat into the water from the shore or a ramp, thinking about the wind direction and how deep the water is so your rudder and daggerboard don't hit the bottom. After launching, you'll learn the best place to park your boat's trolley so it's out of the way and safe. Finally, you'll practice sailing back to your starting point and carefully guiding your boat back onto its trolley, again considering the wind to make it easy.</p>
+        </section>
+
+        <section id="sailing-techniques" class="content-block">
+            <h3 class="section-heading">Sailing Techniques & Manoeuvres</h3>
+            <h4 class="sub-section-heading">Basic Boat Handling</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Paddling/Rowing:</strong> You'll learn to <strong>paddle or row your boat in a straight line</strong> by focusing on symmetrical strokes on both sides, keeping your gaze fixed on a distant point ahead to maintain your bearing. This is a crucial emergency skill if your sail becomes unusable (e.g., it rips) and you need to get back to shore or a safe location.</li>
+                <li class="list-item"><strong>Helm and Crew Roles:</strong> If you're in a two-person boat, it's <strong>vital</strong> that you spend <strong>equal amounts of time as both helm and crew</strong>. This is achieved by regularly switching positions during practice sessions. As helm, you'll gain a feel for steering and sail trim. As crew, you'll learn sail handling, observation, and effective communication, ensuring a well-rounded and collaborative learning experience.</li>
+                <li class="list-item"><strong>Stopping the Boat (In Irons):</strong> You'll practice how to <strong>stop the boat precisely at a chosen spot on the water</strong> using the "in irons" technique. This involves slowly turning the bow of the boat directly into the wind. As the boat points into the wind, the sails will luff (flap) and lose power, bringing the boat to a gradual stop. You'll learn to anticipate the boat's momentum and timing to halt exactly where desired.</li>
+                <li class="list-item"><strong>Getting Out of Irons and Getting Underway:</strong> You'll also learn to effectively <strong>get the boat out of irons</strong> and <strong>get underway again</strong> by sheeting in the sail and bearing away (turning the boat away from the wind). From the "in irons" position, you'll gently push the tiller to turn the bow slightly off the wind. Simultaneously, you'll trim (sheet in) the mainsheet to catch the wind, allowing the boat to gain momentum and begin sailing again.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Steering and Course Control</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Reaching (Across the Wind):</strong> You'll practice sailing fast <strong>across the wind</strong> (known as a <strong>beam reach</strong>), focusing on <strong>controlling your speed and avoiding obstacles</strong>. To achieve this, you'll trim your sail so it's full and pulling, but not so tight that it wrinkles near the mast (which indicates "stalling" and loss of power). You'll use the rudder for precise steering to navigate around markers or other boats, observing the wind's effect on your direction and adjusting your course accordingly.</li>
+                <li class="list-item"><strong>Close-Hauled Sailing:</strong> You'll learn to sail as <strong>close to the wind as possible without the sails flapping</strong> (called <strong>close-hauled</strong>). This technique is how you make progress against the wind by zig-zagging. While doing so, you'll aim to:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Steer a reasonably constant course:</strong> This is achieved by making small, precise adjustments to the tiller while constantly observing the wind direction and the telltales on your sail. The goal is to keep the boat's bow pointed as high into the wind as possible without the sails luffing.</li>
+                        <li class="list-item"><strong>Avoid unintended tacks:</strong> This requires constant attention to your course and wind direction. If the boat turns too far into the wind, it will "luff up" and potentially tack unintentionally. You'll learn to make immediate, corrective tiller movements to prevent this.</li>
+                        <li class="list-item"><strong>Maintain proper sheeting positions:</strong> The sails should be trimmed in tightly but not over-trimmed. You'll learn to use the telltales as visual guides – they should be streaming smoothly aft, indicating optimal airflow over the sail.</li>
+                        <li class="list-item"><strong>Keep the boat balanced:</strong> This involves using your body weight (hiking out) to counteract the force of the wind on the sails, keeping the boat flat and preventing excessive heeling (leaning).</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image9.png" alt="Points of Sailing Diagram for Start Sailing">
+            </div>
+
+            <p class="mb-4"><strong>Running (Downwind):</strong> When sailing with the wind directly behind you, known as running, you'll learn to keep the sail out wide to catch all the wind. You'll also practice sailing downwind on a <strong>training run</strong> (a broad reach but not a dead run), focusing on:</p>
+            <ul class="list-disc list-inside ml-4 mt-2">
+                <li class="list-item"><strong>Steering a reasonably constant course:</strong> This can be challenging downwind as the boat can be less responsive. You'll use subtle tiller movements and observe your wake to ensure you're holding a steady line.</li>
+                        <li class="list-item"><strong>Avoiding unintended gybes:</strong> An uncontrolled gybe can be dangerous. You'll learn to anticipate wind shifts and make small course corrections to keep the wind on the desired side of the boat, preventing the boom from swinging across unexpectedly.</li>
+                        <li class="list-item"><strong>Maintain correct sail setting:</strong> The sail will be let out almost perpendicular to the boat, maximizing its exposure to the wind. You'll observe its shape and adjust for optimal drive.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image10.png" alt="Points of Sailing Diagram for Running">
+            </div>
+
+            <p class="mb-4"><strong>Wind and Current Awareness:</strong> You'll begin to understand <strong>how the wind and any water currents affect your boat's movement</strong>, and <strong>how to use them to your advantage when steering to avoid obstacles</strong>. This involves observing ripples on the water, flags, and other boats to gauge wind shifts and currents. You'll then adjust your course and sail trim proactively to leverage these forces for efficient and safe navigation around markers or other vessels.</p>
+
+            <h4 class="sub-section-heading">Turning Manoeuvres</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Tacking (Through the Wind):</strong> Your <strong>tacks</strong> (turning through the wind) will become smoother! You'll practice the sequence of turning the boat, moving your body across, and adjusting the sail in one fluid motion, coordinating with your crew. To achieve a smooth tack, you'll:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Maintain boat speed through the manoeuvre:</strong> You'll initiate the turn with good speed and release the mainsheet just enough for the sail to pass through the wind, then re-trim quickly on the new tack to maintain momentum.</li>
+                        <li class="list-item"><strong>Maintain an awareness of and avoiding other water users:</strong> Before initiating a tack, you'll perform a 360-degree scan to ensure the path is clear and communicate your intentions clearly to your crew and any nearby boats (e.g., "Ready to tack!").</li>
+                        <li class="list-item"><strong>Maintain control of the boat before, during, and after the manoeuvre:</strong> This means executing a deliberate and controlled turn with the tiller, ensuring the boat doesn't lose excessive speed or become unstable. You'll also re-balance the boat immediately on the new tack.</li>
+                        <li class="list-item"><strong>Using the tiller extension if normally fitted to your boat type:</strong> You'll learn to hold the tiller extension effectively to allow you to lean out and balance the boat while still steering.</li>
+                        <li class="list-item"><strong>Keeping your crew informed of your intentions and progress:</strong> Clear communication is key. You'll call out "Ready about!" or "Tacking!" to your crew and confirm "Tacking!" as the boat turns.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image4.png" alt="Tacking Diagram showing boat movement">
+            </div>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Gybing (Through the Wind from Astern):</strong> <strong>Gybing</strong> is a new turn where you turn the back of your boat through the wind, meaning the boom will swing across the boat. You'll learn to <strong>control the smooth swing of the boom carefully</strong>, ensuring it doesn't hit anyone and that the boat remains balanced throughout the turn. It's often harder to control than a tack, especially in stronger winds. When gybing, you'll work on:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Maintaining boat speed through the manoeuvre:</strong> Like tacking, you'll aim to keep the boat moving well. You'll pull the mainsheet in slightly just before the gybe to control the boom's swing, then let it out quickly on the new gybe.</li>
+                        <li class="list-item"><strong>Maintaining an awareness of, and avoiding other water users:</strong> Again, a thorough scan before initiating the gybe is crucial. You'll communicate your intentions ("Ready to gybe!" or "Gybing!") to your crew and other vessels.</li>
+                        <li class="list-item"><strong>Maintaining control of the boat before, during, and after the manoeuvre:</strong> This involves a steady hand on the tiller to turn the stern through the wind. The key is to manage the boom's swing by actively sheeting the mainsheet. You'll ensure the boat doesn't heel excessively or become unstable.</li>
+                        <li class="list-item"><strong>Using the tiller extension if normally fitted to your boat type:</strong> This allows for better body position and control during the turn.</li>
+                        <li class="list-item"><strong>Keeping your crew informed of your intentions and progress:</strong> Clear commands like "Ready to gybe!" and "Gybing!" are essential for coordinated action and safety. You'll also warn your crew about the boom's swing.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image11.png" alt="Gybing Diagram showing boat movement">
+            </div>
+        </section>
+
+        <section id="capsize-recovery" class="content-block">
+            <h3 class="section-heading">Capsize Recovery</h3>
+            <p class="mb-4">You'll actively practice flipping your boat back over after it capsizes and then climbing back in safely. <a href="taste_of_sailing.html#capsize-recovery" class="text-blue-600 hover:underline">Review Capsize Recovery</a> from the Taste of Sailing course for initial safety techniques.</p>
+        </section>
+
+        <section id="sailing-knowledge" class="content-block">
+            <h3 class="section-heading">Sailing Knowledge</h3>
+            <h4 class="sub-section-heading">Points of Sailing</h4>
+            <p class="mb-4">You'll be able to <strong>describe the different points of sailing</strong>, understanding your boat's angle in relation to the wind and how to trim your sails accordingly. You'll be able to point to diagrams or other boats and name how they are sailing in relation to the wind.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Close-Hauled:</strong> This is the point of sailing where you are sailing as <strong>close to the wind as possible</strong> without your sails luffing (flapping). The boat will be heading approximately 45 degrees into the wind. To achieve this, your sails will be pulled in tightly, and you'll maintain precise steering and balance to keep the boat tracking efficiently "upwind" by zig-zagging (tacking).</li>
+                <li class="list-item"><strong>Beam Reach:</strong> When sailing on a <strong>beam reach</strong>, the wind is coming directly across the side of your boat (approximately 90 degrees to your boat's direction). This is often the fastest and most stable point of sailing. You'll learn to trim your sails to a moderate position, letting them out slightly from the close-hauled position to catch the wind effectively, maintaining good speed and control.</li>
+                <li class="list-item"><strong>Broad Reach (or Training Run):</strong> On a <strong>broad reach</strong>, the wind is coming from behind your boat, but still slightly to one side (e.g., 120-150 degrees off the bow). A "training run" often refers to a broad reach where the boat is heading almost directly downwind, but not quite. Your sails will be let out further than a beam reach to maximize the wind's drive. This point of sailing requires careful attention to avoid an unintended gybe, especially in stronger winds.</li>
+                <li class="list-item"><strong>Run:</strong> A <strong>run</strong> is when you are sailing directly downwind, with the wind coming from directly behind your boat (approximately 180 degrees). To achieve maximum speed and efficiency on a run, you'll let your sails out as wide as possible, often perpendicular to the boat. This point of sailing can be less stable than a reach and demands constant awareness of the wind and careful control of the boom to prevent accidental gybes.</li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image12.png" alt="Points of Sailing Diagram with all points">
+            </div>
+
+            <h4 class="sub-section-heading">Collision Avoidance (Rules of the Road)</h4>
+            <p class="mb-4">Understanding and applying the maritime "Rules of the Road" is paramount to preventing collisions and ensuring safe navigation.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Understanding Right of Way:</strong> You'll learn the fundamental "Rules of the Road" for sailors, enabling you to <strong>take the correct action when boats on different tacks meet</strong>. This is crucial for preventing collisions.
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Different Tacks:</strong> When two sailboats are approaching each other with the wind coming from different sides (on opposite tacks), the boat with the wind on its <strong>port (left) side</strong> must give way to the boat with the wind on its <strong>starboard (right) side</strong>. You'll practice identifying your own tack and the tack of approaching boats to determine who has right of way and execute the necessary manoeuvre (e.g., altering course or slowing down).</li>
+                        <li class="list-item"><strong>Same Tack:</strong> When two boats are on the same tack (wind coming from the same side for both), the <strong>leeward (downwind) boat has right of way</strong>. The windward (upwind) boat must give way. You'll learn to maintain situational awareness, especially when sailing parallel to other boats on the same tack, to ensure you respect the leeward boat's right of way.</li>
+                        <li class="list-item"><strong>Other Vessels:</strong> You'll also learn basic rules for interactions with powerboats, commercial vessels, and vessels constrained by their draft, understanding that they generally have less maneuverability than a sailboat and thus often have right of way.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image13.png" alt="Rules of the Road Diagram">
+            </div>
+
+            <h4 class="sub-section-heading">Environmental Awareness</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Tides and Currents:</strong> You'll be able to <strong>describe how tides and currents can affect them</strong>. You'll understand that the water moves in and out (tides) and sometimes flows in rivers or channels (currents), and how this moving water can push your boat around or change how fast you go. You'll learn to:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Identify Tidal Patterns:</strong> Recognize rising and falling tides and how they impact water depth, which is vital for safe navigation, especially near shore or in shallow areas.</li>
+                        <li class="list-item"><strong>Observe Current Effects:</strong> Spot visual clues of currents (e.g., ripples, objects moving on the water) and understand how a current can increase or decrease your boat's speed over the ground or push you off course. You'll learn to account for current when planning your route or aiming for a specific destination.</li>
+
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">Safety Equipment</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Personal Flotation Devices (PFDs):</strong> You'll be able to <strong>identify when sailors are required to wear PFDs by law</strong>. This includes understanding local regulations and common best practices for when a PFD should be worn, such as when sailing in strong winds, cold water, or when you are a non-swimmer, or simply as a mandatory requirement by the sailing school or club. You'll also learn the importance of ensuring your PFD fits correctly and is in good condition.</li>
+            </ul>
+
+            <h4 class="sub-section-heading">Sailing Terminology</h4>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Common Sailing Terms:</strong> You'll learn to <strong>identify and use common sailing terms</strong> accurately, both in conversation and when responding to instructions. This includes being able to point to diagrams or other boats and name how they are sailing in relation to the wind, using the correct terminology. Key terms you'll master include:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Sheet in:</strong> To pull the sail closer to the centerline of the boat, typically to gain power or sail closer to the wind.</li>
+                        <li class="list-item"><strong>Sheet out:</strong> To let the sail further away from the centerline of the boat, typically to reduce power or sail further downwind.</li>
+                        <li class="list-item"><strong>Luff up:</strong> To turn the boat towards the wind, causing the sails to flap and lose power.</li>
+                        <li class="list-item"><strong>Bear away:</strong> To turn the boat away from the wind.</li>
+                        <li class="list-item"><strong>Upwind:</strong> Sailing towards the direction from which the wind is blowing.</li>
+                        <li class="list-item"><strong>Downwind:</strong> Sailing in the same direction as the wind is blowing.</li>
+                        <li class="list-item"><strong>Tacking:</strong> The manoeuvre of turning the bow of the boat through the wind to change sides.</li>
+                        <li class="list-item"><strong>Gybing:</strong> The manoeuvre of turning the stern of the boat through the wind to change sides.</li>
+                        <li class="list-item"><strong>In Irons:</strong> The state where a boat is stuck directly facing into the wind, with sails luffing and unable to move forward or backward.</li>
+                        <li class="list-item"><strong>Port:</strong> The left-hand side of the boat when looking forward.</li>
+                        <li class="list-item"><strong>Starboard:</strong> The right-hand side of the boat when looking forward.</li>
+                        <li class="list-item"><strong>Bow:</strong> The front part of the boat.</li>
+                        <li class="list-item"><strong>Stern:</strong> The back part of the boat.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="coastal-knowledge" class="content-block">
+            <h3 class="section-heading">Coastal Knowledge: Understanding Your Environment</h3>
+            <h4 class="sub-section-heading">Tidal Cycles</h4>
+            <p class="mb-4">You'll learn about the regular rise and fall of the sea level, known as <strong>tides</strong>, and how they are primarily caused by the moon's gravitational pull on the Earth's oceans.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>How Often Tides Occur:</strong> You'll be able to <strong>describe how often high and low tides occur</strong>. In most coastal areas, high and low tides occur approximately twice a day. This means you will experience two high tides and two low tides within roughly a 24-hour period. Each change from a high-water mark to a low water mark (or vice-versa) takes approximately 6 hours.</li>
+                <li class="list-item"><strong>High Tide:</strong> This is when the water level reaches its highest point. At high tide, there is more water in harbours, over sandbanks, and closer to the shoreline.</li>
+                <li class="list-item"><strong>Low Tide:</strong> This is when the water level reaches its lowest point. At low tide, certain areas that were submerged at high tide may become dry, revealing rocks, sandbanks, or exposing mudflats.</li>
+            </ul>
+            <div class="image-container">
+                <img src="images/image14.png" alt="Tidal Currents Diagram">
+            </div>
+            <h4 class="sub-section-heading">Implications of Tides on Sailing Activities</h4>
+            <p class="mb-4">You'll be able to <strong>describe the implications of tides on activities</strong>, recognizing their critical importance for safe navigation and planning:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Access to Harbours and Slipways:</strong> Tides significantly affect your ability to launch, recover, and access certain harbours or slipways. At low tide, some areas may become too shallow to allow your boat to float, potentially leading to you getting stuck in mud or on the bottom. You'll learn to check tidal predictions to ensure sufficient water depth for your planned activities.</li>
+                <li class="list-item"><strong>Navigating Shallow Areas:</strong> Areas that appear safe to sail through at high tide can become dangerously shallow or even completely dry at low tide. This presents a significant risk of <strong>running aground</strong> (getting stuck on the seabed or a hidden obstacle). You'll learn to consult charts and tidal information to identify such areas and avoid them during low water.</li>
+                <li class="list-item"><strong>Tidal Currents:</strong> As the tide moves in and out, it creates <strong>tidal currents</strong> (moving water). These currents can have a substantial impact on your boat's speed and direction over the ground. You'll learn how a strong current can either boost your progress or slow you down, and how it can push your boat off your intended course, requiring you to adjust your steering to stay on track.</li>
+            </ul>
+            <p class="mb-4">Understanding these tidal implications is essential for planning your sailing trips safely, avoiding hazards, and ensuring you can always get to and from your desired locations without incident.</p>
+        </section>
+
+        <section id="weather-safety" class="content-block">
+            <h3 class="section-heading">Weather & Safety</h4>
+            <h4 class="sub-section-heading">Understanding Wind Direction and Its Impact</h4>
+            <p class="mb-4">You'll learn to identify the direction of the wind relative to the land and understand its significant implications for your sailing activity and safety.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Onshore Winds:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Description:</strong> Onshore winds are those that blow <strong>towards</strong> the land from the water.</li>
+                        <li class="list-item"><strong>Effect on Sailing:</strong> When sailing with an onshore wind, it generally makes it easier to return to shore if you encounter difficulties, as the wind will naturally push your boat in that direction. This can be a comforting factor, particularly for beginners or when exploring new areas.</li>
+                        <li class="list-item"><strong>Safety Implication:</strong> Provides a 'safety net' pushing you towards land in case of equipment failure or exhaustion. However, you must still manage your approach to the shore to avoid hazards.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>Offshore Winds:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Description:</strong> Offshore winds are those that blow <strong>away</strong> from the land towards the open water.</li>
+                        <li class="list-item"><strong>Effect on Sailing:</strong> Sailing with an offshore wind means that if you lose control, break down, or become tired, the wind will push you further away from the safety of the land. This makes it significantly harder to sail or return to shore, potentially increasing the danger if you drift.</li>
+                        <li class="list-item"><strong>Safety Implication:</strong> Demands greater caution and preparedness. Always ensure your boat is in good working order and that you have a reliable means of propulsion (e.g., oars, small engine) if an offshore wind is present. It's crucial to be mindful of your ability to get back against the wind.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="image-container flex justify-center my-6">
+                <img src="images/onshore-offshore.png" alt="Onshore vs Offshore Winds Diagram" class="rounded-lg shadow-lg max-w-full h-auto border border-gray-300">
+
+            </div>
+            <h4 class="sub-section-heading">Understanding Wind Strength and Its Impact</h4>
+            <p class="mb-4">You'll also learn how the strength of the wind dictates your sailing activity, and the safety measures you need to employ.</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>High Winds:</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Description:</strong> High winds refer to strong wind conditions that generate significant power in your sails.</li>
+                        <li class="list-item"><strong>Effect on Sailing:</strong> While exhilarating, high winds lead to very fast sailing and can make the boat harder to control. The increased force on the sails can cause excessive heeling (leaning over) and put strain on the boat and rigging.</li>
+                        <li class="list-item"><strong>Safety Implication:</strong> In high winds, it's often necessary to <strong>reef your sail</strong> (make it smaller) to reduce its area and thus reduce the power generated. This helps maintain control, reduces stress on the boat, and prevents capsizing. You'll learn the techniques for reefing. Sailing in high winds requires more experience and skill to manage the boat effectively and safely.</li>
+                    </ul>
+                </li>
+                <li class="list-item"><strong>No Wind (Calm Conditions):</strong>
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Description:</strong> No wind, or light wind, refers to calm conditions where there is insufficient wind to propel the boat.</li>
+                        <li class="list-item"><strong>Effect on Sailing:</strong> This results in a slow, gentle day on the water, or no movement at all. While peaceful, it means your boat has little steerage way (ability to respond to the rudder) and you cannot sail to your desired destination.</li>
+                        <li class="list-item"><strong>Safety Implication:</strong> The primary safety concern in no wind is being stranded. You'll learn the importance of having alternative means of propulsion, such as <strong>paddles or oars</strong>, to get back to shore or to a more favourable wind area. While generally minimal risk for capsizing, it can lead to exposure if caught unexpectedly far from shore, emphasizing the need for contingency plans.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 class="sub-section-heading">General Safety Practices</h4>
+            <p class="mb-4">Beyond understanding wind conditions, you'll learn crucial safety habits:</p>
+            <ul class="list-disc list-inside ml-4 mb-4">
+                <li class="list-item"><strong>Shore Contact and Trip Plans:</strong> You'll understand why it's important to <strong>tell someone ashore</strong> (like family, friends, or a sailing club contact) <strong>where you're going and when you expect to be back</strong>. This is a critical safety practice. If you don't return as expected, someone will know to initiate a search or call for help, providing vital information about your last known location.</li>
+                <li class="list-item"><strong>Signalling for Help:</strong> You'll learn different ways to <strong>get help if you or someone else needs it on the water</strong>:
+                    <ul class="list-disc list-inside ml-4 mt-2">
+                        <li class="list-item"><strong>Visual Signals:</strong> Waving your arms slowly and repeatedly, raising and lowering them out to your sides.</li>
+                        <li class="list-item"><strong>Audible Signals:</strong> Using a loud whistle (distinct from recreational sounds), or other sound-producing devices.</li>
+                        <li class="list-item"><strong>VHF Radio:</strong> If you are on a safety boat or a larger vessel, you'll learn basic radio procedures to make a distress call (e.g., Mayday or Pan-Pan).</strong></li>
+                        <li class="list-item"><strong>Other Devices:</strong> Flares (day/night), signal mirrors, or even your mobile phone in areas with coverage (though less dependable on water).</li>
+                    </ul>
+                </li>
+            </ul>
+            <p class="mb-4">By mastering these aspects of weather awareness and safety procedures, you'll be well-equipped to make informed decisions and ensure a safe and enjoyable sailing experience.</p>
+        </section>
+
+        <section class="content-block">
+            <h3 class="section-heading">What Next? Keep on Sailing!</h3>
+            <p class="mb-4">Your instructor will continue to guide you on your sailing journey, encouraging you to keep practicing and learning more. You're now ready for the "Basic Skills" course!</p>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz-section" class="container mx-auto px-4 py-8">
+            <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Quiz Section</h2>
+
+            <form id="combined-quiz" class="bg-gray-100 p-4 rounded-lg shadow-md">
+            <!-- Quiz content goes here -->
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Objective</h4>
+            <p class="mb-4">What is the main goal of the "Start Sailing" course?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="objective-quiz" id="objective-option1" value="option1"> To sail independently in strong winds</li>
+            <li><input type="radio" name="objective-quiz" id="objective-option2" value="option2"> To sail mostly on your own in gentle winds</li>
+            <li><input type="radio" name="objective-quiz" id="objective-option3" value="option3"> To learn advanced sailing techniques</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Clothing & Equipment</h4>
+            <p class="mb-4">Which material keeps you warm even when wet?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="clothing-quiz" id="clothing-option1" value="option1"> Cotton</li>
+            <li><input type="radio" name="clothing-quiz" id="clothing-option2" value="option2"> Wool</li>
+            <li><input type="radio" name="clothing-quiz" id="clothing-option3" value="option3"> Synthetic fibre</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Rigging</h4>
+            <p class="mb-4">What does "head to wind" mean?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="rigging-quiz" id="rigging-option1" value="option1"> Pointing the boat directly into the wind</li>
+            <li><input type="radio" name="rigging-quiz" id="rigging-option2" value="option2"> Sailing downwind</li>
+            <li><input type="radio" name="rigging-quiz" id="rigging-option3" value="option3"> Turning the boat away from the wind</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Ropework</h4>
+            <p class="mb-4">Which knot is used to stop a rope from slipping through a block?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="ropework-quiz" id="ropework-option1" value="option1"> Figure of eight knot</li>
+            <li><input type="radio" name="ropework-quiz" id="ropework-option2" value="option2"> Round turn and two half hitches</li>
+            <li><input type="radio" name="ropework-quiz" id="ropework-option3" value="option3"> Jam cleat</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Launch & Recovery</h4>
+            <p class="mb-4">What should you always check for when moving your boat?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="launch-quiz" id="launch-option1" value="option1"> Overhead wires</li>
+            <li><input type="radio" name="launch-quiz" id="launch-option2" value="option2"> Wind direction</li>
+            <li><input type="radio" name="launch-quiz" id="launch-option3" value="option3"> Water depth</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Sailing Techniques</h4>
+            <p class="mb-4">What is the term for stopping the boat by pointing it directly into the wind?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="techniques-quiz" id="techniques-option1" value="option1"> In irons</li>
+            <li><input type="radio" name="techniques-quiz" id="techniques-option2" value="option2"> Close-hauled</li>
+            <li><input type="radio" name="techniques-quiz" id="techniques-option3" value="option3"> Beam reach</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Capsize Recovery</h4>
+            <p class="mb-4">What is the first step in recovering from a capsize?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="capsize-quiz" id="capsize-option1" value="option1"> Climb back into the boat</li>
+            <li><input type="radio" name="capsize-quiz" id="capsize-option2" value="option2"> Flip the boat back upright</li>
+            <li><input type="radio" name="capsize-quiz" id="capsize-option3" value="option3"> Secure the sails</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Sailing Knowledge</h4>
+            <p class="mb-4">Which point of sailing is the fastest and most stable?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="knowledge-quiz" id="knowledge-option1" value="option1"> Close-hauled</li>
+            <li><input type="radio" name="knowledge-quiz" id="knowledge-option2" value="option2"> Beam reach</li>
+            <li><input type="radio" name="knowledge-quiz" id="knowledge-option3" value="option3"> Broad reach</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Coastal Knowledge</h4>
+            <p class="mb-4">How often do high and low tides occur in most coastal areas?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="coastal-quiz" id="coastal-option1" value="option1"> Once a day</li>
+            <li><input type="radio" name="coastal-quiz" id="coastal-option2" value="option2"> Twice a day</li>
+            <li><input type="radio" name="coastal-quiz" id="coastal-option3" value="option3"> Every six hours</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Weather & Safety</h4>
+            <p class="mb-4">Which wind direction makes it easier to return to shore?</p>
+            <ul class="list-disc list-inside ml-4">
+            <li><input type="radio" name="weather-quiz" id="weather-option1" value="option1"> Offshore wind</li>
+            <li><input type="radio" name="weather-quiz" id="weather-option2" value="option2"> Onshore wind</li>
+            <li><input type="radio" name="weather-quiz" id="weather-option3" value="option3"> Crosswind</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Rigging</h4>
+            <p class="mb-4">What is the term for pointing the boat directly into the wind?</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="rigging-quiz2" id="rigging-option1" value="option1"> Head to Wind</li>
+                <li><input type="radio" name="rigging-quiz2" id="rigging-option2" value="option2"> Close-hauled</li>
+                <li><input type="radio" name="rigging-quiz2" id="rigging-option3" value="option3"> Broad Reach</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Launch & Recovery</h4>
+            <p class="mb-4">What should you check for before launching your boat?</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="launch-recovery-quiz" id="launch-recovery-option1" value="option1"> Overhead wires</li>
+                <li><input type="radio" name="launch-recovery-quiz" id="launch-recovery-option2" value="option2"> Water depth</li>
+                <li><input type="radio" name="launch-recovery-quiz" id="launch-recovery-option3" value="option3"> Both of the above</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Sailing Techniques</h4>
+            <p class="mb-4">What is the term for stopping the boat by letting the sail flap freely?</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="sailing-techniques-quiz" id="sailing-techniques-option1" value="option1"> Heaving To</li>
+                <li><input type="radio" name="sailing-techniques-quiz" id="sailing-techniques-option2" value="option2"> Luffing</li>
+                <li><input type="radio" name="sailing-techniques-quiz" id="sailing-techniques-option3" value="option3"> Tacking</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Coastal Knowledge</h4>
+            <p class="mb-4">What is the term for the horizontal movement of water caused by tides?</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="coastal-knowledge-quiz" id="coastal-knowledge-option1" value="option1"> Tidal Stream</li>
+                <li><input type="radio" name="coastal-knowledge-quiz" id="coastal-knowledge-option2" value="option2"> Tidal Range</li>
+                <li><input type="radio" name="coastal-knowledge-quiz" id="coastal-knowledge-option3" value="option3"> Spring Tide</li>
+            </ul>
+            </div>
+
+            <div class="quiz-container mb-6">
+            <h4 class="quiz-heading text-lg font-bold mb-2"> Weather & Safety</h4>
+            <p class="mb-4">What is the Beaufort scale used to measure?</p>
+            <ul class="list-disc list-inside ml-4">
+                <li><input type="radio" name="weather-safety-quiz" id="weather-safety-option1" value="option1"> Wind Speed</li>
+                <li><input type="radio" name="weather-safety-quiz" id="weather-safety-option2" value="option2"> Wave Height</li>
+                <li><input type="radio" name="weather-safety-quiz" id="weather-safety-option3" value="option3"> Visibility</li>
+            </ul>
+            </div>
+
+            <button type="button" onclick="submitCombinedQuiz()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit All</button>
+            <p id="quiz-results" class="mt-4"></p>
+            </form>
+            </form>
+        </section>
+
+        <script>
+            function submitCombinedQuiz() {
+            const answers = {
+            'objective-quiz': 'option2',
+            'clothing-quiz': 'option2',
+            'rigging-quiz': 'option1',
+            'ropework-quiz': 'option1',
+            'launch-quiz': 'option1',
+            'techniques-quiz': 'option1',
+            'capsize-quiz': 'option2',
+            'knowledge-quiz': 'option2',
+            'coastal-quiz': 'option2',
+            'weather-quiz': 'option2',
+            'launch-recovery-quiz': 'option3',
+            'sailing-techniques-quiz': 'option2',
+            'coastal-knowledge-quiz': 'option1',
+            'weather-safety-quiz': 'option1',
+            'rigging-quiz2': 'option1'
+            };
+
+            let score = 0;
+            let totalQuestions = Object.keys(answers).length;
+
+            for (let question in answers) {
+            const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+            const questionContainer = document.querySelector(`input[name="${question}"]`).closest('.quiz-container');
+            if (selectedOption && selectedOption.value === answers[question]) {
+            score++;
+            questionContainer.classList.remove('bg-red-100');
+            questionContainer.classList.add('bg-green-100');
+            } else {
+            questionContainer.classList.remove('bg-green-100');
+            questionContainer.classList.add('bg-red-100');
+            }
+            }
+
+            const resultsContainer = document.getElementById('quiz-results');
+            resultsContainer.textContent = `You scored ${score} out of ${totalQuestions}.`;
+            resultsContainer.classList.add(score === totalQuestions ? 'text-green-500' : 'text-red-500');
+            }
+        </script>
+    </main>
+
+    <button id="back-to-top" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 hidden" onclick="scrollToTop()">Back to Top</button>
+    <script>
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) {
+                backToTopButton.classList.remove('hidden');
+            } else {
+                backToTopButton.classList.add('hidden');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+<footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <p class="text-lg font-semibold">&copy; 2025
+                <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+            </p>
+            <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+            <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.782 2.295 7.148 2.233 8.414 2.175 8.794 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</footer></svg>
+
+</html>

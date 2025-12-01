@@ -1,0 +1,322 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Coastal Navigation — Coming Soon</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --bg1: #012a4a;
+            --bg2: #01497c;
+            --accent: #ffdd57;
+            --glass: rgba(255,255,255,0.06);
+            --card: rgba(255,255,255,0.04);
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+            background: radial-gradient(1200px 600px at 10% 10%, rgba(1,41,74,0.6), transparent 10%),
+                                    linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+            color:#e8f6ff;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:48px;
+            overflow:hidden;
+        }
+
+        .card{
+            width:min(980px,96%);
+            display:grid;
+            grid-template-columns: 1fr 360px;
+            gap:28px;
+            align-items:center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+            border:1px solid rgba(255,255,255,0.06);
+            padding:32px;
+            border-radius:14px;
+            backdrop-filter: blur(6px) saturate(120%);
+            box-shadow: 0 12px 30px rgba(2,6,23,0.55);
+        }
+
+        .lead{
+            padding:18px 12px;
+        }
+        h1{
+            margin:0 0 8px 0;
+            font-size:clamp(22px,4.5vw,36px);
+            line-height:1.05;
+            letter-spacing:-0.02em;
+            font-weight:600;
+        }
+        p.lead-text{
+            margin:0 0 20px 0;
+            color:rgba(232,246,255,0.92);
+            opacity:0.95;
+            font-size:clamp(14px,1.8vw,16px);
+        }
+
+        /* waves & boat panel */
+        .visual{
+            position:relative;
+            height:220px;
+            border-radius:10px;
+            overflow:hidden;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.06) 100%);
+            display:flex;
+            align-items:flex-end;
+            justify-content:center;
+            padding:16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+
+        /* waves from SVG repeated */
+        .waves{
+            position:absolute;
+            left:0; right:0; bottom:0;
+            height:72%;
+            pointer-events:none;
+            overflow:hidden;
+        }
+        .wave{
+            position:absolute;
+            width:200%;
+            height:100%;
+            left:-50%;
+            background-repeat: repeat-x;
+            transform: translate3d(0,0,0);
+            opacity:0.65;
+        }
+        .wave.w1{
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0 30 C150 90 350 -10 600 30 C850 70 1050 30 1200 60 L1200 120 L0 120 Z" fill="%2300a3ff"/></svg>');
+            animation: wave 11s linear infinite;
+            opacity:0.35;
+            bottom:0;
+            transform: translate3d(0, 6px, 0);
+        }
+        .wave.w2{
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0 60 C200 0 400 110 600 60 C800 10 1000 60 1200 40 L1200 120 L0 120 Z" fill="%230077c7"/></svg>');
+            animation: wave 16s linear infinite reverse;
+            opacity:0.5;
+            bottom:-6px;
+            transform: translate3d(0, 0, 0) scaleY(1.05);
+        }
+        @keyframes wave{
+            from{transform: translate3d(0,0,0)}
+            to{transform: translate3d(-25%,0,0)}
+        }
+
+        .boat{
+            position:relative;
+            width:120px;
+            height:80px;
+            z-index:6;
+            transform-origin:center bottom;
+            animation: bob 4s ease-in-out infinite;
+            filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
+        }
+        @keyframes bob{
+            0%{transform: translateY(0) rotate(-1deg)}
+            50%{transform: translateY(-8px) rotate(2deg)}
+            100%{transform: translateY(0) rotate(-1deg)}
+        }
+
+        /* right column - subscribe box */
+        .subscribe{
+            padding:18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.04);
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+        label{font-size:13px;opacity:0.9}
+        .input-row{
+            display:flex;
+            gap:8px;
+        }
+        input[type="email"]{
+            flex:1;
+            padding:10px 12px;
+            border-radius:8px;
+            border:1px solid rgba(255,255,255,0.06);
+            background:rgba(255,255,255,0.02);
+            color:inherit;
+            font-size:14px;
+            outline:none;
+        }
+        button.cta{
+            padding:10px 14px;
+            border-radius:8px;
+            border:0;
+            background: linear-gradient(90deg,#ffb703,#fb8500);
+            color:#04293a;
+            font-weight:600;
+            cursor:pointer;
+            transition:transform .15s ease, box-shadow .15s ease;
+        }
+        button.cta:active{transform:translateY(1px)}
+        .small{font-size:12px; opacity:0.85}
+
+        .muted{opacity:0.78; font-size:13px}
+
+        footer{
+            grid-column: 1 / -1;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:6px;
+            color:rgba(232,246,255,0.65);
+            font-size:13px;
+        }
+
+        @media (max-width:880px){
+            .card{grid-template-columns:1fr; gap:18px}
+            .visual{height:180px}
+        }
+    </style>
+</head>
+<body>
+    <main class="card" role="main" aria-labelledby="coming-title">
+        <section class="lead">
+            <h1 id="coming-title">Coastal Navigation — Coming Soon</h1>
+            <p class="lead-text">Sailing notes, local tides, and practical coastal navigation guidance for safe and confident trips. Working on something useful — stay on course.</p>
+
+            <div class="visual" aria-hidden="true">
+                <!-- Boat SVG -->
+                <div class="boat" aria-hidden="true">
+                    <svg viewBox="0 0 200 130" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+                        <g transform="translate(0,6)">
+                            <ellipse cx="100" cy="96" rx="70" ry="20" fill="rgba(0,0,0,0.16)"/>
+                            <path d="M30 86 C60 70 140 70 170 86 L160 86 C140 80 60 80 40 86 Z" fill="#5b2a05"/>
+                            <rect x="96" y="12" width="6" height="54" fill="#2c2c2c"/>
+                            <path d="M100 14 L140 46 L100 46 Z" fill="#fff7cc"/>
+                            <path d="M100 16 L128 42 L100 42 Z" fill="#ffb703"/>
+                            <circle cx="52" cy="80" r="2.8" fill="#ffd89b"/>
+                            <!-- subtle highlight -->
+                            <path d="M44 74 C62 68 112 68 156 74" stroke="rgba(255,255,255,0.06)" stroke-width="2" fill="none"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="waves" aria-hidden="true">
+                    <div class="wave w1"></div>
+                    <div class="wave w2"></div>
+                </div>
+            </div>
+
+            <p class="muted small">Designed for sailors. Simple, offline-friendly, and practical.</p>
+        </section>
+
+        <aside class="subscribe" aria-label="Get notified">
+            <div>
+                <strong>Get notified</strong>
+                <div class="small muted">Enter your email and we'll let you know when the notes are ready.</div>
+            </div>
+
+            <form id="notifyForm" onsubmit="return subscribe(event)" novalidate>
+                <label for="email">Email</label>
+                <div class="input-row">
+                    <input id="email" name="email" type="email" placeholder="you@example.com" required aria-required="true" />
+                    <button class="cta" type="submit">Notify me</button>
+                </div>
+                <div id="feedback" class="small muted" aria-live="polite" style="min-height:1.2em;margin-top:6px"></div>
+            </form>
+
+            <div class="small muted">No spam. You can unsubscribe anytime.</div>
+        </aside>
+
+        <footer>
+            <div>&copy; <span id="year"></span> Coastal Navigation</div>
+            <div class="muted">Prepared for practical coastal sailing</div>
+        </footer>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKwElTmL2vxEb6-pTH9B0eSxYRyV72To4",
+            authDomain: "sailingrathmullan.firebaseapp.com",
+            databaseURL: "https://sailingrathmullan-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "sailingrathmullan",
+            storageBucket: "sailingrathmullan.firebasestorage.app",
+            messagingSenderId: "677092232533",
+            appId: "1:677092232533:web:61610c76e7cfd3689db3dc",
+            measurementId: "G-5XTZ65J3TN"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Google Apps Script URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTEK9kCS3OUkYVSaOisX6bLhZ55oAhharaFYyD1G8Q7t3kNDi_wZg_ny_8aZudDrVP/exec";
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        async function subscribe(e){
+            e.preventDefault();
+            const email = document.getElementById('email');
+            const fb = document.getElementById('feedback');
+            const btn = e.target.querySelector('button');
+
+            if (!email.checkValidity()){
+                fb.textContent = 'Please enter a valid email address.';
+                fb.style.color = 'rgba(255,100,100,0.9)';
+                return false;
+            }
+
+            // Disable button during submission
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            fb.textContent = 'Processing...';
+            fb.style.color = 'rgba(232,246,255,0.85)';
+
+            try {
+                // Store email in Firebase
+                await db.ref('coastalSubscribers').push({
+                    email: email.value,
+                    timestamp: Date.now(),
+                    notified: false
+                });
+
+                // Send confirmation email via Google Apps Script
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'coastal_subscription',
+                        email: email.value,
+                        adminEmail: 'jamescassidylk@gmail.com'
+                    })
+                });
+
+                fb.style.color = 'rgba(100,255,150,0.95)';
+                fb.textContent = '✓ Successfully subscribed! Check your email for confirmation.';
+                email.value = '';
+                setTimeout(()=> {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Subscription error:', error);
+                fb.style.color = 'rgba(255,100,100,0.9)';
+                fb.textContent = 'Something went wrong. Please try again.';
+                btn.disabled = false;
+                btn.textContent = 'Notify me';
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html></g></div>

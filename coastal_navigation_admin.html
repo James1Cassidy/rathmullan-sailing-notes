@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Coastal Navigation - Send Launch Email</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #012a4a 0%, #01497c 100%);
+            color: #e8f6ff;
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: none; /* Hidden until auth check passes */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            color: #ffdd57;
+        }
+
+        .subtitle {
+            margin: 0 0 30px 0;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin: 20px 0 8px 0;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e8f6ff;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .info-box {
+            background: rgba(255, 183, 3, 0.1);
+            border: 1px solid rgba(255, 183, 3, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .info-box strong {
+            color: #ffb703;
+        }
+
+        button {
+            padding: 14px 28px;
+            border-radius: 8px;
+            border: 0;
+            background: linear-gradient(90deg, #ffb703, #fb8500);
+            color: #04293a;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        #status.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            display: block;
+        }
+
+        #status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            display: block;
+        }
+
+        #status.processing {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+            display: block;
+        }
+
+        .email-list {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 13px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚢 Coastal Navigation Launch</h1>
+        <p class="subtitle">Send launch announcement to all subscribers</p>
+
+        <div class="info-box">
+            <strong>Instructions:</strong>
+            <ol style="margin: 8px 0 0 20px; padding: 0;">
+                <li>Paste your subscriber email addresses below (one per line or comma-separated)</li>
+                <li>Customize the message if needed</li>
+                <li>Click "Send Launch Email" to notify all subscribers</li>
+            </ol>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="emails">Subscriber Email Addresses:</label>
+            <button onclick="loadSubscribers()" style="padding: 8px 16px; margin: 0; font-size: 13px;">Load from Firebase</button>
+        </div>
+        <textarea id="emails" placeholder="Click 'Load from Firebase' to load all subscribers"></textarea>
+        <div id="subscriber-count" style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+            Click "Load from Firebase" to see subscriber count
+        </div>
+
+        <label for="message">Launch Message (customizable):</label>
+        <textarea id="message">Hello!
+
+Great news - the Coastal Navigation notes are now live! 🎉
+
+Dive into comprehensive sailing notes, local tides, and practical coastal navigation guidance at:
+https://yoursite.com/coastal_navigation.html
+
+What you'll find:
+• Step-by-step navigation techniques
+• Local tide information for Rathmullan
+• Weather interpretation for safe sailing
+• Practical tips from experienced instructors
+
+Thank you for your patience and interest. Happy sailing!
+
+Best regards,
+The Coastal Navigation Team</textarea>
+
+        <button onclick="sendLaunchEmails()" id="sendBtn">Send Launch Email</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKwElTmL2vxEb6-pTH9B0eSxYRyV72To4",
+            authDomain: "sailingrathmullan.firebaseapp.com",
+            databaseURL: "https://sailingrathmullan-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "sailingrathmullan",
+            storageBucket: "sailingrathmullan.firebasestorage.app",
+            messagingSenderId: "677092232533",
+            appId: "1:677092232533:web:61610c76e7cfd3689db3dc",
+            measurementId: "G-5XTZ65J3TN"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // Admin email
+        const ADMIN_EMAIL = "jamescassidylk@gmail.com";
+
+        // Check authentication and admin access
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                // Not logged in, redirect to instructors page
+                alert('You must be logged in as admin to access this page.');
+                window.location.href = 'instructors.html';
+                return;
+            }
+
+            // Check if user is admin
+            if (user.email !== ADMIN_EMAIL) {
+                alert('Access denied. This page is for admin only.');
+                window.location.href = 'instructors.html';
+                return;
+            }
+
+            // User is authenticated admin, show the page
+            document.body.style.display = 'block';
+        });
+
+        // Google Apps Script URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTEK9kCS3OUkYVSaOisX6bLhZ55oAhharaFYyD1G8Q7t3kNDi_wZg_ny_8aZudDrVP/exec";
+
+        // Load subscribers from Firebase
+        async function loadSubscribers() {
+            const status = document.getElementById('status');
+            const emailsTextarea = document.getElementById('emails');
+            const countDiv = document.getElementById('subscriber-count');
+
+            status.className = 'processing';
+            status.textContent = '📥 Loading subscribers from Firebase...';
+
+            try {
+                const snapshot = await db.ref('coastalSubscribers').once('value');
+                const subscribers = snapshot.val();
+
+                if (!subscribers) {
+                    status.className = 'error';
+                    status.textContent = '❌ No subscribers found in Firebase';
+                    countDiv.textContent = '0 subscribers';
+                    return;
+                }
+
+                const emails = Object.values(subscribers).map(sub => sub.email);
+                emailsTextarea.value = emails.join('\n');
+                countDiv.textContent = `${emails.length} subscriber(s) loaded from Firebase`;
+                countDiv.style.color = '#10b981';
+
+                status.className = 'success';
+                status.textContent = `✅ Loaded ${emails.length} subscriber(s) from Firebase`;
+            } catch (error) {
+                console.error('Error loading subscribers:', error);
+                status.className = 'error';
+                status.textContent = '❌ Error loading subscribers: ' + error.message;
+            }
+        }
+
+        async function sendLaunchEmails() {
+            const emailsText = document.getElementById('emails').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const status = document.getElementById('status');
+            const btn = document.getElementById('sendBtn');
+
+            if (!emailsText) {
+                status.className = 'error';
+                status.textContent = '❌ Please enter at least one email address';
+                return;
+            }
+
+            // Parse emails (supports newlines, commas, or semicolons)
+            const emails = emailsText
+                .split(/[\n,;]+/)
+                .map(e => e.trim())
+                .filter(e => e && e.includes('@'));
+
+            if (emails.length === 0) {
+                status.className = 'error';
+                status.textContent = '❌ No valid email addresses found';
+                return;
+            }
+
+            // Disable button
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            status.className = 'processing';
+            status.textContent = `📧 Sending to ${emails.length} subscriber(s)...`;
+
+            let successCount = 0;
+            let failCount = 0;
+
+            // Send emails one by one (to avoid rate limits)
+            for (let i = 0; i < emails.length; i++) {
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            type: 'launch_email',
+                            to_email: emails[i],
+                            message: message
+                        })
+                    });
+
+                    successCount++;
+                    status.textContent = `📧 Sent ${successCount}/${emails.length}...`;
+
+                    // Small delay to be polite to the script
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    console.error(`Failed to send to ${emails[i]}:`, error);
+                    failCount++;
+                }
+            }
+
+            // Mark all subscribers as notified in Firebase
+            try {
+                const snapshot = await db.ref('coastalSubscribers').once('value');
+                const subscribers = snapshot.val();
+                if (subscribers) {
+                    const updates = {};
+                    Object.keys(subscribers).forEach(key => {
+                        if (emails.includes(subscribers[key].email)) {
+                            updates[key + '/notified'] = true;
+                            updates[key + '/notifiedAt'] = Date.now();
+                        }
+                    });
+                    await db.ref('coastalSubscribers').update(updates);
+                }
+            } catch (error) {
+                console.error('Error updating Firebase:', error);
+            }
+
+            // Mark all subscribers as notified in Firebase
+            try {
+                const snapshot = await db.ref('coastalSubscribers').once('value');
+                const subscribers = snapshot.val();
+                if (subscribers) {
+                    const updates = {};
+                    Object.keys(subscribers).forEach(key => {
+                        if (emails.includes(subscribers[key].email)) {
+                            updates[key + '/notified'] = true;
+                            updates[key + '/notifiedAt'] = Date.now();
+                        }
+                    });
+                    await db.ref('coastalSubscribers').update(updates);
+                }
+            } catch (error) {
+                console.error('Error updating Firebase:', error);
+            }
+
+            // Final status
+            btn.disabled = false;
+            btn.textContent = 'Send Launch Email';
+
+            if (failCount === 0) {
+                status.className = 'success';
+                status.textContent = `✅ Success! Launch email sent to all ${successCount} subscriber(s) and marked as notified`;
+            } else {
+                status.className = 'error';
+                status.textContent = `⚠️ Sent to ${successCount} subscriber(s), but ${failCount} failed. Check console for details.`;
+            }
+        }
+    </script>
+</body>
+
+</html>

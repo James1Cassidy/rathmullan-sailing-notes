@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taste of Sailing - Rathmullan sailing school notes</title>
+    <!-- Tailwind CSS (prebuilt local) -->
+    <link rel="stylesheet" href="tailwind-ui.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+    </script>
+    <style>
+        body.dark {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark a {
+            color: #90caf9;
+        }
+        body.dark header {
+            background-color: #1f1f1f;
+        }
+        body.dark footer {
+            background-color: #1f1f1f;
+        }
+        body.dark .content-block {
+            background-color: #1f1f1f;
+            border-color: #333333;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header/Navigation Bar -->
+    <header class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan sailing school notes</a></h1>
+            <nav>
+                <a href="taste_of_sailing.html" class="nav-link">Taste of Sailing</a>
+                <a href="start_sailing.html" class="nav-link">Start Sailing</a>
+                <a href="basic_skills.html" class="nav-link">Basic Skills</a>
+                <a href="improving_skills.html" class="nav-link">Improving Skills</a>
+                <a href="advanced.html" class="nav-link">Advanced Courses</a>
+                <a href="instructors.html" class="nav-link">Instructors</a>
+            </nav>
+            <button onclick="toggleDarkMode()" class="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400">Toggle Dark Mode</button>
+        </div>
+    </header>
+
+    <!-- Dropdown for Section Navigation -->
+    <div class="container mx-auto px-4 py-4">
+        <label for="section-select" class="block text-lg font-bold mb-2">Jump to Section:</label>
+        <select id="section-select" class="w-full p-2 border rounded-md" onchange="scrollToSection(this.value)">
+            <option value="">Select a section...</option>
+            <option value="objective">Objective</option>
+            <option value="clothing-equipment">Clothing & Equipment</option>
+            <option value="sailing-techniques">Sailing Techniques & Manoeuvres</option>
+            <option value="capsize-recovery">Capsize Recovery</option>
+            <option value="quiz-section">Quiz Section</option>
+        </select>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Taste of Sailing</h2>
+
+        <section id="objective" class="content-block">
+            <h3 class="section-heading">Objective</h3>
+            <p class="mb-4">This course is your first introduction to sailing! It's all about having a blast and seeing how much fun sailing can be. <a href="start_sailing.html#objective" class="text-blue-600 hover:underline">Explore the Start Sailing Objective</a> to see how your skills will progress.</p>
+        </section>
+
+        <section id="clothing-equipment" class="content-block">
+            <h3 class="section-heading">Clothing & Equipment</h3>
+            <p class="mb-4">To get ready for sailing, you'll learn that wearing a Personal Flotation Device (PFD) is super important. <a href="start_sailing.html#clothing-&-equipment" class="text-blue-600 hover:underline">Review Clothing & Equipment</a> from the Start Sailing course for more advanced preparation tips.</p>
+            <div class="image-container">
+                <a href="https://vikingmarine.ie/blogs/news/what-is-the-difference-between-buoyancy-aids-and-life-jackets"><img src="images/image.png" alt="Buoyancy Aids vs Life Jackets Diagram"></a>
+            </div>
+        </section>
+
+        <section id="sailing-techniques" class="content-block">
+            <h3 class="section-heading">Sailing Techniques & Manoeuvres</h3>
+            <p class="mb-4">First, you'll learn to figure out where the wind is coming from. This is called identifying the <strong>"windward"</strong> side. Hold your hand up and feel it on your cheek, watch flags onshore, or look at the ripples on the water. On the boat, you can also look at a <strong>wind indicator</strong> at the top of the mast if your boat has one. You'll practice identifying the wind's direction from different spots on the boat to always know where the wind is coming from.</p>
+
+            <p class="mb-4">To sail straight across the wind (a <strong>"beam reach"</strong>), you'll gently hold the <strong>tiller</strong> (the steering stick). The tiller moves the <strong>rudder</strong> (the steering fin). To steer to the right, you push the tiller to the left, and vice versa. Use small, smooth movements – think of steering a bicycle, not a car! You'll also pull in your <strong>sail</strong> (the "sheet") just enough, so it's puffed up, making the boat go forward. The sail should be pulled in until it just stops flapping (flappy sail is not a happy sail). This balance between tiller and sail is key to going straight.</p>
+            <div class="image-container">
+                <img src="images/image12.png" alt="Points of Sailing Diagram with No Sail Zone">
+            </div>
+
+            <p class="mb-4">To stop the boat, you'll simply let your sail out all the way. This is called letting the sail <strong>"luff"</strong> (flap freely). The wind won't push it anymore, and the boat will slow down and stop, facing directly into the wind, a position called <strong>"in irons."</strong> When you're ready to go again, you'll pull your sail in until it fills and gently turn the tiller to catch the wind and start moving.</p>
+            <div class="image-container">
+                <img src="images/image12.png" alt="Points of Sailing Diagram with No Sail Zone">
+            </div>
+
+            <p class="mb-4">Turning the front of the boat through the wind is called <strong>tacking</strong>. This is a move where you change which side the wind is coming from (from one side to the other). You'll learn the sequence: turn the boat, then move smoothly from one side of the boat to the other (this is called <strong>"changing sides"</strong>), swapping hands on the tiller and main sheet. The key is smooth coordination between the helm (you, steering) and the crew (your sailing partner).</p>
+            <div class="image-container">
+                <img src="images/image4.png" alt="Tacking Diagram">
+            </div>
+
+
+            <p class="mb-4">To keep the boat flat and happy, you'll learn to move your body weight. This is called <strong>"balancing"</strong> or <strong>"hiking."</strong> If the boat tips a little to one side (heels over), you lean your body weight to the other side to balance it, like a seesaw! This keeps the boat flatter.</p>
+            <div class="image-container">
+                <img src="images/image5.png" alt="Sailing Technique Photo">
+            </div>
+            <p class="mb-4">You'll practice moving the <strong>daggerboard</strong> (or centreboard) up and down. This fin acts like a keel, stopping the boat from slipping sideways. When you're sailing, it goes down to help the boat go straight and point into the wind. When you're near shore or in shallow water, you pull it up, so it doesn't hit the bottom. The <strong>rudder</strong> goes down in the water to steer and up when you're finished or in shallow water.</p>
+
+        </section>
+
+        <section id="capsize-recovery" class="content-block">
+            <h3 class="section-heading">Capsize Recovery</h3>
+            <p class="mb-4">If your boat ever tips over (capsizes), your instructor will teach you to <strong>always stay with your boat</strong>. <a href="start_sailing.html#capsize-recovery" class="text-blue-600 hover:underline">Review Capsize Recovery</a> from the Start Sailing course for more advanced techniques.</p>
+            <div class="image-container">
+                <img src="images/image6.png" alt="Capsize and Recovery Diagram">
+            </div>
+        </section>
+
+        <section class="content-block">
+            <h3 class="section-heading">What Next?</h3>
+            <p class="mb-4">Your instructor will tell you all about the next exciting course, "Start Sailing," and how it builds on what you've learned here.</p>
+        </section>
+
+        <section id="quiz-section" class="container mx-auto px-4 py-8">
+            <h2 class="text-4xl font-extrabold text-center text-blue-800 mb-10">Quiz Section</h2>
+
+            <form id="taste-of-sailing-quiz" class="bg-gray-100 p-4 rounded-lg shadow-md">
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Objective</h4>
+                    <p class="mb-4">What is the main goal of the "Taste of Sailing" course?</p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li><input type="radio" name="objective-quiz" id="objective-option1" value="option1"> To learn advanced sailing techniques</li>
+                        <li><input type="radio" name="objective-quiz" id="objective-option2" value="option2"> To have fun and learn the basics of sailing</li>
+                        <li><input type="radio" name="objective-quiz" id="objective-option3" value="option3"> To sail independently in strong winds</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Clothing & Equipment</h4>
+                    <p class="mb-4">What is the most important piece of equipment to wear while sailing?</p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li><input type="radio" name="equipment-quiz" id="equipment-option1" value="option1"> Sunglasses</li>
+                        <li><input type="radio" name="equipment-quiz" id="equipment-option2" value="option2"> Personal Flotation Device (PFD)</li>
+                        <li><input type="radio" name="equipment-quiz" id="equipment-option3" value="option3"> Waterproof shoes</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Sailing Techniques</h4>
+                    <p class="mb-4">What is the term for stopping the boat by letting the sail flap freely?</p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li><input type="radio" name="techniques-quiz" id="techniques-option1" value="option1"> Heaving to</li>
+                        <li><input type="radio" name="techniques-quiz" id="techniques-option2" value="option2"> Luffing</li>
+                        <li><input type="radio" name="techniques-quiz" id="techniques-option3" value="option3"> Tacking</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Capsize Recovery</h4>
+                    <p class="mb-4">What should you do if your boat capsizes?</p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li><input type="radio" name="capsize-quiz" id="capsize-option1" value="option1"> Swim away from the boat</li>
+                        <li><input type="radio" name="capsize-quiz" id="capsize-option2" value="option2"> Stay with the boat</li>
+                        <li><input type="radio" name="capsize-quiz" id="capsize-option3" value="option3"> Dive under the boat</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Wind Awareness</h4>
+                    <p class="mb-4">What is the term for the direction from which the wind is blowing?</p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li><input type="radio" name="wind-awareness-quiz" id="wind-awareness-option1" value="option1"> Windward</li>
+                        <li><input type="radio" name="wind-awareness-quiz" id="wind-awareness-option2" value="option2"> Leeward</li>
+                        <li><input type="radio" name="wind-awareness-quiz" id="wind-awareness-option3" value="option3"> True Wind</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Points of Sailing</h4>
+                    <p class="mb-4">Which point of sailing involves sailing directly into the wind?</p>
+                    <ul class="list-disc list-inside ml-4"></ul>
+                        <li><input type="radio" name="points-sailing-quiz" id="points-sailing-option1" value="option1"> Close-hauled</li>
+                        <li><input type="radio" name="points-sailing-quiz" id="points-sailing-option2" value="option2"> Running</li>
+                        <li><input type="radio" name="points-sailing-quiz" id="points-sailing-option3" value="option3"> In Irons</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Safety Equipment</h4>
+                    <p class="mb-4">What is the primary purpose of a buoyancy aid?</p>
+                    <ul class="list-disc list-inside ml-4"></ul>
+                        <li><input type="radio" name="safety-equipment-quiz" id="safety-equipment-option1" value="option1"> To keep you afloat</li>
+                        <li><input type="radio" name="safety-equipment-quiz" id="safety-equipment-option2" value="option2"> To protect against cold water</li>
+                        <li><input type="radio" name="safety-equipment-quiz" id="safety-equipment-option3" value="option3"> To signal for help</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Steering</h4>
+                    <p class="mb-4">What is the term for turning the boat's bow through the wind?</p>
+                    <ul class="list-disc list-inside ml-4"></ul>
+                        <li><input type="radio" name="steering-quiz" id="steering-option1" value="option1"> Tacking</li>
+                        <li><input type="radio" name="steering-quiz" id="steering-option2" value="option2"> Gybing</li>
+                        <li><input type="radio" name="steering-quiz" id="steering-option3" value="option3"> Heaving To</li>
+                    </ul>
+                </div>
+
+                <div class="quiz-container mb-6">
+                    <h4 class="quiz-heading text-lg font-bold mb-2">Quiz: Capsize Recovery</h4>
+                    <p class="mb-4">What should you do first when your boat capsizes?</p>
+                    <ul class="list-disc list-inside ml-4"></ul>
+                        <li><input type="radio" name="capsize-recovery-quiz" id="capsize-recovery-option1" value="option1"> Swim away from the boat</li>
+                        <li><input type="radio" name="capsize-recovery-quiz" id="capsize-recovery-option2" value="option2"> Stay with the boat</li>
+                        <li><input type="radio" name="capsize-recovery-quiz" id="capsize-recovery-option3" value="option3"> Dive under the boat</li>
+                    </ul>
+                </div>
+                <button type="button" onclick="submitCombinedQuiz()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit</button>
+                <p id="quiz-results" class="mt-4"></p>
+            </form>
+        </section>
+    </main>
+
+    <footer class="bg-gradient-to-r from-blue-700 via-blue-800 to-gray-900 text-white py-8 mt-12 shadow-inner">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <p class="text-lg font-semibold">&copy; 2025
+                <a href="mailto:jamescassidylk@gmail.com" class="underline hover:text-blue-300 transition">James Cassidy</a> |
+                <a href="https://rathmullansailingschool.com/" class="underline hover:text-blue-300 transition" target="_blank">Rathmullan Sailing School</a>
+            </p>
+            <p class="text-sm text-gray-300 mt-1">All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+            <a href="https://www.facebook.com/p/Rathmullan-Sailing-Watersports-School-100063805562596/" target="_blank" aria-label="Facebook" class="hover:text-blue-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.675 0h-21.35C.595 0 0 .592 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .592 23.406 0 22.675 0"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/rathmullansailingschool/" target="_blank" aria-label="Instagram" class="hover:text-pink-400 transition">
+                <svg class="w-7 h-7 inline" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.241 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.241 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.241-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.782 2.295 7.148 2.233 8.414 2.175 8.794 2.163 12 2.163zm0-2.163C8.741 0 8.332.013 7.052.072 5.771.131 4.659.388 3.678 1.369c-.98.98-1.237 2.092-1.296 3.373C2.013 5.668 2 6.077 2 12c0 5.923.013 6.332.072 7.612.059 1.281.316 2.393 1.296 3.373.98.98 2.092 1.237 3.373 1.296C8.332 23.987 8.741 24 12 24s3.668-.013 4.948-.072c1.281-.059 2.393-.316 3.373-1.296.98-.98 1.237-2.092 1.296-3.373.059-1.28.072-1.689.072-7.612 0-5.923-.013-6.332-.072-7.612-.059-1.281-.316-2.393-1.296-3.373-.98-.98-2.092-1.237-3.373-1.296C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</footer></svg>
+    <button id="back-to-top" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 hidden" onclick="scrollToTop()">Back to Top</button>
+    <script>
+        function submitCombinedQuiz() {
+            const answers = {
+                'objective-quiz': 'option2',
+                'equipment-quiz': 'option2',
+                'techniques-quiz': 'option2',
+                'capsize-quiz': 'option2',
+                'wind-awareness-quiz': 'option1',
+                'points-sailing-quiz': 'option3',
+                'safety-equipment-quiz': 'option1',
+                'steering-quiz': 'option1',
+                'capsize-recovery-quiz': 'option2'
+            };
+
+            let score = 0;
+            let totalQuestions = Object.keys(answers).length;
+
+            for (let question in answers) {
+                const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+                const questionContainer = document.querySelector(`input[name="${question}"]`).closest('.quiz-container');
+                if (selectedOption && selectedOption.value === answers[question]) {
+                    score++;
+                    questionContainer.classList.remove('bg-red-100');
+                    questionContainer.classList.add('bg-green-100');
+                } else {
+                    questionContainer.classList.remove('bg-green-100');
+                    questionContainer.classList.add('bg-red-100');
+                }
+            }
+
+            const resultsContainer = document.getElementById('quiz-results');
+            resultsContainer.textContent = `You scored ${score} out of ${totalQuestions}.`;
+            resultsContainer.classList.add(score === totalQuestions ? 'text-green-500' : 'text-red-500');
+        }
+
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) {
+                backToTopButton.classList.remove('hidden');
+            } else {
+                backToTopButton.classList.add('hidden');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
