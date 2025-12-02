@@ -1479,15 +1479,24 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- Repairs Log ---
 function saveRepairLog(detail) {
     const ref = db.ref('repairsLog').push();
-    const entry = { detail, timestamp: Date.now() };
+    const entry = { detail, timestamp: Date.now(), fixed: false, fixedAt: null, fixedBy: null };
     return ref.set(entry);
 }
 function loadRepairLogs(callback) {
-    db.ref('repairsLog').orderByChild('timestamp').limitToLast(30).once('value').then(snap => {
+    db.ref('repairsLog').orderByChild('timestamp').limitToLast(200).once('value').then(snap => {
         const logs = []; snap.forEach(child => { logs.push({ id: child.key, ...child.val() }); });
         logs.sort((a, b) => b.timestamp - a.timestamp);
         callback(logs);
     });
+}
+function markRepairFixed(id) {
+    const user = auth.currentUser;
+    const updates = { fixed: true, fixedAt: Date.now(), fixedBy: user ? (currentUserName || user.email.split('@')[0]) : 'unknown' };
+    return db.ref('repairsLog/' + id).update(updates).then(() => loadRepairLogs(renderRepairLogs));
+}
+function markRepairUnfixed(id) {
+    const updates = { fixed: false, fixedAt: null, fixedBy: null };
+    return db.ref('repairsLog/' + id).update(updates).then(() => loadRepairLogs(renderRepairLogs));
 }
 function renderRepairLogs(logs) {
     const ul = document.getElementById('repairs-log-list');
@@ -1496,7 +1505,17 @@ function renderRepairLogs(logs) {
     if (!logs.length) { ul.innerHTML = '<li class="py-2 text-gray-400 italic">No repairs logged yet.</li>'; return; }
     logs.forEach(log => {
         const dateStr = new Date(log.timestamp).toLocaleString();
-        ul.innerHTML += `<li class="py-2"><span class="font-semibold text-blue-800">${dateStr}:</span> <span class="text-gray-800">${log.detail}</span></li>`;
+        const isFixed = !!log.fixed;
+        const fixedAtStr = log.fixedAt ? new Date(log.fixedAt).toLocaleString() : '';
+        const badge = isFixed ? `<span class="text-xs font-semibold text-green-800 bg-green-100 px-2 py-0.5 rounded">Fixed</span>` : `<span class="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded">Unfixed</span>`;
+        const actionBtn = isFixed
+            ? `<button onclick="markRepairUnfixed('${log.id}')" class="ml-2 text-sm px-2 py-0.5 rounded bg-yellow-200 text-yellow-800 hover:bg-yellow-300">Reopen</button>`
+            : `<button onclick="markRepairFixed('${log.id}')" class="ml-2 text-sm px-2 py-0.5 rounded bg-green-600 text-white hover:bg-green-700">Mark Fixed</button>`;
+
+        const meta = isFixed ? ` <span class="text-xs text-gray-600">(fixed: ${fixedAtStr})</span>` : '';
+        const liClass = isFixed ? 'py-2 border-l-4 border-green-400 pl-3 bg-green-50 rounded mb-2' : 'py-2 border-l-4 border-red-400 pl-3 bg-red-50 rounded mb-2';
+
+        ul.innerHTML += `<li class="${liClass}"><div class="flex items-center justify-between"><div><span class="font-semibold text-blue-800">${dateStr}:</span> <span class="text-gray-800">${escapeHtml(log.detail)}</span>${meta}</div><div class="ml-4">${badge}${actionBtn}</div></div></li>`;
     });
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -1515,6 +1534,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Expose repair mark/unmark helpers globally for inline onclick handlers
+window.markRepairFixed = markRepairFixed;
+window.markRepairUnfixed = markRepairUnfixed;
 
 // --- UUID Generator ---
 function uuidv4() {
