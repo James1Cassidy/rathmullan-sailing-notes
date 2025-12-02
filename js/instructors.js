@@ -1594,9 +1594,34 @@ function getBeaufortDescription(knots) {
 
 // --- Open-Meteo Weather Fetching ---
 async function fetchWeather() {
-    const lat = 55.09;
-    const lon = -7.54;
-    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_gusts_10m&wind_speed_unit=ms&timezone=auto&past_days=1`;
+    // Default coordinates for Rathmullan, Co. Donegal, Ireland
+    // You can override these by adding an element with id="weather-coords" and data-lat / data-lon attributes.
+    const DEFAULT_LAT = 55.09;
+    const DEFAULT_LON = -7.54;
+    let lat = DEFAULT_LAT;
+    let lon = DEFAULT_LON;
+    try {
+        const coordEl = document.getElementById('weather-coords');
+        if (coordEl) {
+            const dlat = coordEl.getAttribute('data-lat');
+            const dlon = coordEl.getAttribute('data-lon');
+            if (dlat && dlon) {
+                const parsedLat = parseFloat(dlat);
+                const parsedLon = parseFloat(dlon);
+                if (!Number.isNaN(parsedLat) && !Number.isNaN(parsedLon)) {
+                    lat = parsedLat;
+                    lon = parsedLon;
+                }
+            }
+        }
+    } catch (e) {
+        // fallback to defaults
+    }
+
+    // Use Ireland timezone explicitly so times match local expectations
+    const TZ = 'Europe/Dublin';
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_gusts_10m&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&past_days=1`;
+    console.info('Fetching Open-Meteo for Rathmullan at', { lat, lon, TZ, apiUrl });
 
     try {
         const response = await fetch(apiUrl);
