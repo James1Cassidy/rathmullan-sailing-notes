@@ -65,10 +65,13 @@ self.addEventListener('fetch', event => {
                 .then(response => {
                     // Cache the fresh response
                     if (response && response.status === 200 && response.type === 'basic') {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(event.request, responseToCache);
-                        });
+                        // Only cache GET requests — Cache.put rejects POST/PUT/DELETE requests
+                        if (event.request.method === 'GET') {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME).then(cache => {
+                                cache.put(event.request, responseToCache);
+                            });
+                        }
                     }
                     return response;
                 })
@@ -98,10 +101,13 @@ self.addEventListener('fetch', event => {
 
                     // Only cache basic responses (same-origin)
                     if (response.type === 'basic') {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(event.request, responseToCache);
-                        });
+                        // Only cache GET requests to avoid "Request method 'POST' is unsupported" errors
+                        if (event.request.method === 'GET') {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME).then(cache => {
+                                cache.put(event.request, responseToCache);
+                            });
+                        }
                     }
 
                     return response;
