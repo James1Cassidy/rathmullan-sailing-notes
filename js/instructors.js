@@ -164,8 +164,44 @@ function initNotificationPreferencesUI() {
 let chatInitialized = false;
 let chatMessagesRef = null;
 
-// --- Email Service Configuration ---
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTEK9kCS3OUkYVSaOisX6bLhZ55oAhharaFYyD1G8Q7t3kNDi_wZg_ny_8aZudDrVP/exec";
+// Apps Script webhook URL (deployed web app). Update if you deploy a new version.
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFWId3k2ySboWqDSuRkH-q7dOsUrS1AsUpXnYqHTRjGMk1503tIrGzQ0xgMczFKbQq/exec';
+
+// Send admin notification by POSTing form-encoded data to the Apps Script
+// web app. We use `application/x-www-form-urlencoded` so browsers avoid a
+// CORS preflight. The Apps Script accepts JSON or form-encoded payloads.
+async function sendAdminNotification(type, payload) {
+    if (!GOOGLE_SCRIPT_URL) {
+        console.warn('[AdminNotify] no script URL configured');
+        return false;
+    }
+
+    const bodyObj = { type, payload: payload || {} };
+    const params = new URLSearchParams();
+    params.append('type', type);
+    try {
+        params.append('payload', JSON.stringify(payload || {}));
+    } catch (_) {
+        params.append('payload', String(payload || ''));
+    }
+
+    try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        });
+
+        // Some browsers will block reading the response body cross-origin
+        // when the remote app doesn't set CORS headers. If the fetch resolves
+        // with no exception we've at least delivered the request.
+        if (res && (res.ok || res.type === 'opaque' || res.type === 'basic')) return true;
+        return false;
+    } catch (err) {
+        console.warn('[AdminNotify] webhook error', err);
+        return false;
+    }
+}
 
 // --- OFFLINE MODE & SERVICE WORKER ---
 let isOnline = navigator.onLine;
@@ -522,19 +558,16 @@ window.approveUser = function (uid) {
         db.ref('users/' + uid).once('value').then(snapshot => {
             const userData = snapshot.val();
             return db.ref('users/' + uid).update({ approved: true }).then(() => {
-                if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' && userData && userData.email) {
-                    fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
+                    if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' && userData && userData.email) {
+                        sendAdminNotification('approval_notification', {
                             email: userData.email,
                             userName: userData.name || userData.email.split('@')[0],
-                            type: 'approval_notification',
-                            instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
-                        })
-                    }).catch(err => console.error('Email request failed:', err));
-                }
+                            instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/',
+                            // Send admin's display name (avoid exposing UID)
+                            createdByName: current ? (current.displayName || (current.email ? current.email.split('@')[0] : 'Admin')) : null,
+                            action: 'approved'
+                        }).catch(e => console.error('sendAdminNotification error', e));
+                    }
                 alert('User approved! Notification email sent.');
                 loadPendingUsers();
             });
@@ -556,9 +589,21 @@ window.revokeUser = function (uid) {
             return alert('Your account does not have the admin claim. Run the admin setup script or sign out/in to refresh your token.');
         }
         if (!confirm('Revoke this user\'s access? They will see Pending until re-approved.')) return;
-        db.ref('users/' + uid).update({ approved: false }).then(() => {
-            alert('User access revoked.');
-            loadPendingUsers();
+        // Read user record so we can email the affected user after revocation
+        db.ref('users/' + uid).once('value').then(snapshot => {
+            const userData = snapshot.val() || {};
+            return db.ref('users/' + uid).update({ approved: false }).then(() => {
+                    if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' && userData && userData.email) {
+                    sendAdminNotification('approval_notification', {
+                        email: userData.email,
+                        userName: userData.name || userData.email.split('@')[0],
+                        createdByName: current ? (current.displayName || (current.email ? current.email.split('@')[0] : 'Admin')) : null,
+                        action: 'revoked'
+                    }).catch(e => console.error('sendAdminNotification error', e));
+                }
+                alert('User access revoked.');
+                loadPendingUsers();
+            });
         }).catch(err => alert('Error revoking user: ' + err.message));
     }).catch(err => {
         console.error('Error fetching token claims:', err);
@@ -628,17 +673,12 @@ if (loginForm) {
                         role: 'instructor'
                     }).then(() => {
                         console.log('[DEBUG][signup] users/<uid> set (loginForm)', { uid: user.uid, ts: Date.now() });
-                        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                            fetch(GOOGLE_SCRIPT_URL, {
-                                method: 'POST',
-                                mode: 'no-cors',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    email: user.email,
-                                    adminEmail: ADMIN_EMAIL,
-                                    type: 'signup_notification',
-                                    instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
-                                })
+                        if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                            sendAdminNotification('signup_notification', {
+                                email: user.email,
+                                adminEmail: ADMIN_EMAIL,
+                                instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/',
+                                createdBy: user.uid
                             }).catch(() => { });
                         }
                     });
@@ -703,6 +743,14 @@ if (googleSignInBtn) {
                     }).then(() => {
                         console.log('[DEBUG][google-signin] users/<uid> created', { uid: user.uid, ts: Date.now() });
                         // For signup flow, show pending approval
+                        if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                            // Notify admin of new signup (DB fallback will be used if webhook fails)
+                            sendAdminNotification('signup_notification', {
+                                email: user.email,
+                                adminEmail: ADMIN_EMAIL,
+                                instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
+                            }).catch(() => {});
+                        }
                         showPendingApproval();
                     });
                 } else {
@@ -1698,12 +1746,20 @@ async function fetchWeather() {
                     }
                 });
 
-                // Calculate pan/zoom limits: +/- 48 hours around now
+                // Calculate chart x-axis limits from the actual data range (with a small padding)
                 const now = new Date();
                 const nowMs = now.getTime();
                 const HOUR_MS = 60 * 60 * 1000;
-                const minLimit = new Date(nowMs - 48 * HOUR_MS);
-                const maxLimit = new Date(nowMs + 48 * HOUR_MS);
+                const xTimes = windData.map(d => new Date(d.x).getTime()).filter(t => !Number.isNaN(t));
+                let dataMin = new Date(nowMs - 48 * HOUR_MS);
+                let dataMax = new Date(nowMs + 48 * HOUR_MS);
+                if (xTimes.length) {
+                    dataMin = new Date(Math.min(...xTimes));
+                    dataMax = new Date(Math.max(...xTimes));
+                }
+                const PADDING_MS = 30 * 60 * 1000; // 30 minutes padding on each side
+                const minLimit = new Date(dataMin.getTime() - PADDING_MS);
+                const maxLimit = new Date(dataMax.getTime() + PADDING_MS);
 
                 const windChart = new Chart(windCanvas, {
                     type: 'line',
@@ -1741,17 +1797,18 @@ async function fetchWeather() {
                             // Zoom & pan (chartjs-plugin-zoom)
                             zoom: {
                                 pan: {
-                                    enabled: true,
+                                    // Disable user panning; only allow built-in controls
+                                    enabled: false,
                                     mode: 'x',
-                                    modifierKey: null,
                                 },
                                 zoom: {
+                                    // Disable wheel/pinch zoom so scrolling doesn't change the view
                                     wheel: {
-                                        enabled: true,
+                                        enabled: false,
                                         speed: 0.1,
                                     },
                                     pinch: {
-                                        enabled: true,
+                                        enabled: false,
                                     },
                                     mode: 'x',
                                 },
@@ -1921,6 +1978,19 @@ window.renderTideChart = function() {
                 window.tideChartInstance.destroy();
             }
 
+            // Compute x-axis limits from actual data range so the chart only shows regions with data
+            const xTimes = tideData.map(d => new Date(d.x).getTime()).filter(t => !Number.isNaN(t));
+            // Fallback to +/-24h if no valid points
+            let dataMin = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            let dataMax = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            if (xTimes.length) {
+                dataMin = new Date(Math.min(...xTimes));
+                dataMax = new Date(Math.max(...xTimes));
+            }
+            const PADDING_MS = 30 * 60 * 1000; // 30 minutes padding
+            const minLimit = new Date(dataMin.getTime() - PADDING_MS);
+            const maxLimit = new Date(dataMax.getTime() + PADDING_MS);
+
             window.tideChartInstance = new Chart(tideCanvas, {
                 type: 'line',
                 data: {
@@ -1991,8 +2061,9 @@ window.renderTideChart = function() {
                                 autoSkip: true,
                                 maxTicksLimit: 8,
                             },
-                            min: startTime,
-                            max: endTime,
+                            // Set min/max to the computed data limits so chart shows only regions with data
+                            min: minLimit,
+                            max: maxLimit,
                         }
                     }
                 }
@@ -4055,7 +4126,18 @@ window.windChartPanRight = function() {
 
 window.windChartReset = function() {
     if (window.windChartInstance) {
-        window.windChartInstance.resetZoom();
+        // Reset to original data-range limits (do not call plugin resetZoom to avoid changing plugin internal state)
+        try {
+            const chart = window.windChartInstance;
+            if (chart && chart.options && chart.options.scales && chart.options.scales.x) {
+                // Use stored min/max if available, otherwise fall back to initial axis values
+                const min = window.windChartMinLimit || chart.options.scales.x.min;
+                const max = window.windChartMaxLimit || chart.options.scales.x.max;
+                chart.options.scales.x.min = typeof min === 'number' ? min : (min instanceof Date ? min.getTime() : min);
+                chart.options.scales.x.max = typeof max === 'number' ? max : (max instanceof Date ? max.getTime() : max);
+                chart.update();
+            }
+        } catch (e) { console.error('windChartReset error', e); }
         const slider = document.getElementById('wind-time-slider');
         if (slider) slider.value = 0;
         const label = document.getElementById('wind-slider-label');
@@ -4065,9 +4147,19 @@ window.windChartReset = function() {
 
 window.windChartGoToNow = function() {
     if (window.windChartInstance && window.windChartNowTime) {
-        const HOUR_MS = 60 * 60 * 1000;
-        const viewRange = 12 * HOUR_MS; // Show +/- 6 hours around now
-        window.windChartInstance.zoomScale('x', {min: window.windChartNowTime - viewRange/2, max: window.windChartNowTime + viewRange/2}, 'default');
+        try {
+            const HOUR_MS = 60 * 60 * 1000;
+            const viewRange = 12 * HOUR_MS; // Show +/- 6 hours around now
+            const center = window.windChartNowTime;
+            const min = center - viewRange / 2;
+            const max = center + viewRange / 2;
+            const chart = window.windChartInstance;
+            if (chart && chart.options && chart.options.scales && chart.options.scales.x) {
+                chart.options.scales.x.min = min;
+                chart.options.scales.x.max = max;
+                chart.update();
+            }
+        } catch (e) { console.error('windChartGoToNow error', e); }
         const slider = document.getElementById('wind-time-slider');
         if (slider) slider.value = 0;
         const label = document.getElementById('wind-slider-label');
@@ -4088,9 +4180,19 @@ window.windChartSliderChange = function(value) {
         if (label) label.textContent = hours + 'h';
     }
 
+    // Update chart x-axis min/max directly instead of using the zoom plugin
     if (window.windChartInstance && window.windChartNowTime) {
-        const centerTime = window.windChartNowTime + (hours * HOUR_MS);
-        const viewRange = 12 * HOUR_MS; // Show +/- 6 hours
-        window.windChartInstance.zoomScale('x', {min: centerTime - viewRange/2, max: centerTime + viewRange/2}, 'default');
+        try {
+            const centerTime = window.windChartNowTime + (hours * HOUR_MS);
+            const viewRange = 12 * HOUR_MS; // Show +/- 6 hours
+            const min = centerTime - viewRange / 2;
+            const max = centerTime + viewRange / 2;
+            const chart = window.windChartInstance;
+            if (chart && chart.options && chart.options.scales && chart.options.scales.x) {
+                chart.options.scales.x.min = min;
+                chart.options.scales.x.max = max;
+                chart.update();
+            }
+        } catch (e) { console.error('windChartSliderChange error', e); }
     }
 };

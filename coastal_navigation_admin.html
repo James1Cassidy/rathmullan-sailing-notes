@@ -234,8 +234,8 @@ The Coastal Navigation Team</textarea>
             document.body.style.display = 'block';
         });
 
-        // Google Apps Script URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTEK9kCS3OUkYVSaOisX6bLhZ55oAhharaFYyD1G8Q7t3kNDi_wZg_ny_8aZudDrVP/exec";
+        // Email sending is disabled in this build. Configure and re-enable
+        // the email webhook when ready.
 
         // Load subscribers from Firebase
         async function loadSubscribers() {
@@ -304,32 +304,12 @@ The Coastal Navigation Team</textarea>
             let successCount = 0;
             let failCount = 0;
 
-            // Send emails one by one (to avoid rate limits)
-            for (let i = 0; i < emails.length; i++) {
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            type: 'launch_email',
-                            to_email: emails[i],
-                            message: message
-                        })
-                    });
-
-                    successCount++;
-                    status.textContent = `📧 Sent ${successCount}/${emails.length}...`;
-
-                    // Small delay to be polite to the script
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                } catch (error) {
-                    console.error(`Failed to send to ${emails[i]}:`, error);
-                    failCount++;
-                }
-            }
+            // Email sending disabled: skip actual POSTs. You can re-enable
+            // by restoring a webhook URL and appropriate sending logic.
+            status.className = 'error';
+            status.textContent = '❌ Email sending is currently disabled. Configure webhook to enable.';
+            btn.disabled = false;
+            btn.textContent = 'Send';
 
             // Mark all subscribers as notified in Firebase
             try {

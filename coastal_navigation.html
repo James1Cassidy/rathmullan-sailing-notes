@@ -224,9 +224,13 @@
             </div>
 
             <form id="notifyForm" onsubmit="return subscribe(event)" novalidate>
-                <label for="email">Email</label>
+                <label for="coastal-name">Name (optional)</label>
                 <div class="input-row">
-                    <input id="email" name="email" type="email" placeholder="you@example.com" required aria-required="true" />
+                    <input id="coastal-name" name="name" type="text" placeholder="Your name (optional)" />
+                </div>
+                <label for="coastal-email">Email</label>
+                <div class="input-row">
+                    <input id="coastal-email" name="email" type="email" placeholder="you@example.com" required aria-required="true" />
                     <button class="cta" type="submit">Notify me</button>
                 </div>
                 <div id="feedback" class="small muted" aria-live="polite" style="min-height:1.2em;margin-top:6px"></div>
@@ -238,6 +242,10 @@
         <footer>
             <div>&copy; <span id="year"></span> Coastal Navigation</div>
             <div class="muted">Prepared for practical coastal sailing</div>
+            <div style="margin-top:8px;">
+                <a href="https://revolut.me/cassidy_j" target="_blank" rel="noopener noreferrer" aria-label="Contribute to support this site" style="display:inline-block;padding:8px 12px;border-radius:9999px;background:linear-gradient(90deg,#ffd89b,#ffb703);color:#04293a;font-weight:600;text-decoration:none;box-shadow:0 4px 10px rgba(251,133,0,0.12);transition:transform .12s ease;font-size:14px">Contribute</a>
+                <p style="display:inline-block;margin-left:10px;color:rgba(232,246,255,0.85);font-size:13px">Small donations keep the site alive — thank you!</p>
+            </div>
         </footer>
     </main>
 
@@ -258,14 +266,19 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Google Apps Script URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTEK9kCS3OUkYVSaOisX6bLhZ55oAhharaFYyD1G8Q7t3kNDi_wZg_ny_8aZudDrVP/exec";
+        // Apps Script webhook URL for server-side emails/auditing.
+        // Update if you deploy a new script version.
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFWId3k2ySboWqDSuRkH-q7dOsUrS1AsUpXnYqHTRjGMk1503tIrGzQ0xgMczFKbQq/exec';
+
+        // Email sending is handled by the Apps Script webhook. We post
+        // form-encoded to avoid CORS preflight and let the script write
+        // the audit record and send the confirmation email as the owner.
 
         document.getElementById('year').textContent = new Date().getFullYear();
 
         async function subscribe(e){
             e.preventDefault();
-            const email = document.getElementById('email');
+            const email = document.getElementById('coastal-email');
             const fb = document.getElementById('feedback');
             const btn = e.target.querySelector('button');
 
@@ -282,31 +295,43 @@
             fb.style.color = 'rgba(232,246,255,0.85)';
 
             try {
-                // Store email in Firebase
-                await db.ref('coastalSubscribers').push({
-                    email: email.value,
-                    timestamp: Date.now(),
-                    notified: false
-                });
+                    // Post to Apps Script webhook which will send email, write audit,
+                    // and save the subscriber record (so admin can load them later).
+                    const name = document.getElementById('coastal-name') ? document.getElementById('coastal-name').value.trim() : '';
+                    const params = new URLSearchParams();
+                    params.append('type', 'coastal_subscription');
+                    params.append('payload', JSON.stringify({ email: email.value, name: name }));
 
-                // Send confirmation email via Google Apps Script
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'coastal_subscription',
-                        email: email.value,
-                        adminEmail: 'jamescassidylk@gmail.com'
-                    })
-                });
-
-                fb.style.color = 'rgba(100,255,150,0.95)';
-                fb.textContent = '✓ Successfully subscribed! Check your email for confirmation.';
-                email.value = '';
-                setTimeout(()=> {
-                    window.location.href = 'index.html';
-                }, 2000);
+                    try {
+                        const r = await fetch(GOOGLE_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString()
+                        });
+                        // We don't rely on reading the JSON body (cross-origin may block it),
+                        // but a resolved fetch generally means the request was delivered.
+                        fb.style.color = 'rgba(100,255,150,0.95)';
+                        fb.textContent = '✓ Successfully subscribed! Check your inbox.';
+                        email.value = '';
+                        setTimeout(()=> { window.location.href = 'index.html'; }, 1800);
+                    } catch (fetchErr) {
+                        console.error('Webhook error:', fetchErr);
+                        // Fallback: try to store in Firebase (may still fail if rules block).
+                        try {
+                            const name = document.getElementById('coastal-name') ? document.getElementById('coastal-name').value.trim() : '';
+                            await db.ref('coastalSubscribers').push({ email: email.value, name: name || null, timestamp: Date.now(), notified: false });
+                            fb.style.color = 'rgba(100,255,150,0.95)';
+                            fb.textContent = '✓ Subscribed (stored in database).';
+                            email.value = '';
+                            setTimeout(()=> { window.location.href = 'index.html'; }, 1800);
+                        } catch (dbErr) {
+                            console.error('Subscription fallback error:', dbErr);
+                            fb.style.color = 'rgba(255,100,100,0.9)';
+                            fb.textContent = 'Could not subscribe right now. Please try again later.';
+                            btn.disabled = false;
+                            btn.textContent = 'Notify me';
+                        }
+                    }
             } catch (error) {
                 console.error('Subscription error:', error);
                 fb.style.color = 'rgba(255,100,100,0.9)';
