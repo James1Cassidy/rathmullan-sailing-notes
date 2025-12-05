@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
-    <!-- Removed PWA theme-color & manifest (no app install) -->
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/image.png">
     <title>Sailing Instructor Resources</title>
     <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="tailwind-ui.min.css">
@@ -1713,6 +1715,8 @@
                 <script>document.write('<script src="js/chartjs-loader.js?v=' + new Date().getTime() + '"><\/script>');</script>
                 <script>document.write('<script src="js/instructors.js?v=' + new Date().getTime() + '"><\/script>');</script>
                 <script>document.write('<script src="js/tides.js?v=' + new Date().getTime() + '"><\/script>');</script>
+
+                <script src="js/pwa.js" defer></script>
 
     <!-- Back to top button -->
     <button id="back-to-top" title="Back to top"

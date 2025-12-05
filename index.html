@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3a8a">
     <title>Irish Sailing Course Notes</title>
     <!-- Tailwind CSS (prebuilt local) -->
     <link rel="stylesheet" href="tailwind-ui.min.css">
@@ -11,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- External CSS -->
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/image.png">
     <script>
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
@@ -218,6 +221,7 @@
     </footer>
     <script src="js/tides.js?v=20251125"></script>
     <script src="js/quiz.js"></script>
+    <script src="js/pwa.js" defer></script>
 </body>
 
 </html>

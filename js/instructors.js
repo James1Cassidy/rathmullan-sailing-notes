@@ -1098,19 +1098,29 @@ function updateStudentTable(level, students) {
 }
 
 function getProgressButton(currentLevel, studentId, studentName) {
-    const levelProgression = {
-        'cara-na-mara': 'taste-of-sailing',
-        'taste-of-sailing': 'start-sailing',
-        'start-sailing': 'basic-skills',
-        'basic-skills': 'improving-skills',
-        'improving-skills': null
-    };
+    // Ordered list of levels to compute previous/next
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
+    const idx = levels.indexOf(currentLevel);
+    if (idx === -1) return '';
 
-    const nextLevel = levelProgression[currentLevel];
-    if (!nextLevel) return ''; // No progression from improving-skills
+    const prevLevel = idx > 0 ? levels[idx - 1] : null;
+    const nextLevel = idx < levels.length - 1 ? levels[idx + 1] : null;
 
-    const nextLevelName = nextLevel.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    return `<button class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="progressStudent('${currentLevel}', '${nextLevel}', '${studentId}', '${studentName.replace(/'/g, "\\'")}')">→ ${nextLevelName}</button>`;
+    function prettyName(levelKey) {
+        return levelKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    const parts = [];
+    if (prevLevel) {
+        const prevName = prettyName(prevLevel);
+        parts.push(`<button class="text-yellow-600 hover:text-yellow-800 text-sm font-medium mr-2" onclick="progressStudent('${currentLevel}', '${prevLevel}', '${studentId}', '${studentName.replace(/'/g, "\\'")}')">← ${prevName}</button>`);
+    }
+    if (nextLevel) {
+        const nextName = prettyName(nextLevel);
+        parts.push(`<button class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="progressStudent('${currentLevel}', '${nextLevel}', '${studentId}', '${studentName.replace(/'/g, "\\'")}')">→ ${nextName}</button>`);
+    }
+
+    return parts.join('');
 }
 
 function progressStudent(fromLevel, toLevel, studentId, studentName) {
@@ -3194,7 +3204,7 @@ function renderCalendarView(container, allAvailability) {
         const opacity = isCurrentMonth ? '' : 'opacity-30';
 
         html += `
-            <div class="${bgColor} ${opacity} border ${isToday ? 'border-blue-500 border-2' : 'border-gray-300'} rounded-lg p-2 text-center hover:shadow-md transition-shadow cursor-pointer" onclick="showDayDetails('${dateStr}')">
+            <div class="${bgColor} ${opacity} border ${isToday ? 'border-blue-500 border-2' : 'border-gray-300'} rounded-lg p-2 text-center hover:shadow-md transition-shadow cursor-pointer" onclick="showAvailabilityPicker('${dateStr}')">
                 <div class="text-lg font-bold ${isToday ? 'text-blue-600' : 'text-gray-800'}">${dayNum}</div>
                 ${availableCount > 0 ? `<div class="text-xs text-green-700">✅${availableCount}</div>` : ''}
                 ${unavailableCount > 0 ? `<div class="text-xs text-red-700">❌${unavailableCount}</div>` : ''}
@@ -3301,6 +3311,96 @@ function showDayDetails(dateStr) {
     });
 }
 
+// Show a small modal allowing the current user to mark available/unavailable/clear for a date
+function showAvailabilityPicker(dateStr) {
+    const user = auth.currentUser;
+    if (!user) return alert('Please sign in to set your availability');
+
+    // Fetch day's availability summary and user's own entry
+    Promise.all([
+        db.ref('availability').orderByKey().once('value'),
+        db.ref(`availability/${user.uid}/${dateStr}`).once('value')
+    ]).then(([allSnap, mySnap]) => {
+        const dayData = [];
+        allSnap.forEach(userSnap => {
+            const data = userSnap.child(dateStr).val();
+            if (data) dayData.push(data);
+        });
+
+        const myEntry = mySnap.exists() ? mySnap.val() : null;
+        const date = new Date(dateStr);
+        const formattedDate = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+        // Build modal
+        const modal = document.createElement('div');
+        modal.id = 'availability-modal';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+        const available = dayData.filter(d => d.status === 'available').map(d => d.name).sort();
+        const unavailable = dayData.filter(d => d.status === 'unavailable').map(d => d.name).sort();
+        let summaryHtml = '';
+        if (available.length) summaryHtml += `✅ Available (${available.length}): ${available.join(', ')}\n`;
+        if (unavailable.length) summaryHtml += `❌ Unavailable (${unavailable.length}): ${unavailable.join(', ')}`;
+
+        const box = document.createElement('div');
+        box.className = 'bg-white rounded-lg shadow-lg p-6 w-full max-w-md';
+        box.innerHTML = `
+            <div class="text-lg font-semibold mb-2">Availability — ${escapeHtml(formattedDate)}</div>
+            <div id="availability-summary" class="text-sm text-gray-600 mb-3 white-space-pre-wrap">${escapeHtml(summaryHtml) || 'No availability set for this date.'}</div>
+            <div id="my-status" class="text-sm text-gray-800 mb-4">${myEntry ? 'You are marked: ' + escapeHtml(myEntry.status) : 'You have no entry for this date.'}</div>
+            <div class="grid grid-cols-3 gap-3 mb-3">
+                <button id="avail-btn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded">Available</button>
+                <button id="unavail-btn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded">Unavailable</button>
+                <button id="clear-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded">Clear</button>
+            </div>
+            <button id="cancel-btn" class="w-full mt-2 bg-white border border-gray-200 rounded py-2 hover:bg-gray-50">Cancel</button>
+        `;
+
+        modal.appendChild(box);
+        document.body.appendChild(modal);
+
+        // Handlers
+        const availBtnEl = document.getElementById('avail-btn');
+        const unavailBtnEl = document.getElementById('unavail-btn');
+        const clearBtnEl = document.getElementById('clear-btn');
+        const cancelBtnEl = document.getElementById('cancel-btn');
+
+        const cleanup = () => {
+            try { document.body.removeChild(modal); } catch (_) {}
+            window.removeEventListener('keydown', onKey);
+        };
+
+        const onKey = (e) => { if (e.key === 'Escape') cleanup(); };
+        window.addEventListener('keydown', onKey);
+
+        availBtnEl.onclick = () => {
+            const name = currentUserName || (user.email ? user.email.split('@')[0] : 'User');
+            db.ref(`availability/${user.uid}/${dateStr}`).set({ status: 'available', name, timestamp: Date.now() })
+                .then(() => { cleanup(); loadAvailabilityDisplay(); alert('Marked available'); })
+                .catch(err => alert('Error: ' + err.message));
+        };
+
+        unavailBtnEl.onclick = () => {
+            const name = currentUserName || (user.email ? user.email.split('@')[0] : 'User');
+            db.ref(`availability/${user.uid}/${dateStr}`).set({ status: 'unavailable', name, timestamp: Date.now() })
+                .then(() => { cleanup(); loadAvailabilityDisplay(); alert('Marked unavailable'); })
+                .catch(err => alert('Error: ' + err.message));
+        };
+
+        clearBtnEl.onclick = () => {
+            if (!confirm('Clear your availability entry for this date?')) return;
+            db.ref(`availability/${user.uid}/${dateStr}`).remove()
+                .then(() => { cleanup(); loadAvailabilityDisplay(); alert('Availability cleared'); })
+                .catch(err => alert('Error: ' + err.message));
+        };
+
+        cancelBtnEl.onclick = () => cleanup();
+    }).catch(err => {
+        console.error('Failed to load availability for picker', err);
+        alert('Could not load availability data');
+    });
+}
+
 function changeCalendarMonth(offset) {
     calendarMonthOffset += offset;
     loadAvailabilityDisplay();
@@ -3314,6 +3414,7 @@ function resetCalendarToToday() {
 window.setAvailabilityRange = setAvailabilityRange;
 window.clearMyAvailability = clearMyAvailability;
 window.showDayDetails = showDayDetails;
+window.showAvailabilityPicker = showAvailabilityPicker;
 window.changeCalendarMonth = changeCalendarMonth;
 window.resetCalendarToToday = resetCalendarToToday;
 
