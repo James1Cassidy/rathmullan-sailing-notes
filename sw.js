@@ -5,8 +5,7 @@ const urlsToCache = [
     '/instructors.html',
     '/style.css',
     // Intentionally excluding '/js/instructors.js' so it is always fetched fresh
-    '/images/image.png'
-];
+    '/images/logo.png'];
 
 // Install event - cache resources
 self.addEventListener('install', event => {

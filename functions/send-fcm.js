@@ -16,7 +16,7 @@ export async function onRequestPost(context) {
         title: title || 'Notification',
         body: msgBody || '',
         click_action: url,
-        icon: '/images/image.png'
+        icon: '/images/logo.png'
       },
       data: { url }
     };

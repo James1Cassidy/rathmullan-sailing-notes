@@ -22,8 +22,8 @@ messaging.setBackgroundMessageHandler(function(payload) {
   const body = (payload.notification && payload.notification.body) || '';
   const options = {
     body,
-    icon: '/images/image.png',
-    badge: '/images/image.png',
+    icon: '/images/logo.png',
+    badge: '/images/logo.png',
     data: { url: '/instructors.html' }
   };
   return self.registration.showNotification(title, options);

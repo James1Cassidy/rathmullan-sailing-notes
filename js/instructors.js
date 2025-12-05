@@ -21,14 +21,86 @@ window.db = db; // Expose db globally for inline scripts
 window.firebase = firebase; // Ensure firebase is globally accessible
 const auth = firebase.auth();
 const storage = firebase.storage();
-// Messaging removed (no push infra)
+// --- Firebase Messaging (FCM) client integration ---
+// Note: `firebase-messaging.js` is included in pages that use messaging (instructors.html).
+let messaging = null;
+try {
+    if (firebase && firebase.messaging && 'serviceWorker' in navigator) {
+        messaging = firebase.messaging();
+        window.fcmMessaging = messaging; // expose for debugging
+        // Handle messages when app is in the foreground
+        try {
+            messaging.onMessage(payload => {
+                console.info('[FCM] foreground message', payload);
+                if (payload && payload.notification) {
+                    const n = payload.notification;
+                    showNotification(n.title || 'Notification', { body: n.body || '', data: payload.data });
+                }
+            });
+        } catch (e) {
+            console.warn('FCM onMessage attach failed', e);
+        }
+    }
+} catch (e) {
+    console.warn('FCM init skipped', e);
+}
+
+// Public VAPID key for Web Push (optional). Set `window.FCM_VAPID_KEY` in a script tag if you have one.
+window.FCM_VAPID_KEY = window.FCM_VAPID_KEY || '';
+
+async function registerForPush() {
+    const user = auth.currentUser;
+    if (!user || !messaging) return;
+    if (!('Notification' in window)) return;
+
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.warn('Notification permission not granted');
+            return;
+        }
+
+        // Get FCM token (v8 API). If a VAPID key is provided use the object form.
+        let token = null;
+        if (window.FCM_VAPID_KEY) {
+            token = await messaging.getToken({ vapidKey: window.FCM_VAPID_KEY });
+        } else {
+            try { token = await messaging.getToken(); } catch (e) { token = null; }
+        }
+
+        if (!token) {
+            console.warn('No FCM token returned');
+            return;
+        }
+
+        const tokenRef = db.ref(`notificationTokens/${user.uid}/${token}`);
+        await tokenRef.set({ token, createdAt: Date.now(), ua: navigator.userAgent });
+        console.info('[FCM] token saved');
+        return token;
+    } catch (err) {
+        console.error('FCM registration error', err);
+    }
+}
+
+async function unregisterPushToken(token) {
+    const user = auth.currentUser;
+    if (!user || !token) return;
+    try {
+        await db.ref(`notificationTokens/${user.uid}/${token}`).remove();
+        console.info('[FCM] token removed from DB');
+        try { await messaging.deleteToken(token); } catch (e) { console.warn('deleteToken failed', e); }
+    } catch (e) { console.warn('unregisterPushToken error', e); }
+}
+
+window.registerForPush = registerForPush;
+window.unregisterPushToken = unregisterPushToken;
 
 // Simple Notification API helpers
 function showNotification(title, options = {}) {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
     if (!window.notificationPrefs || !window.notificationPrefs.enabled) return;
-    try { new Notification(title, { icon: '/images/image.png', ...options }); } catch(e){ console.error('[Notify] error', e); }
+    try { new Notification(title, { icon: '/images/logo.png', ...options }); } catch(e){ console.error('[Notify] error', e); }
 }
 
 function initNotificationUI() {
@@ -51,6 +123,8 @@ function initNotificationUI() {
                 window.notificationPrefs.enabled = true;
                 saveNotificationPrefs();
                 applyNotificationPrefsToUI();
+                // Register with FCM (if available) to obtain and persist a push token
+                try { registerForPush().catch(e => console.warn('registerForPush failed', e)); } catch (_) {}
                 showNotification('Notifications enabled', { body: 'Urgent announcements will appear.' });
                 btn.classList.add('hidden');
             } else if (p === 'denied') {
@@ -416,7 +490,11 @@ auth.onAuthStateChanged(user => {
                 userApproved = true;
                 // Attach announcements listener and load notification preferences
                 loadAnnouncements();
-                loadNotificationPrefs();
+                loadNotificationPrefs().then(() => {
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && window.notificationPrefs.enabled) {
+                        try { registerForPush().catch(e => console.warn('registerForPush failed', e)); } catch (_) {}
+                    }
+                }).catch(() => {});
 
                 // Check if Admin via ID token claim (preferred) or fallback to email match
                 try {
