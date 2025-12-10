@@ -600,6 +600,7 @@ function loadPendingUsers() {
                 // Do not display admin user to prevent accidental revoke/delete
                 if (u.email === ADMIN_EMAIL) return;
                 const approved = !!u.approved;
+                const isAdmin = !!u.isAdmin;
                 const tr = document.createElement('tr');
                 tr.className = "border-t";
                 const statusClasses = approved ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
@@ -608,6 +609,11 @@ function loadPendingUsers() {
                     actionCell += `<button onclick=\"approveUser('${uid}')\" class=\"bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm mr-2\">Approve</button>`;
                 } else {
                     actionCell += `<button onclick=\"revokeUser('${uid}')\" class=\"bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm mr-2\">Revoke</button>`;
+                }
+                if (!isAdmin) {
+                    actionCell += `<button onclick=\"makeAdmin('${uid}')\" class=\"bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mr-2\">Make Admin</button>`;
+                } else {
+                    actionCell += `<button onclick=\"revokeAdmin('${uid}')\" class=\"bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm mr-2\">Revoke Admin</button>`;
                 }
                 actionCell += `<button onclick=\"deleteUserRecord('${uid}')\" class=\"bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm\">Delete</button>`;
                 tr.innerHTML = `
@@ -702,6 +708,126 @@ window.deleteUserRecord = function (uid) {
             alert('User record deleted. They can still authenticate unless removed via Firebase Console.');
             loadPendingUsers();
         }).catch(err => alert('Error deleting user record: ' + err.message));
+    }).catch(err => {
+        console.error('Error fetching token claims:', err);
+        alert('Could not verify admin status; check console for details.');
+    });
+};
+
+// Make user admin (sets database flag and shows instructions for custom claim)
+window.makeAdmin = function (uid) {
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin.');
+    current.getIdTokenResult().then(idToken => {
+        if (!idToken.claims || !idToken.claims.admin) {
+            return alert('Your account does not have the admin claim. Run the admin setup script or sign out/in to refresh your token.');
+        }
+
+        // Create a custom modal for admin permissions
+        const modalHTML = `
+            <div id="admin-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 24px; border-radius: 8px; max-width: 500px; width: 90%;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Make User Admin</h3>
+                    <p style="margin-bottom: 16px; color: #4b5563;">Grant admin privileges to this user.</p>
+                    <label style="display: flex; align-items: center; margin-bottom: 16px; cursor: pointer;">
+                        <input type="checkbox" id="can-grant-admin-checkbox" style="margin-right: 8px; width: 18px; height: 18px; cursor: pointer;">
+                        <span style="font-size: 14px;">Allow this admin to grant admin privileges to others</span>
+                    </label>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px;">Note: Custom claims must still be set server-side via Firebase Admin SDK.</p>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button id="admin-modal-cancel" style="padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 4px; background: white; cursor: pointer;">Cancel</button>
+                        <button id="admin-modal-confirm" style="padding: 8px 16px; border: none; border-radius: 4px; background: #3b82f6; color: white; cursor: pointer;">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const modal = document.getElementById('admin-modal');
+        const checkbox = document.getElementById('can-grant-admin-checkbox');
+        const cancelBtn = document.getElementById('admin-modal-cancel');
+        const confirmBtn = document.getElementById('admin-modal-confirm');
+
+        cancelBtn.onclick = () => modal.remove();
+        confirmBtn.onclick = async () => {
+            const canGrantAdmin = checkbox.checked;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Processing...';
+
+            try {
+                // Get the current user's ID token
+                const token = await current.getIdToken();
+
+                // Call Cloudflare Pages Function
+                const response = await fetch('/functions/admin-claims', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'grant',
+                        targetUid: uid,
+                        canGrantAdmin: canGrantAdmin,
+                        adminToken: token
+                    })
+                });
+
+                const result = await response.json();
+                modal.remove();
+
+                if (response.ok) {
+                    alert('Admin privileges granted successfully!\n\nThe user now has full admin access. They may need to sign out and back in for changes to take effect.');
+                    loadPendingUsers();
+                } else {
+                    alert('Failed to grant admin privileges: ' + (result.error || 'Unknown error'));
+                }
+            } catch (err) {
+                modal.remove();
+                console.error('Error granting admin:', err);
+                alert('Failed to grant admin privileges: ' + err.message);
+            }
+        };
+    }).catch(err => {
+        console.error('Error fetching token claims:', err);
+        alert('Could not verify admin status; check console for details.');
+    });
+};
+
+// Revoke admin privileges
+window.revokeAdmin = function (uid) {
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin.');
+    current.getIdTokenResult().then(async idToken => {
+        if (!idToken.claims || !idToken.claims.admin) {
+            return alert('Your account does not have the admin claim.');
+        }
+        if (!confirm('Revoke admin privileges for this user? This will remove both database flags and custom claims.')) return;
+
+        try {
+            // Get the current user's ID token
+            const token = await current.getIdToken();
+
+            // Call Cloudflare Pages Function
+            const response = await fetch('/functions/admin-claims', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'revoke',
+                    targetUid: uid,
+                    adminToken: token
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Admin privileges revoked successfully!\n\nThe user no longer has admin access. They may need to sign out and back in for changes to take effect.');
+                loadPendingUsers();
+            } else {
+                alert('Failed to revoke admin privileges: ' + (result.error || 'Unknown error'));
+            }
+        } catch (err) {
+            console.error('Error revoking admin:', err);
+            alert('Failed to revoke admin privileges: ' + err.message);
+        }
     }).catch(err => {
         console.error('Error fetching token claims:', err);
         alert('Could not verify admin status; check console for details.');

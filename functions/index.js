@@ -81,3 +81,97 @@ exports.notifyAdminOnUserWrite = functions.database.ref('/users/{uid}').onWrite(
     return null;
   }
 });
+
+// HTTPS callable function to set admin custom claims
+// Called from client-side when admin wants to grant admin privileges
+exports.setAdminClaim = functions.https.onCall(async (data, context) => {
+  // Verify the caller is authenticated and has admin claim
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  // Get the caller's custom claims
+  const callerRecord = await admin.auth().getUser(context.auth.uid);
+  const callerClaims = callerRecord.customClaims || {};
+
+  if (!callerClaims.admin) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can grant admin privileges');
+  }
+
+  const { targetUid, canGrantAdmin } = data;
+
+  if (!targetUid) {
+    throw new functions.https.HttpsError('invalid-argument', 'targetUid is required');
+  }
+
+  try {
+    // Set the admin claim on the target user
+    await admin.auth().setCustomUserClaims(targetUid, {
+      admin: true,
+      canGrantAdmin: !!canGrantAdmin
+    });
+
+    // Also update the database record to keep it in sync
+    await admin.database().ref(`/users/${targetUid}`).update({
+      isAdmin: true,
+      canGrantAdmin: !!canGrantAdmin,
+      adminGrantedBy: context.auth.uid,
+      adminGrantedAt: Date.now()
+    });
+
+    console.log(`Admin claim granted to ${targetUid} by ${context.auth.uid}`);
+    return { success: true, message: 'Admin privileges granted successfully' };
+  } catch (error) {
+    console.error('Error setting admin claim:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to set admin claim: ' + error.message);
+  }
+});
+
+// HTTPS callable function to revoke admin custom claims
+exports.revokeAdminClaim = functions.https.onCall(async (data, context) => {
+  // Verify the caller is authenticated and has admin claim
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  // Get the caller's custom claims
+  const callerRecord = await admin.auth().getUser(context.auth.uid);
+  const callerClaims = callerRecord.customClaims || {};
+
+  if (!callerClaims.admin) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can revoke admin privileges');
+  }
+
+  const { targetUid } = data;
+
+  if (!targetUid) {
+    throw new functions.https.HttpsError('invalid-argument', 'targetUid is required');
+  }
+
+  // Prevent revoking your own admin privileges
+  if (targetUid === context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'You cannot revoke your own admin privileges');
+  }
+
+  try {
+    // Remove the admin claim from the target user
+    await admin.auth().setCustomUserClaims(targetUid, {
+      admin: false,
+      canGrantAdmin: false
+    });
+
+    // Also update the database record
+    await admin.database().ref(`/users/${targetUid}`).update({
+      isAdmin: false,
+      canGrantAdmin: false,
+      adminRevokedBy: context.auth.uid,
+      adminRevokedAt: Date.now()
+    });
+
+    console.log(`Admin claim revoked from ${targetUid} by ${context.auth.uid}`);
+    return { success: true, message: 'Admin privileges revoked successfully' };
+  } catch (error) {
+    console.error('Error revoking admin claim:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to revoke admin claim: ' + error.message);
+  }
+});
