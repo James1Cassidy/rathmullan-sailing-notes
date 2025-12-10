@@ -14,7 +14,7 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 } else {
-    firebase.initializeApp(firebaseConfig);
+    firebase.app(); // reuse existing app
 }
 const db = firebase.database();
 window.db = db; // Expose db globally for inline scripts
@@ -977,7 +977,11 @@ if (googleSignInBtn) {
         const provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(provider).then(result => {
             const user = result.user;
-            if (!user) return;
+            if (!user) {
+                window.__signupInFlight = false;
+                alert('Google sign-in did not return a user. Please try again.');
+                return;
+            }
             // Avoid duplicate DB creation from onAuthStateChanged
             try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
             // Ensure a users/<uid> record exists (do not overwrite existing)
@@ -1022,6 +1026,8 @@ if (googleSignInBtn) {
         }).catch(err => {
             console.error('[DEBUG][google-signin] signInWithPopup error:', err);
             alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
+            window.__signupInFlight = false;
+        }).finally(() => {
             window.__signupInFlight = false;
         });
     });
