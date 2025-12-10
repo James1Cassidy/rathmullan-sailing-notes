@@ -759,7 +759,7 @@ window.makeAdmin = function (uid) {
                 const token = await current.getIdToken();
 
                 // Call Cloudflare Pages Function
-                const response = await fetch('/functions/admin-claims', {
+                const response = await fetch('/admin-claims', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -806,7 +806,7 @@ window.revokeAdmin = function (uid) {
             const token = await current.getIdToken();
 
             // Call Cloudflare Pages Function
-            const response = await fetch('/functions/admin-claims', {
+            const response = await fetch('/admin-claims', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
