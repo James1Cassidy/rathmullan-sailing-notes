@@ -989,10 +989,6 @@ if (googleSignInBtn) {
             window.__signupInFlight = false;
         });
     });
-    }).catch(err => {
-        console.error('loadPendingUsers admin check failed', err);
-        list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin check failed</td></tr>';
-    });
 }
 
 // --- Weekly Planning Logic ---
