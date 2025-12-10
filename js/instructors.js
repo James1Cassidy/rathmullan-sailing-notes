@@ -363,10 +363,46 @@ setAuthMode('login');
 // Admin Email
 const ADMIN_EMAIL = "jamescassidylk@gmail.com";
 let currentUserName = null;
+let currentUserIsAdmin = false;
+let currentUserCanGrant = false;
 // Realtime listener state flags
 let userApproved = false;
 let announcementsListenerAttached = false;
 let notificationsListenerAttached = false;
+
+async function refreshAdminStatus() {
+    const user = auth.currentUser;
+    if (!user) {
+        currentUserIsAdmin = false;
+        currentUserCanGrant = false;
+        return false;
+    }
+
+    const emailIsSuper = user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    let dbFlags = { isAdmin: false, canGrantAdmin: false };
+    try {
+        const snap = await db.ref('users/' + user.uid).once('value');
+        const val = snap.val() || {};
+        dbFlags.isAdmin = !!val.isAdmin;
+        dbFlags.canGrantAdmin = !!val.canGrantAdmin;
+    } catch (e) {
+        console.warn('refreshAdminStatus: db read failed', e);
+    }
+
+    let claimAdmin = false;
+    let claimGrant = false;
+    try {
+        const idToken = await user.getIdTokenResult(true); // force refresh to pick up claim changes
+        claimAdmin = !!(idToken.claims && idToken.claims.admin);
+        claimGrant = !!(idToken.claims && idToken.claims.canGrantAdmin);
+    } catch (e) {
+        console.warn('refreshAdminStatus: token read failed', e);
+    }
+
+    currentUserIsAdmin = emailIsSuper || claimAdmin || dbFlags.isAdmin;
+    currentUserCanGrant = emailIsSuper || claimGrant || dbFlags.canGrantAdmin;
+    return currentUserIsAdmin;
+}
 
 // --- LOGIN FALLBACK & DEFENSIVE REBIND ---
 function ensureLoginInteractivity() {
@@ -575,10 +611,15 @@ function showLogin() {
 }
 
 function showAdminPanel() {
-    if (adminPanel) {
+    if (!adminPanel) return;
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            adminPanel.classList.add('hidden');
+            return;
+        }
         adminPanel.classList.remove('hidden');
         loadPendingUsers();
-    }
+    });
 }
 
 function loadPendingUsers() {
@@ -591,10 +632,8 @@ function loadPendingUsers() {
         return;
     }
 
-    // Check admin claim or fallback to super-admin email
-    current.getIdTokenResult().then(idToken => {
-        const hasAdminClaim = !!(idToken && idToken.claims && idToken.claims.admin);
-        if (!hasAdminClaim && current.email !== ADMIN_EMAIL) {
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
             list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin only</td></tr>';
             return;
         }
@@ -611,7 +650,7 @@ function loadPendingUsers() {
                     if (uid === current.uid) return;
                     const approved = !!u.approved;
                     // Treat older records with canGrantAdmin/admin flag as admin for UI purposes
-                    const isAdmin = !!(u.isAdmin || u.canGrantAdmin || u.admin === true);
+                    const isAdminRow = !!(u.isAdmin || u.canGrantAdmin || u.admin === true);
                     const tr = document.createElement('tr');
                     tr.className = "border-t";
                     const statusClasses = approved ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
@@ -621,7 +660,7 @@ function loadPendingUsers() {
                     } else {
                         actionCell += `<button onclick=\"revokeUser('${uid}')\" class=\"bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm mr-2\">Revoke</button>`;
                     }
-                    if (!isAdmin) {
+                    if (!isAdminRow) {
                         actionCell += `<button onclick=\"makeAdmin('${uid}')\" class=\"bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mr-2\">Make Admin</button>`;
                     } else {
                         actionCell += `<button onclick=\"revokeAdmin('${uid}')\" class=\"bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm mr-2\">Revoke Admin</button>`;
@@ -642,7 +681,7 @@ function loadPendingUsers() {
             list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error loading users.</td></tr>';
         });
     }).catch(err => {
-        console.error('Error checking admin claim:', err);
+        console.error('Error checking admin access:', err);
         list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error verifying admin access.</td></tr>';
     });
 }
@@ -652,9 +691,9 @@ window.approveUser = function (uid) {
     // Check token claims first to avoid permission_denied from server rules
     const current = auth.currentUser;
     if (!current) return alert('You must be signed in as an admin to approve users.');
-    current.getIdTokenResult().then(idToken => {
-        if (!idToken.claims || !idToken.claims.admin) {
-            return alert('Your account does not have the admin claim. Run the admin setup script or sign out/in to refresh your token.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
         }
         if (!confirm('Are you sure you want to approve this user?')) return;
         db.ref('users/' + uid).once('value').then(snapshot => {
@@ -676,9 +715,6 @@ window.approveUser = function (uid) {
         }).catch(err => {
             alert('Error approving user: ' + err.message);
         });
-    }).catch(err => {
-        console.error('Error fetching token claims:', err);
-        alert('Could not verify admin status; check console for details.');
     });
 };
 
@@ -686,9 +722,9 @@ window.approveUser = function (uid) {
 window.revokeUser = function (uid) {
     const current = auth.currentUser;
     if (!current) return alert('You must be signed in as an admin to revoke users.');
-    current.getIdTokenResult().then(idToken => {
-        if (!idToken.claims || !idToken.claims.admin) {
-            return alert('Your account does not have the admin claim. Run the admin setup script or sign out/in to refresh your token.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
         }
         if (!confirm('Revoke this user\'s access? They will see Pending until re-approved.')) return;
         // Read user record so we can email the affected user after revocation
@@ -707,9 +743,6 @@ window.revokeUser = function (uid) {
                 loadPendingUsers();
             });
         }).catch(err => alert('Error revoking user: ' + err.message));
-    }).catch(err => {
-        console.error('Error fetching token claims:', err);
-        alert('Could not verify admin status; check console for details.');
     });
 };
 
@@ -717,18 +750,15 @@ window.revokeUser = function (uid) {
 window.deleteUserRecord = function (uid) {
     const current = auth.currentUser;
     if (!current) return alert('You must be signed in as an admin to delete user records.');
-    current.getIdTokenResult().then(idToken => {
-        if (!idToken.claims || !idToken.claims.admin) {
-            return alert('Your account does not have the admin claim. Run the admin setup script or sign out/in to refresh your token.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
         }
         if (!confirm('Delete this user\'s database record? If they sign in again they will be recreated as Pending.')) return;
         db.ref('users/' + uid).remove().then(() => {
             alert('User record deleted. They can still authenticate unless removed via Firebase Console.');
             loadPendingUsers();
         }).catch(err => alert('Error deleting user record: ' + err.message));
-    }).catch(err => {
-        console.error('Error fetching token claims:', err);
-        alert('Could not verify admin status; check console for details.');
     });
 };
 
@@ -736,9 +766,9 @@ window.deleteUserRecord = function (uid) {
 window.makeAdmin = function (uid) {
     const current = auth.currentUser;
     if (!current) return alert('You must be signed in as an admin.');
-    current.getIdTokenResult().then(idToken => {
-        if (!idToken.claims || !idToken.claims.admin) {
-            return alert('Your account does not have the admin claim. Run the admin setup script or sign out/in to refresh your token.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
         }
 
         // Create a custom modal for admin permissions
@@ -773,6 +803,11 @@ window.makeAdmin = function (uid) {
             confirmBtn.textContent = 'Processing...';
 
             try {
+                // Ensure caller is allowed to grant
+                await refreshAdminStatus();
+                if (!currentUserCanGrant) {
+                    throw new Error('You are not allowed to grant admin rights.');
+                }
                 // Get the current user's ID token (force refresh to include latest claims)
                 const token = await current.getIdToken(true);
 
@@ -809,9 +844,6 @@ window.makeAdmin = function (uid) {
                 alert('Failed to grant admin privileges: ' + err.message);
             }
         };
-    }).catch(err => {
-        console.error('Error fetching token claims:', err);
-        alert('Could not verify admin status; check console for details.');
     });
 };
 
@@ -819,9 +851,9 @@ window.makeAdmin = function (uid) {
 window.revokeAdmin = function (uid) {
     const current = auth.currentUser;
     if (!current) return alert('You must be signed in as an admin.');
-    current.getIdTokenResult().then(async idToken => {
-        if (!idToken.claims || !idToken.claims.admin) {
-            return alert('Your account does not have the admin claim.');
+    refreshAdminStatus().then(async isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
         }
         if (!confirm('Revoke admin privileges for this user? This will remove both database flags and custom claims.')) return;
 
@@ -858,9 +890,6 @@ window.revokeAdmin = function (uid) {
             console.error('Error revoking admin:', err);
             alert('Failed to revoke admin privileges: ' + err.message);
         }
-    }).catch(err => {
-        console.error('Error fetching token claims:', err);
-        alert('Could not verify admin status; check console for details.');
     });
 };
 
