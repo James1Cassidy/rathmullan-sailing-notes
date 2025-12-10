@@ -32,6 +32,15 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: 'FIREBASE_WEB_API_KEY not configured' }, 500);
     }
 
+    // Verify the caller's token and permissions
+    const caller = await verifyAdminToken(adminToken, env.FIREBASE_WEB_API_KEY);
+    if (!caller || !caller.admin) {
+      return jsonResponse({ error: 'Caller is not an admin' }, 403);
+    }
+    if (action === 'grant' && !caller.canGrantAdmin) {
+      return jsonResponse({ error: 'Caller is not allowed to grant admin rights' }, 403);
+    }
+
     let serviceAccount;
     try {
       serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
@@ -107,6 +116,43 @@ export async function onRequestPost(context) {
       message: error.message,
       stack: error.stack
     }, 500);
+  }
+}
+
+async function verifyAdminToken(idToken, apiKey) {
+  try {
+    const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken })
+    });
+
+    if (!res.ok) {
+      console.error('accounts:lookup failed', res.status);
+      return null;
+    }
+
+    const data = await res.json();
+    const user = data && data.users && data.users[0];
+    if (!user || !user.customAttributes) return null;
+
+    let claims = {};
+    try {
+      claims = JSON.parse(user.customAttributes);
+    } catch (e) {
+      console.error('Failed to parse customAttributes', e);
+      return null;
+    }
+
+    return {
+      uid: user.localId,
+      email: user.email,
+      admin: !!claims.admin,
+      canGrantAdmin: !!claims.canGrantAdmin
+    };
+  } catch (e) {
+    console.error('verifyAdminToken error', e);
+    return null;
   }
 }
 

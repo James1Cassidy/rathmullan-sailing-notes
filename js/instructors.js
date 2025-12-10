@@ -607,6 +607,8 @@ function loadPendingUsers() {
                     const u = users[uid];
                     // Do not display admin user to prevent accidental revoke/delete
                     if (u.email === ADMIN_EMAIL) return;
+                    // Do not show the currently signed-in admin in the table
+                    if (uid === current.uid) return;
                     const approved = !!u.approved;
                     // Treat older records with canGrantAdmin/admin flag as admin for UI purposes
                     const isAdmin = !!(u.isAdmin || u.canGrantAdmin || u.admin === true);
