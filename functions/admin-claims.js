@@ -32,15 +32,6 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: 'FIREBASE_WEB_API_KEY not configured' }, 500);
     }
 
-    // Verify the caller's token and permissions
-    const caller = await verifyAdminToken(adminToken, env.FIREBASE_WEB_API_KEY, env.ADMIN_EMAIL);
-    if (!caller || !caller.admin) {
-      return jsonResponse({ error: 'Caller is not an admin' }, 403);
-    }
-    if (action === 'grant' && !caller.canGrantAdmin) {
-      return jsonResponse({ error: 'Caller is not allowed to grant admin rights' }, 403);
-    }
-
     let serviceAccount;
     try {
       serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
@@ -52,6 +43,21 @@ export async function onRequestPost(context) {
     const accessToken = await getAccessToken(serviceAccount);
     if (!accessToken) {
       return jsonResponse({ error: 'Failed to get access token from Google OAuth2' }, 500);
+    }
+
+    // Verify the caller's token and permissions (after we have DB access token)
+    const caller = await verifyAdminToken(
+      adminToken,
+      env.FIREBASE_WEB_API_KEY,
+      env.ADMIN_EMAIL,
+      env.FIREBASE_DATABASE_URL,
+      accessToken
+    );
+    if (!caller || !caller.admin) {
+      return jsonResponse({ error: 'Caller is not an admin' }, 403);
+    }
+    if (action === 'grant' && !caller.canGrantAdmin) {
+      return jsonResponse({ error: 'Caller is not allowed to grant admin rights' }, 403);
     }
 
     // Set custom claims using Firebase Identity Toolkit API
@@ -119,7 +125,7 @@ export async function onRequestPost(context) {
   }
 }
 
-async function verifyAdminToken(idToken, apiKey, superAdminEmail) {
+async function verifyAdminToken(idToken, apiKey, superAdminEmail, dbUrl, serviceAccessToken) {
   try {
     const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
       method: 'POST',
@@ -134,14 +140,33 @@ async function verifyAdminToken(idToken, apiKey, superAdminEmail) {
 
     const data = await res.json();
     const user = data && data.users && data.users[0];
-    if (!user || !user.customAttributes) return null;
+    if (!user) return null;
 
     let claims = {};
-    try {
-      claims = JSON.parse(user.customAttributes);
-    } catch (e) {
-      console.error('Failed to parse customAttributes', e);
-      return null;
+    if (user.customAttributes) {
+      try {
+        claims = JSON.parse(user.customAttributes);
+      } catch (e) {
+        console.error('Failed to parse customAttributes', e);
+      }
+    }
+
+    // Fallback: check Realtime Database flags if available
+    let dbFlags = { isAdmin: false, canGrantAdmin: false };
+    const finalDbUrl = dbUrl || 'https://sailingrathmullan-default-rtdb.europe-west1.firebasedatabase.app';
+    if (serviceAccessToken) {
+      try {
+        const dbRes = await fetch(`${finalDbUrl}/users/${user.localId}.json?auth=${serviceAccessToken}`);
+        if (dbRes.ok) {
+          const dbData = await dbRes.json();
+          if (dbData && typeof dbData === 'object') {
+            dbFlags.isAdmin = !!dbData.isAdmin;
+            dbFlags.canGrantAdmin = !!dbData.canGrantAdmin;
+          }
+        }
+      } catch (e) {
+        console.error('DB flag lookup failed', e);
+      }
     }
 
     // Allow super admin email even if claims absent
@@ -150,8 +175,8 @@ async function verifyAdminToken(idToken, apiKey, superAdminEmail) {
     return {
       uid: user.localId,
       email: user.email,
-      admin: isSuperAdmin ? true : !!claims.admin,
-      canGrantAdmin: isSuperAdmin ? true : !!claims.canGrantAdmin
+      admin: isSuperAdmin ? true : (!!claims.admin || dbFlags.isAdmin),
+      canGrantAdmin: isSuperAdmin ? true : (!!claims.canGrantAdmin || dbFlags.canGrantAdmin)
     };
   } catch (e) {
     console.error('verifyAdminToken error', e);
