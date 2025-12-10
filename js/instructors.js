@@ -600,40 +600,47 @@ function loadPendingUsers() {
         }
 
         db.ref('users').once('value').then(snapshot => {
-        list.innerHTML = '';
-        const users = snapshot.val();
-        if (users) {
-            Object.keys(users).forEach(uid => {
-                const u = users[uid];
-                // Do not display admin user to prevent accidental revoke/delete
-                if (u.email === ADMIN_EMAIL) return;
-                const approved = !!u.approved;
-                const isAdmin = !!u.isAdmin;
-                const tr = document.createElement('tr');
-                tr.className = "border-t";
-                const statusClasses = approved ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
-                let actionCell = '';
-                if (!approved) {
-                    actionCell += `<button onclick=\"approveUser('${uid}')\" class=\"bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm mr-2\">Approve</button>`;
-                } else {
-                    actionCell += `<button onclick=\"revokeUser('${uid}')\" class=\"bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm mr-2\">Revoke</button>`;
-                }
-                if (!isAdmin) {
-                    actionCell += `<button onclick=\"makeAdmin('${uid}')\" class=\"bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mr-2\">Make Admin</button>`;
-                } else {
-                    actionCell += `<button onclick=\"revokeAdmin('${uid}')\" class=\"bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm mr-2\">Revoke Admin</button>`;
-                }
-                actionCell += `<button onclick=\"deleteUserRecord('${uid}')\" class=\"bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm\">Delete</button>`;
-                tr.innerHTML = `
-                    <td class="px-4 py-2">${u.email}</td>
-                    <td class="px-4 py-2 ${statusClasses}">${approved ? 'Approved' : 'Pending'}</td>
-                    <td class="px-4 py-2">${actionCell}</td>
-                `;
-                list.appendChild(tr);
-            });
-        } else {
-            list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">No users found.</td></tr>';
-        }
+            list.innerHTML = '';
+            const users = snapshot.val();
+            if (users) {
+                Object.keys(users).forEach(uid => {
+                    const u = users[uid];
+                    // Do not display admin user to prevent accidental revoke/delete
+                    if (u.email === ADMIN_EMAIL) return;
+                    const approved = !!u.approved;
+                    const isAdmin = !!u.isAdmin;
+                    const tr = document.createElement('tr');
+                    tr.className = "border-t";
+                    const statusClasses = approved ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
+                    let actionCell = '';
+                    if (!approved) {
+                        actionCell += `<button onclick=\"approveUser('${uid}')\" class=\"bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm mr-2\">Approve</button>`;
+                    } else {
+                        actionCell += `<button onclick=\"revokeUser('${uid}')\" class=\"bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm mr-2\">Revoke</button>`;
+                    }
+                    if (!isAdmin) {
+                        actionCell += `<button onclick=\"makeAdmin('${uid}')\" class=\"bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mr-2\">Make Admin</button>`;
+                    } else {
+                        actionCell += `<button onclick=\"revokeAdmin('${uid}')\" class=\"bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm mr-2\">Revoke Admin</button>`;
+                    }
+                    actionCell += `<button onclick=\"deleteUserRecord('${uid}')\" class=\"bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm\">Delete</button>`;
+                    tr.innerHTML = `
+                        <td class="px-4 py-2">${u.email}</td>
+                        <td class="px-4 py-2 ${statusClasses}">${approved ? 'Approved' : 'Pending'}</td>
+                        <td class="px-4 py-2">${actionCell}</td>
+                    `;
+                    list.appendChild(tr);
+                });
+            } else {
+                list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">No users found.</td></tr>';
+            }
+        }).catch(err => {
+            console.error('Error loading users:', err);
+            list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error loading users.</td></tr>';
+        });
+    }).catch(err => {
+        console.error('Error checking admin claim:', err);
+        list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error verifying admin access.</td></tr>';
     });
 }
 
