@@ -608,7 +608,8 @@ function loadPendingUsers() {
                     // Do not display admin user to prevent accidental revoke/delete
                     if (u.email === ADMIN_EMAIL) return;
                     const approved = !!u.approved;
-                    const isAdmin = !!u.isAdmin;
+                    // Treat older records with canGrantAdmin/admin flag as admin for UI purposes
+                    const isAdmin = !!(u.isAdmin || u.canGrantAdmin || u.admin === true);
                     const tr = document.createElement('tr');
                     tr.className = "border-t";
                     const statusClasses = approved ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
