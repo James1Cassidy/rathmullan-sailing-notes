@@ -585,13 +585,21 @@ function loadPendingUsers() {
     const list = document.getElementById('pending-users-list');
     if (!list) return;
     list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center">Loading...</td></tr>';
-    // Only allow admin to load pending users
     const current = auth.currentUser;
-    if (!current || current.email !== ADMIN_EMAIL) {
+    if (!current) {
         list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin only</td></tr>';
         return;
     }
-    db.ref('users').once('value').then(snapshot => {
+
+    // Check admin claim or fallback to super-admin email
+    current.getIdTokenResult().then(idToken => {
+        const hasAdminClaim = !!(idToken && idToken.claims && idToken.claims.admin);
+        if (!hasAdminClaim && current.email !== ADMIN_EMAIL) {
+            list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin only</td></tr>';
+            return;
+        }
+
+        db.ref('users').once('value').then(snapshot => {
         list.innerHTML = '';
         const users = snapshot.val();
         if (users) {
@@ -973,6 +981,10 @@ if (googleSignInBtn) {
             alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
             window.__signupInFlight = false;
         });
+    });
+    }).catch(err => {
+        console.error('loadPendingUsers admin check failed', err);
+        list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin check failed</td></tr>';
     });
 }
 
