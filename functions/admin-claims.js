@@ -50,8 +50,10 @@ export async function onRequestPost(context) {
       ? { admin: true, canGrantAdmin: !!canGrantAdmin }
       : { admin: false, canGrantAdmin: false };
 
+    // Use project-scoped endpoint with Bearer token (no API key required when using service account)
+    const projectId = serviceAccount.project_id;
     const claimsResponse = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${env.FIREBASE_WEB_API_KEY}`,
+      `https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts:update`,
       {
         method: 'POST',
         headers: {
@@ -66,12 +68,12 @@ export async function onRequestPost(context) {
     );
 
     if (!claimsResponse.ok) {
-      const error = await claimsResponse.text();
-      console.error('Claims API error:', error);
+      const errorText = await safeText(claimsResponse);
+      console.error('Claims API error:', claimsResponse.status, errorText);
       return jsonResponse({
         error: 'Failed to set claims',
         status: claimsResponse.status,
-        details: error
+        details: errorText
       }, 500);
     }
 
@@ -88,8 +90,8 @@ export async function onRequestPost(context) {
     });
 
     if (!dbResponse.ok) {
-      const dbError = await dbResponse.text();
-      console.error('Database update error:', dbError);
+      const dbError = await safeText(dbResponse);
+      console.error('Database update error:', dbResponse.status, dbError);
       // Don't fail the whole operation if DB update fails
     }
 
@@ -173,6 +175,14 @@ function jsonResponse(data, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
   });
+}
+
+async function safeText(response) {
+  try {
+    return await response.text();
+  } catch (e) {
+    return '';
+  }
 }
 
 export async function onRequestOptions() {
