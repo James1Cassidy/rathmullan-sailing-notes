@@ -26,87 +26,78 @@ const storage = firebase.storage();
 let messaging = null;
 try {
     if (firebase && firebase.messaging && 'serviceWorker' in navigator) {
-        messaging = firebase.messaging();
-        window.fcmMessaging = messaging; // expose for debugging
-        // Handle messages when app is in the foreground
-        try {
-            messaging.onMessage(payload => {
-                console.info('[FCM] foreground message', payload);
-                if (payload && payload.notification) {
-                    const n = payload.notification;
-                    showNotification(n.title || 'Notification', { body: n.body || '', data: payload.data });
+        // Detach previous user record listener
+        if (userRecordListener) {
+            try { userRecordListener.off(); } catch (_) {}
+            userRecordListener = null;
+        }
+
+        const userRef = db.ref('users/' + user.uid);
+        userRecordListener = userRef;
+
+        const handleUserSnapshot = async (snapshot) => {
+            const userData = snapshot.val();
+
+            // If user data doesn't exist (legacy users or direct firebase console creations), create pending record
+            if (!userData) {
+                let recentUid = null;
+                try { recentUid = sessionStorage.getItem('__recentSignupUid'); } catch (_) { recentUid = null; }
+                if (recentUid && recentUid === user.uid) {
+                    console.log('[DEBUG][auth.onAuthStateChanged] recent signup detected, skipping duplicate DB write', { uid: user.uid, ts: Date.now() });
+                    showPendingApproval();
+                    return;
                 }
-            });
-        } catch (e) {
-            console.warn('FCM onMessage attach failed', e);
-        }
-    }
-} catch (e) {
-    console.warn('FCM init skipped', e);
-}
+                console.log('[DEBUG][auth.onAuthStateChanged] creating default user record', { uid: user.uid, email: user.email, ts: Date.now() });
+                await userRef.set({ email: user.email, approved: false, role: 'instructor' });
+                showPendingApproval();
+                return;
+            }
 
-// Public VAPID key for Web Push (optional). Set `window.FCM_VAPID_KEY` in a script tag if you have one.
-window.FCM_VAPID_KEY = window.FCM_VAPID_KEY || '';
+            currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Instructor');
+            userApproved = !!userData.approved;
 
-async function registerForPush() {
-    const user = auth.currentUser;
-    if (!user || !messaging) return;
-    if (!('Notification' in window)) return;
+            // Refresh admin status (claims + DB + super-admin email)
+            await refreshAdminStatus();
 
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            console.warn('Notification permission not granted');
-            return;
-        }
+            if (userApproved) {
+                showMainContent();
+                loadWeeklyPlans();
+                initChat();
+                loadAnnouncements();
+                loadNotificationPrefs().then(() => {
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && window.notificationPrefs.enabled) {
+                        try { registerForPush().catch(e => console.warn('registerForPush failed', e)); } catch (_) {}
+                    }
+                }).catch(() => {});
 
-        // Get FCM token (v8 API). If a VAPID key is provided use the object form.
-        let token = null;
-        if (window.FCM_VAPID_KEY) {
-            token = await messaging.getToken({ vapidKey: window.FCM_VAPID_KEY });
-        } else {
-            try { token = await messaging.getToken(); } catch (e) { token = null; }
-        }
+                // Show admin panel only if current user is admin
+                if (currentUserIsAdmin) {
+                    showAdminPanel();
+                } else {
+                    if (adminPanel) adminPanel.classList.add('hidden');
+                }
+            } else {
+                // User is NOT approved
+                showPendingApproval();
+                if (adminPanel) adminPanel.classList.add('hidden');
+            }
+        };
 
-        if (!token) {
-            console.warn('No FCM token returned');
-            return;
-        }
-
-        const tokenRef = db.ref(`notificationTokens/${user.uid}/${token}`);
-        await tokenRef.set({ token, createdAt: Date.now(), ua: navigator.userAgent });
-        console.info('[FCM] token saved');
-        return token;
-    } catch (err) {
-        console.error('FCM registration error', err);
-    }
-}
-
-async function unregisterPushToken(token) {
-    const user = auth.currentUser;
-    if (!user || !token) return;
-    try {
-        await db.ref(`notificationTokens/${user.uid}/${token}`).remove();
-        console.info('[FCM] token removed from DB');
-        try { await messaging.deleteToken(token); } catch (e) { console.warn('deleteToken failed', e); }
-    } catch (e) { console.warn('unregisterPushToken error', e); }
-}
-
-window.registerForPush = registerForPush;
-window.unregisterPushToken = unregisterPushToken;
-
-// Simple Notification API helpers
-function showNotification(title, options = {}) {
-    if (typeof Notification === 'undefined') return;
-    if (Notification.permission !== 'granted') return;
-    if (!window.notificationPrefs || !window.notificationPrefs.enabled) return;
-    try { new Notification(title, { icon: '/images/logo.png', ...options }); } catch(e){ console.error('[Notify] error', e); }
+        // Attach realtime listener to user record so approval/admin changes take effect immediately
+        userRef.on('value', handleUserSnapshot, (err) => {
+            console.error('User record listener error:', err);
+            showPendingApproval();
+        });
 }
 
 function initNotificationUI() {
     const btn = document.getElementById('enable-notifications-btn');
     if (!btn || typeof Notification === 'undefined') return;
     // Hide if already granted and prefs enabled
+        if (userRecordListener) {
+            try { userRecordListener.off(); } catch (_) {}
+            userRecordListener = null;
+        }
     if (Notification.permission === 'granted') {
         if (window.notificationPrefs.enabled) btn.classList.add('hidden');
         else btn.classList.remove('hidden');
@@ -369,6 +360,7 @@ let currentUserCanGrant = false;
 let userApproved = false;
 let announcementsListenerAttached = false;
 let notificationsListenerAttached = false;
+let userRecordListener = null;
 
 async function refreshAdminStatus() {
     const user = auth.currentUser;
