@@ -801,7 +801,7 @@ window.makeAdmin = function (uid) {
                     alert('Admin privileges granted successfully!\n\nThe user now has full admin access. They may need to sign out and back in for changes to take effect.');
                     loadPendingUsers();
                 } else {
-                    alert('Failed to grant admin privileges: ' + (result.error || 'Unknown error'));
+                    alert('Failed to grant admin privileges: ' + (result.error || 'Unknown error') + (result.caller ? `\n\nCaller flags: ${JSON.stringify(result.caller.sources || result.caller)}` : ''));
                 }
             } catch (err) {
                 modal.remove();
@@ -852,7 +852,7 @@ window.revokeAdmin = function (uid) {
                 alert('Admin privileges revoked successfully!\n\nThe user no longer has admin access. They may need to sign out and back in for changes to take effect.');
                 loadPendingUsers();
             } else {
-                alert('Failed to revoke admin privileges: ' + (result.error || 'Unknown error'));
+                alert('Failed to revoke admin privileges: ' + (result.error || 'Unknown error') + (result.caller ? `\n\nCaller flags: ${JSON.stringify(result.caller.sources || result.caller)}` : ''));
             }
         } catch (err) {
             console.error('Error revoking admin:', err);

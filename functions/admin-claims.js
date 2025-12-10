@@ -54,10 +54,10 @@ export async function onRequestPost(context) {
       accessToken
     );
     if (!caller || !caller.admin) {
-      return jsonResponse({ error: 'Caller is not an admin' }, 403);
+      return jsonResponse({ error: 'Caller is not an admin', caller });
     }
     if (action === 'grant' && !caller.canGrantAdmin) {
-      return jsonResponse({ error: 'Caller is not allowed to grant admin rights' }, 403);
+      return jsonResponse({ error: 'Caller is not allowed to grant admin rights', caller }, 403);
     }
 
     // Set custom claims using Firebase Identity Toolkit API
@@ -169,14 +169,27 @@ async function verifyAdminToken(idToken, apiKey, superAdminEmail, dbUrl, service
       }
     }
 
-    // Allow super admin email even if claims absent
-    const isSuperAdmin = superAdminEmail && user.email && user.email.toLowerCase() === superAdminEmail.toLowerCase();
+    // Allow super admin email even if claims absent; fallback default
+    const superEmail = superAdminEmail || 'jamescassidylk@gmail.com';
+    const isSuperAdmin = superEmail && user.email && user.email.toLowerCase() === superEmail.toLowerCase();
+
+    const hasAdminClaim = !!claims.admin;
+    const hasGrantClaim = !!claims.canGrantAdmin;
+    const admin = isSuperAdmin || hasAdminClaim || dbFlags.isAdmin;
+    const canGrantAdmin = isSuperAdmin || hasGrantClaim || dbFlags.canGrantAdmin;
 
     return {
       uid: user.localId,
       email: user.email,
-      admin: isSuperAdmin ? true : (!!claims.admin || dbFlags.isAdmin),
-      canGrantAdmin: isSuperAdmin ? true : (!!claims.canGrantAdmin || dbFlags.canGrantAdmin)
+      admin,
+      canGrantAdmin,
+      sources: {
+        superAdmin: isSuperAdmin,
+        claimAdmin: hasAdminClaim,
+        claimGrant: hasGrantClaim,
+        dbAdmin: !!dbFlags.isAdmin,
+        dbGrant: !!dbFlags.canGrantAdmin
+      }
     };
   } catch (e) {
     console.error('verifyAdminToken error', e);
