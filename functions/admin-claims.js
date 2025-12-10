@@ -1,141 +1,149 @@
 // Cloudflare Pages Function to set/revoke admin claims
-// This runs on Cloudflare's free tier as an edge function
-
-import admin from 'firebase-admin';
-
-// Initialize Firebase Admin SDK
-let adminInitialized = false;
-
-function initializeAdmin(env) {
-  if (adminInitialized) return;
-
-  const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: env.FIREBASE_DATABASE_URL
-  });
-
-  adminInitialized = true;
-}
+// Uses Firebase REST API (works in Cloudflare edge runtime)
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    // Initialize admin if needed
-    initializeAdmin(env);
-
-    // Parse request body
     const body = await request.json();
     const { action, targetUid, canGrantAdmin, adminToken } = body;
 
-    if (!adminToken) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (!adminToken || !targetUid) {
+      return jsonResponse({ error: 'Missing required fields' }, 400);
     }
 
-    // Verify the admin token
-    let decodedToken;
-    try {
-      decodedToken = await admin.auth().verifyIdToken(adminToken);
-    } catch (err) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    const serviceAccount = env.FIREBASE_SERVICE_ACCOUNT ? JSON.parse(env.FIREBASE_SERVICE_ACCOUNT) : null;
+    if (!serviceAccount || !env.FIREBASE_WEB_API_KEY) {
+      return jsonResponse({ error: 'Server not configured' }, 500);
     }
 
-    // Check if caller is admin
-    if (!decodedToken.admin) {
-      return new Response(JSON.stringify({ error: 'Permission denied - not an admin' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    // Get OAuth2 access token using service account
+    const accessToken = await getAccessToken(serviceAccount);
+    if (!accessToken) {
+      return jsonResponse({ error: 'Failed to authenticate' }, 500);
     }
 
-    if (!targetUid) {
-      return new Response(JSON.stringify({ error: 'targetUid is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    // Set custom claims using Firebase Identity Toolkit API
+    const customClaims = action === 'grant'
+      ? { admin: true, canGrantAdmin: !!canGrantAdmin }
+      : { admin: false, canGrantAdmin: false };
 
-    if (action === 'grant') {
-      // Set admin claims
-      await admin.auth().setCustomUserClaims(targetUid, {
-        admin: true,
-        canGrantAdmin: !!canGrantAdmin
-      });
-
-      // Update database record
-      await admin.database().ref(`/users/${targetUid}`).update({
-        isAdmin: true,
-        canGrantAdmin: !!canGrantAdmin,
-        adminGrantedBy: decodedToken.uid,
-        adminGrantedAt: Date.now()
-      });
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Admin privileges granted'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-    } else if (action === 'revoke') {
-      // Prevent self-revocation
-      if (targetUid === decodedToken.uid) {
-        return new Response(JSON.stringify({
-          error: 'Cannot revoke your own admin privileges'
-        }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' }
-        });
+    const claimsResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${env.FIREBASE_WEB_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          localId: targetUid,
+          customAttributes: JSON.stringify(customClaims)
+        })
       }
+    );
 
-      // Revoke admin claims
-      await admin.auth().setCustomUserClaims(targetUid, {
-        admin: false,
-        canGrantAdmin: false
-      });
-
-      // Update database record
-      await admin.database().ref(`/users/${targetUid}`).update({
-        isAdmin: false,
-        canGrantAdmin: false,
-        adminRevokedBy: decodedToken.uid,
-        adminRevokedAt: Date.now()
-      });
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Admin privileges revoked'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-    } else {
-      return new Response(JSON.stringify({
-        error: 'Invalid action. Use "grant" or "revoke"'
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (!claimsResponse.ok) {
+      const error = await claimsResponse.text();
+      console.error('Claims API error:', error);
+      return jsonResponse({ error: 'Failed to set claims', details: error }, 500);
     }
+
+    // Update database
+    const dbUrl = env.FIREBASE_DATABASE_URL || 'https://sailingrathmullan-default-rtdb.europe-west1.firebasedatabase.app';
+    const dbData = action === 'grant'
+      ? { isAdmin: true, canGrantAdmin: !!canGrantAdmin, adminGrantedAt: Date.now() }
+      : { isAdmin: false, canGrantAdmin: false, adminRevokedAt: Date.now() };
+
+    await fetch(`${dbUrl}/users/${targetUid}.json?auth=${accessToken}`, {
+      method: 'PATCH',
+      body: JSON.stringify(dbData)
+    });
+
+    return jsonResponse({
+      success: true,
+      message: action === 'grant' ? 'Admin granted' : 'Admin revoked'
+    });
 
   } catch (error) {
-    console.error('Error in admin-claims:', error);
-    return new Response(JSON.stringify({
-      error: 'Internal server error',
-      details: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error('Error:', error);
+    return jsonResponse({ error: error.message }, 500);
   }
+}
+
+async function getAccessToken(serviceAccount) {
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const claim = {
+      iss: serviceAccount.client_email,
+      scope: 'https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/firebase.database',
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now + 3600,
+      iat: now
+    };
+
+    const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+    const payload = base64url(JSON.stringify(claim));
+
+    const privateKey = await crypto.subtle.importKey(
+      'pkcs8',
+      pemToBuffer(serviceAccount.private_key),
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+
+    const signature = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      privateKey,
+      new TextEncoder().encode(`${header}.${payload}`)
+    );
+
+    const jwt = `${header}.${payload}.${base64url(signature)}`;
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+    });
+
+    if (!tokenRes.ok) return null;
+    const { access_token } = await tokenRes.json();
+    return access_token;
+  } catch (e) {
+    console.error('getAccessToken error:', e);
+    return null;
+  }
+}
+
+function pemToBuffer(pem) {
+  const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, '').replace(/-----END PRIVATE KEY-----/, '').replace(/\s/g, '');
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function base64url(input) {
+  const data = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
+  let binary = '';
+  for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+  });
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
 }

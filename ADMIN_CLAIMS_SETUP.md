@@ -10,21 +10,22 @@ This uses Cloudflare Pages Functions (free tier) instead of Firebase Cloud Funct
 2. Click "Generate new private key"
 3. Save the JSON file securely (don't commit it to git!)
 
-### 2. Add Environment Variable to Cloudflare Pages
+### 2. Add Environment Variables to Cloudflare Pages
 
 1. Go to your Cloudflare Pages dashboard
 2. Select your project (rathmullan-sailing-notes)
 3. Go to Settings → Environment variables
-4. Add these variables (both Production and Preview):
+4. Add these THREE variables (both Production and Preview):
 
    **FIREBASE_SERVICE_ACCOUNT**
    - Paste the ENTIRE contents of your service account JSON file
 
    **FIREBASE_DATABASE_URL**
-   - Value: `https://sailingrathmullan-default-rtdb.firebaseio.com`
-   (or your actual database URL)
+   - Value: `https://sailingrathmullan-default-rtdb.europe-west1.firebasedatabase.app`
 
-### 3. Deploy to Cloudflare Pages
+   **FIREBASE_WEB_API_KEY**
+   - Value: `AIzaSyAKhG2rBKKWb0bVz_U0pQ6qYZU0nO9HlI0`
+   - (This is your Firebase Web API key from your Firebase config)### 3. Deploy to Cloudflare Pages
 
 Just push your changes to GitHub - Cloudflare Pages will automatically deploy!
 
