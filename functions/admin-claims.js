@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
     }
 
     // Verify the caller's token and permissions
-    const caller = await verifyAdminToken(adminToken, env.FIREBASE_WEB_API_KEY);
+    const caller = await verifyAdminToken(adminToken, env.FIREBASE_WEB_API_KEY, env.ADMIN_EMAIL);
     if (!caller || !caller.admin) {
       return jsonResponse({ error: 'Caller is not an admin' }, 403);
     }
@@ -119,7 +119,7 @@ export async function onRequestPost(context) {
   }
 }
 
-async function verifyAdminToken(idToken, apiKey) {
+async function verifyAdminToken(idToken, apiKey, superAdminEmail) {
   try {
     const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
       method: 'POST',
@@ -144,11 +144,14 @@ async function verifyAdminToken(idToken, apiKey) {
       return null;
     }
 
+    // Allow super admin email even if claims absent
+    const isSuperAdmin = superAdminEmail && user.email && user.email.toLowerCase() === superAdminEmail.toLowerCase();
+
     return {
       uid: user.localId,
       email: user.email,
-      admin: !!claims.admin,
-      canGrantAdmin: !!claims.canGrantAdmin
+      admin: isSuperAdmin ? true : !!claims.admin,
+      canGrantAdmin: isSuperAdmin ? true : !!claims.canGrantAdmin
     };
   } catch (e) {
     console.error('verifyAdminToken error', e);

@@ -773,8 +773,8 @@ window.makeAdmin = function (uid) {
             confirmBtn.textContent = 'Processing...';
 
             try {
-                // Get the current user's ID token
-                const token = await current.getIdToken();
+                // Get the current user's ID token (force refresh to include latest claims)
+                const token = await current.getIdToken(true);
 
                 // Call Cloudflare Pages Function
                 const response = await fetch('/admin-claims', {
@@ -826,8 +826,8 @@ window.revokeAdmin = function (uid) {
         if (!confirm('Revoke admin privileges for this user? This will remove both database flags and custom claims.')) return;
 
         try {
-            // Get the current user's ID token
-            const token = await current.getIdToken();
+            // Get the current user's ID token (force refresh to include latest claims)
+            const token = await current.getIdToken(true);
 
             // Call Cloudflare Pages Function
             const response = await fetch('/admin-claims', {
