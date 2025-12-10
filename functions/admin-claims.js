@@ -5,22 +5,44 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const body = await request.json();
-    const { action, targetUid, canGrantAdmin, adminToken } = body;
-
-    if (!adminToken || !targetUid) {
-      return jsonResponse({ error: 'Missing required fields' }, 400);
+    // Parse request body with error handling
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return jsonResponse({ error: 'Invalid JSON in request body' }, 400);
     }
 
-    const serviceAccount = env.FIREBASE_SERVICE_ACCOUNT ? JSON.parse(env.FIREBASE_SERVICE_ACCOUNT) : null;
-    if (!serviceAccount || !env.FIREBASE_WEB_API_KEY) {
-      return jsonResponse({ error: 'Server not configured' }, 500);
+    const { action, targetUid, canGrantAdmin, adminToken } = body;
+
+    // Validate inputs
+    if (!adminToken || !targetUid) {
+      return jsonResponse({
+        error: 'Missing required fields',
+        received: { hasToken: !!adminToken, hasUid: !!targetUid }
+      }, 400);
+    }
+
+    // Check environment variables
+    if (!env.FIREBASE_SERVICE_ACCOUNT) {
+      return jsonResponse({ error: 'FIREBASE_SERVICE_ACCOUNT not configured' }, 500);
+    }
+
+    if (!env.FIREBASE_WEB_API_KEY) {
+      return jsonResponse({ error: 'FIREBASE_WEB_API_KEY not configured' }, 500);
+    }
+
+    let serviceAccount;
+    try {
+      serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+    } catch (e) {
+      return jsonResponse({ error: 'Invalid FIREBASE_SERVICE_ACCOUNT JSON' }, 500);
     }
 
     // Get OAuth2 access token using service account
     const accessToken = await getAccessToken(serviceAccount);
     if (!accessToken) {
-      return jsonResponse({ error: 'Failed to authenticate' }, 500);
+      return jsonResponse({ error: 'Failed to get access token from Google OAuth2' }, 500);
     }
 
     // Set custom claims using Firebase Identity Toolkit API
@@ -46,7 +68,11 @@ export async function onRequestPost(context) {
     if (!claimsResponse.ok) {
       const error = await claimsResponse.text();
       console.error('Claims API error:', error);
-      return jsonResponse({ error: 'Failed to set claims', details: error }, 500);
+      return jsonResponse({
+        error: 'Failed to set claims',
+        status: claimsResponse.status,
+        details: error
+      }, 500);
     }
 
     // Update database
@@ -55,10 +81,17 @@ export async function onRequestPost(context) {
       ? { isAdmin: true, canGrantAdmin: !!canGrantAdmin, adminGrantedAt: Date.now() }
       : { isAdmin: false, canGrantAdmin: false, adminRevokedAt: Date.now() };
 
-    await fetch(`${dbUrl}/users/${targetUid}.json?auth=${accessToken}`, {
+    const dbResponse = await fetch(`${dbUrl}/users/${targetUid}.json?auth=${accessToken}`, {
       method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dbData)
     });
+
+    if (!dbResponse.ok) {
+      const dbError = await dbResponse.text();
+      console.error('Database update error:', dbError);
+      // Don't fail the whole operation if DB update fails
+    }
 
     return jsonResponse({
       success: true,
@@ -66,8 +99,12 @@ export async function onRequestPost(context) {
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return jsonResponse({ error: error.message }, 500);
+    console.error('Unexpected error:', error);
+    return jsonResponse({
+      error: 'Internal server error',
+      message: error.message,
+      stack: error.stack
+    }, 500);
   }
 }
 
