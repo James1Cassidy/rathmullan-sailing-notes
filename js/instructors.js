@@ -790,6 +790,12 @@ window.makeAdmin = function (uid) {
                 modal.remove();
 
                 if (response.ok) {
+                    // Mirror the server update in Realtime DB so the UI updates immediately
+                    try {
+                        await db.ref('users/' + uid).update({ isAdmin: true, canGrantAdmin: canGrantAdmin === true });
+                    } catch (e) {
+                        console.warn('Local DB admin flag update failed (continuing):', e);
+                    }
                     alert('Admin privileges granted successfully!\n\nThe user now has full admin access. They may need to sign out and back in for changes to take effect.');
                     loadPendingUsers();
                 } else {
@@ -835,6 +841,12 @@ window.revokeAdmin = function (uid) {
             const result = await response.json();
 
             if (response.ok) {
+                // Mirror server update for immediate UI feedback
+                try {
+                    await db.ref('users/' + uid).update({ isAdmin: false, canGrantAdmin: false });
+                } catch (e) {
+                    console.warn('Local DB admin revoke update failed (continuing):', e);
+                }
                 alert('Admin privileges revoked successfully!\n\nThe user no longer has admin access. They may need to sign out and back in for changes to take effect.');
                 loadPendingUsers();
             } else {
