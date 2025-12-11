@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics – Rathmullan Sailing</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" href="/images/logo.png?v=2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta property="og:title" content="Analytics – Rathmullan Sailing">
+  <meta property="og:description" content="Cohort distribution, skill attainment, and new enrolments over time.">
+  <meta property="og:image" content="/images/logo.png">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="/analytics.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Analytics – Rathmullan Sailing">
+  <meta name="twitter:description" content="Cohort distribution, skill attainment, and new enrolments over time.">
+  <meta name="twitter:image" content="/images/logo.png">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 900px){ .grid { grid-template-columns: 1fr 1fr; } }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; box-shadow: 0 8px 14px rgba(0,0,0,0.06); }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    header { background: #1e3a8a; color: white; padding: 1rem; }
+    a.nav { color: #e0e7ff; margin-right: 12px; text-decoration: none; }
+    a.nav:hover { text-decoration: underline; }
+    .notice { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; padding: 0.75rem 1rem; border-radius: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <strong>Analytics Dashboard</strong>
+        <div class="muted">Insights from students and skill progress</div>
+      </div>
+      <nav>
+        <a class="nav" href="/index.html">Home</a>
+        <a class="nav" href="/instructors.html">Instructors</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="gate" class="notice" style="display:none;">Please sign in with an approved account to view analytics.</div>
+    <div id="content" style="display:none;">
+      <div class="grid" style="grid-template-columns: repeat(auto-fit,minmax(220px,1fr));">
+        <div class="card">
+          <h4>Total Students</h4>
+          <div id="kpi-total" style="font-size:2rem;font-weight:700;">–</div>
+          <div class="muted">All enrolled students</div>
+        </div>
+        <div class="card">
+          <h4>New (30 days)</h4>
+          <div id="kpi-new" style="font-size:2rem;font-weight:700;">–</div>
+          <div class="muted">Recent enrolments</div>
+        </div>
+        <div class="card">
+          <h4>Avg Completion</h4>
+          <div id="kpi-completion" style="font-size:2rem;font-weight:700;">–</div>
+          <div class="muted">% of assessed skills achieved</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Students per Level</h3>
+          <canvas id="levelCounts"></canvas>
+          <div class="muted">Distribution of enrolled students by level.</div>
+        </div>
+        <div class="card">
+          <h3>Skill Attainment by Level</h3>
+          <canvas id="skillStatuses"></canvas>
+          <div class="muted">Stacked breakdown of achieved / partial / not demonstrated / not assessed.</div>
+        </div>
+        <div class="card">
+          <h3>New Students Over Time</h3>
+          <canvas id="newStudents"></canvas>
+          <div class="muted">Based on `students` timestamps (weekly bins).</div>
+        </div>
+        <div class="card">
+          <h3>Overall Status Mix</h3>
+          <canvas id="overallStatus"></canvas>
+          <div class="muted">Combined across all levels and students.</div>
+        </div>
+        <div class="card">
+          <h3>Top Skill Gaps</h3>
+          <ol id="gaps-list" class="muted" style="padding-left:1rem;"></ol>
+          <div class="muted">Most frequent "not demonstrated" or "not assessed" items.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Firebase v8 SDKs (matching instructors.html) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Load shared config + SAILING_SKILLS from instructors.js -->
+  <script src="js/instructors.js"></script>
+  <!-- Load Chart.js stack -->
+  <script src="js/chartjs-loader.js"></script>
+  <!-- Analytics logic -->
+  <script src="js/analytics.js"></script>
+</body>
+</html>
