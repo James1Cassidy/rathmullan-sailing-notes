@@ -917,6 +917,47 @@ function ensureLoginInteractivity() {
     } catch (err) { console.error('[Auth] ensureLoginInteractivity error', err); }
 }
 
+// Load instructors from Firebase users and populate the available zone
+function loadInstructorsFromFirebase() {
+    const availableZone = document.getElementById('available-zone');
+    if (!availableZone) return;
+
+    db.ref('users').once('value').then(snap => {
+        const usersData = snap.val() || {};
+        const flexWrap = availableZone.querySelector('.flex.flex-wrap') || availableZone;
+        flexWrap.innerHTML = ''; // Clear loading message
+
+        const colors = {
+            'instructor': 'bg-blue-500',
+            'assistant': 'bg-green-600',
+            'admin': 'bg-purple-600'
+        };
+
+        Object.entries(usersData).forEach(([uid, userData]) => {
+            if (userData && userData.name && userData.approved) {
+                const userType = userData.role || 'instructor';
+                const color = colors[userType] || 'bg-blue-500';
+                const div = document.createElement('div');
+                div.className = `draggable ${color} text-white px-3 py-1 rounded-md cursor-pointer`;
+                div.id = `user-${uid}`;
+                div.draggable = true;
+                div.textContent = userData.name;
+                flexWrap.appendChild(div);
+            }
+        });
+
+        if (flexWrap.children.length === 0) {
+            flexWrap.innerHTML = '<div class="text-gray-600 italic text-sm">No approved instructors yet</div>';
+        }
+    }).catch(err => {
+        console.error('Error loading instructors from Firebase:', err);
+        const flexWrap = availableZone.querySelector('.flex.flex-wrap') || availableZone;
+        flexWrap.innerHTML = '<div class="text-red-600 text-sm">Error loading users</div>';
+    });
+}
+
+window.loadInstructorsFromFirebase = loadInstructorsFromFirebase;
+
 document.addEventListener('DOMContentLoaded', () => {
     // If not authenticated show login & enforce interactivity
     if (!auth.currentUser) {
@@ -960,6 +1001,7 @@ auth.onAuthStateChanged(user => {
                 currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Instructor');
                 showMainContent();
                 loadWeeklyPlans();
+                loadInstructorsFromFirebase();
                 initChat();
 
                 userApproved = true;
