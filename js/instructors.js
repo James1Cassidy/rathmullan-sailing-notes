@@ -4553,6 +4553,7 @@ function printStudentSkills() {
     if (!levelSelect || !studentSelect || !checklistContainer) return;
 
     const level = levelSelect.value;
+    const studentId = studentSelect.value;
     const studentName = studentSelect.options[studentSelect.selectedIndex].text;
     const levelKey = level;
     const skillsData = SAILING_SKILLS[levelKey];
