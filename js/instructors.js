@@ -22,24 +22,6 @@ window.firebase = firebase; // Ensure firebase is globally accessible
 const auth = firebase.auth();
 const storage = firebase.storage();
 
-// Handle redirect result immediately after Firebase init
-console.log('[DEBUG] Checking for redirect result...');
-auth.getRedirectResult().then(result => {
-    console.log('[DEBUG][google-redirect] getRedirectResult called', result);
-
-    if (result && result.user) {
-        console.log('[DEBUG][google-redirect] User returned from Google sign-in:', result.user.email, result.user.uid);
-        // Mark as recent signup so auth listener knows it's from Google
-        try { sessionStorage.setItem('__recentSignupUid', result.user.uid); } catch (_) {}
-    } else {
-        console.log('[DEBUG][google-redirect] No redirect result found');
-    }
-    window.__signupInFlight = false;
-}).catch(err => {
-    console.error('[DEBUG][google-redirect] getRedirectResult error:', err);
-    window.__signupInFlight = false;
-});
-
 // --- Firebase Messaging (FCM) client integration ---
 // Note: `firebase-messaging.js` is included in pages that use messaging (instructors.html).
 let messaging = null;
@@ -1017,15 +999,25 @@ if (googleSignInBtn) {
             return;
         }
         if (window.__signupInFlight) {
-            console.warn('[DEBUG][google-signin] signup already in progress');
+            console.warn('Google sign-in already in progress');
             return;
         }
         window.__signupInFlight = true;
         const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithRedirect(provider).catch(err => {
-            console.error('[DEBUG][google-signin] signInWithRedirect error:', err);
-            alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
-        });
+        firebase.auth().signInWithPopup(provider)
+            .then(result => {
+                // Mark as recent signup so auth listener creates database record
+                try { sessionStorage.setItem('__recentSignupUid', result.user.uid); } catch (_) {}
+                window.__signupInFlight = false;
+            })
+            .catch(err => {
+                window.__signupInFlight = false;
+                // Only show alert if user didn't just cancel
+                if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+                    console.error('Google sign-in error:', err);
+                    alert('Google sign-in failed: ' + (err.message || 'Unknown error'));
+                }
+            });
     });
 }
 
