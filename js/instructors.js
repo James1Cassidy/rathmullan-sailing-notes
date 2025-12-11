@@ -34,221 +34,421 @@ try {
 }
 
 // --- SAILING SKILLS CHECKLIST DATA ---
-// Exact competencies from SBSS Joe Soap Sheets 2016
+// Exact competencies from SBSS Joe Soap Sheets 2016 with section groupings
 const SAILING_SKILLS = {
     'taste-of-sailing': {
         level: 'Taste of Sailing',
-        competencies: [
-            { id: 'tos-1', skill: 'Can explain why personal buoyancy is worn when afloat. (Safety & legislation)' },
-            { id: 'tos-2', skill: 'Can identify the limitations of a Buoyancy Aid (50N PFD) as against a Life jacket (> 150N PFD)' },
-            { id: 'tos-3', skill: 'The sailor should be able to identify where the wind is coming from' },
-            { id: 'tos-4', skill: 'Can use tiller extension' },
-            { id: 'tos-5', skill: 'Can keep the sail filled' },
-            { id: 'tos-6', skill: 'Can stop the boat at will by letting out the sail' },
-            { id: 'tos-7', skill: 'Can get under way by sheeting in and bearing away' },
-            { id: 'tos-8', skill: 'Can turn the boat in the vicinity of a mark' },
-            { id: 'tos-9', skill: 'Is balancing the boat' },
-            { id: 'tos-10', skill: 'Can lower and raise the centre / dagger board and rudder when leaving and coming back to shore' },
-            { id: 'tos-11', skill: 'Can explain why they must always maintain contact with capsized boat' },
-            { id: 'tos-12', skill: 'Can explain why they should never swim for shore' },
-            { id: 'tos-13', skill: 'Can explain how to minimise the risk of full inversions (Don\'t hang onto top gunwale)' },
-            { id: 'tos-14', skill: 'Is aware that the next step for people completing this course is "Start Sailing"' },
-            { id: 'tos-15', skill: 'Can identify why they should do this course and where to find information on it and course providers' }
+        sections: [
+            {
+                name: 'Clothing & Equipment',
+                competencies: [
+                    { id: 'tos-1', skill: 'Can explain why personal buoyancy is worn when afloat. (Safety & legislation)' },
+                    { id: 'tos-2', skill: 'Can identify the limitations of a Buoyancy Aid (50N PFD) as against a Life jacket (> 150N PFD)' }
+                ]
+            },
+            {
+                name: 'Sailing Techniques & Manoeuvres',
+                competencies: [
+                    { id: 'tos-3', skill: 'The sailor should be able to identify where the wind is coming from' },
+                    { id: 'tos-4', skill: 'Can use tiller extension' },
+                    { id: 'tos-5', skill: 'Can keep the sail filled' },
+                    { id: 'tos-6', skill: 'Can stop the boat at will by letting out the sail' },
+                    { id: 'tos-7', skill: 'Can get under way by sheeting in and bearing away' },
+                    { id: 'tos-8', skill: 'Can turn the boat in the vicinity of a mark' },
+                    { id: 'tos-9', skill: 'Is balancing the boat' },
+                    { id: 'tos-10', skill: 'Can lower and raise the centre / dagger board and rudder when leaving and coming back to shore' }
+                ]
+            },
+            {
+                name: 'Capsize Recovery',
+                competencies: [
+                    { id: 'tos-11', skill: 'Can explain why they must always maintain contact with capsized boat' },
+                    { id: 'tos-12', skill: 'Can explain why they should never swim for shore' },
+                    { id: 'tos-13', skill: 'Can explain how to minimise the risk of full inversions (Don\'t hang onto top gunwale)' }
+                ]
+            },
+            {
+                name: 'What Next',
+                competencies: [
+                    { id: 'tos-14', skill: 'Is aware that the next step for people completing this course is "Start Sailing"' },
+                    { id: 'tos-15', skill: 'Can identify why they should do this course and where to find information on it and course providers' }
+                ]
+            }
         ]
     },
     'start-sailing': {
         level: 'Start Sailing',
-        competencies: [
-            { id: 'ss-1', skill: 'Can describe why they might / should /should not wear; Hats, sun glasses, gloves, footwear, wetsuits, drysuits, waterproofs' },
-            { id: 'ss-2', skill: 'Describe the relative merits of cotton, wool & man made fibres when used afloat' },
-            { id: 'ss-3', skill: 'Can identify the difference between buoyancy aids & lifejackets' },
-            { id: 'ss-4', skill: 'Can explain what the ISO/EN number & pictograms mean' },
-            { id: 'ss-5', skill: 'Can explain why they are using the type of PFDs that they are for this activity' },
-            { id: 'ss-6', skill: 'Can describe where & when your organisation expects they to wear their PFD' },
-            { id: 'ss-7', skill: 'Can put on and adjust their own PFD' },
-            { id: 'ss-8', skill: 'Can identify where the wind is blowing from' },
-            { id: 'ss-9', skill: 'Can position their boat head to wind and can do so in an appropriate are free from hazards (overhead lines, fences, other boats & sailors etc.)' },
-            { id: 'ss-10', skill: 'Can identify parts of the hull - bow, stern, rudder, tiller & centre / daggerboard, bungs' },
-            { id: 'ss-11', skill: 'Can identify parts of the rigging - mast, boom, halyards, stays / shrouds & kicking strap, sheets' },
-            { id: 'ss-12', skill: 'Can identify sails & sail parts - mainsail, jib, clew, foot, luff, leach' },
-            { id: 'ss-13', skill: 'Has assisted instructor in rigging boat' },
-            { id: 'ss-14', skill: 'Can tie and describe when to use a figure of eight knot' },
-            { id: 'ss-15', skill: 'Can tie and describe when to use a round turn and two half hitches' },
-            { id: 'ss-16', skill: 'Can secure a rope using a Cam Cleat (as used on jib & main sheets)' },
-            { id: 'ss-17', skill: 'Can secure a rope using a Horned cleat (as on marinas)' },
-            { id: 'ss-18', skill: 'Can secure a rope using a Jam cleat (often used on tiller to hold down rudder)' },
-            { id: 'ss-19', skill: 'Can coil a line by flaking it into one hand and secure it to stop it uncoiling' },
-            { id: 'ss-20', skill: 'Can throw one end of a coiled line' },
-            { id: 'ss-21', skill: 'Can secure a boat to its trolley and tie down' },
-            { id: 'ss-22', skill: 'Can demonstrate the correct way to lift a boat' },
-            { id: 'ss-23', skill: 'Can move their boat around the dinghy park without colliding with other boats' },
-            { id: 'ss-24', skill: 'Can identify the hazard presented by overhead cables' },
-            { id: 'ss-25', skill: 'Can safely manoeuvre the boat on the trolley with the sails up' },
-            { id: 'ss-26', skill: 'Can, with assistance, launch their boat and sail away from the shore' },
-            { id: 'ss-27', skill: 'Can lower their centre/dagger board and rudder' },
-            { id: 'ss-28', skill: 'Can park their trolley while they are on the water. (tide & other slip users)' },
-            { id: 'ss-29', skill: 'Can, with assistance, return to the shore, recover their boat on to its trolley and drop the sails' },
-            { id: 'ss-30', skill: 'When approaching shore, can slow the boat down and raise the centre/dagger board and rudder to avoid grounding them' },
-            { id: 'ss-31', skill: 'Can secure their boat alongside' },
-            { id: 'ss-32', skill: 'Can secure their boat to a mooring' },
-            { id: 'ss-33', skill: 'Can paddle or row a boat in a straight line' },
-            { id: 'ss-34', skill: 'It is vital that in two person boats, sailors spend equal amounts of time as both helm and crew' },
-            { id: 'ss-35', skill: 'Can reach the boat across the wind while controlling speed and avoiding obstacles' },
-            { id: 'ss-36', skill: 'Can sail the boat close to the wind and while doing so steer a reasonably constant course avoiding unintended tacks maintaining proper sheeting positions keeping the boat balanced' },
-            { id: 'ss-37', skill: 'Can sail the boat down wind on a training run (very broad reach but not dead run) while steering a reasonably constant course avoiding unintended gybes maintain correct sail setting' },
-            { id: 'ss-38', skill: 'Can tack the boat through the wind, from close reach to close reach while maintaining boat speed through the manoeuvre maintaining an awareness of, and avoiding other water users maintaining control of the boat before, during and after the manoeuvre using the tiller extension if normally fitted to type of boat keeping crew informed of intentions & progress' },
-            { id: 'ss-39', skill: 'Can gybe the boat, from training run and avoid luffing up beyond a reach, while maintaining boat speed through the manoeuvre maintaining an awareness of, and avoiding other water users maintaining control of the boat before, during and after the manoeuvre using the tiller extension if normally fitted to type of boat keeping crew informed of intentions & progress' },
-            { id: 'ss-40', skill: 'Can get the boat out of irons' },
-            { id: 'ss-41', skill: 'Can stop the boat' },
-            { id: 'ss-42', skill: 'Can describe the different points of sailing - Beam reach, Run, Training Run, Close hauled' },
-            { id: 'ss-43', skill: 'Can take the correct action when boats on different tacks meet' },
-            { id: 'ss-44', skill: 'Can describe how tides and currents can affect them' },
-            { id: 'ss-45', skill: 'Can identify when sailors are required to wear PFDs by law' },
-            { id: 'ss-46', skill: 'Can identify and use common sailing terms - Sheet in, sheet out, luff up, bear away, up wind, down wind, tacking, gybing, in irons' },
-            { id: 'ss-47', skill: 'Can describe how often high and low tides occur' },
-            { id: 'ss-48', skill: 'Can describe implications of tides on activities' },
-            { id: 'ss-49', skill: 'Can describe how onshore and offshore winds can affect their sailing activity & safety' },
-            { id: 'ss-50', skill: 'Can describe how high winds can affect their sailing activity & safety' },
-            { id: 'ss-51', skill: 'Can describe how no wind can affect their sailing activity & safety' },
-            { id: 'ss-52', skill: 'Can describe what details to leave about what they are doing onshore and who to leave it with' },
-            { id: 'ss-53', skill: 'Can describe how to summon assistance while they are on/in the water' },
-            { id: 'ss-54', skill: 'Can describe how to summon assistance for someone else who is on/in the water' },
-            { id: 'ss-55', skill: 'Are aware that the next step for people completing this course is "Basic Skills"' },
-            { id: 'ss-56', skill: 'Can identify why they should do this course and where to find information on it and course providers' }
+        sections: [
+            {
+                name: 'Clothing & Equipment',
+                competencies: [
+                    { id: 'ss-1', skill: 'Can describe why they might / should /should not wear; Hats, sun glasses, gloves, footwear, wetsuits, drysuits, waterproofs' },
+                    { id: 'ss-2', skill: 'Describe the relative merits of cotton, wool & man made fibres when used afloat' },
+                    { id: 'ss-3', skill: 'Can identify the difference between buoyancy aids & lifejackets' },
+                    { id: 'ss-4', skill: 'Can explain what the ISO/EN number & pictograms mean' },
+                    { id: 'ss-5', skill: 'Can explain why they are using the type of PFDs that they are for this activity' },
+                    { id: 'ss-6', skill: 'Can describe where & when your organisation expects they to wear their PFD' },
+                    { id: 'ss-7', skill: 'Can put on and adjust their own PFD' }
+                ]
+            },
+            {
+                name: 'Rigging',
+                competencies: [
+                    { id: 'ss-8', skill: 'Can identify where the wind is blowing from' },
+                    { id: 'ss-9', skill: 'Can position their boat head to wind and can do so in an appropriate are free from hazards (overhead lines, fences, other boats & sailors etc.)' },
+                    { id: 'ss-10', skill: 'Can identify parts of the hull - bow, stern, rudder, tiller & centre / daggerboard, bungs' },
+                    { id: 'ss-11', skill: 'Can identify parts of the rigging - mast, boom, halyards, stays / shrouds & kicking strap, sheets' },
+                    { id: 'ss-12', skill: 'Can identify sails & sail parts - mainsail, jib, clew, foot, luff, leach' },
+                    { id: 'ss-13', skill: 'Has assisted instructor in rigging boat' }
+                ]
+            },
+            {
+                name: 'Ropework',
+                competencies: [
+                    { id: 'ss-14', skill: 'Can tie and describe when to use a figure of eight knot' },
+                    { id: 'ss-15', skill: 'Can tie and describe when to use a round turn and two half hitches' },
+                    { id: 'ss-16', skill: 'Can secure a rope using a Cam Cleat (as used on jib & main sheets)' },
+                    { id: 'ss-17', skill: 'Can secure a rope using a Horned cleat (as on marinas)' },
+                    { id: 'ss-18', skill: 'Can secure a rope using a Jam cleat (often used on tiller to hold down rudder)' },
+                    { id: 'ss-19', skill: 'Can coil a line by flaking it into one hand and secure it to stop it uncoiling' },
+                    { id: 'ss-20', skill: 'Can throw one end of a coiled line' }
+                ]
+            },
+            {
+                name: 'Launch & Recovery',
+                competencies: [
+                    { id: 'ss-21', skill: 'Can secure a boat to its trolley and tie down' },
+                    { id: 'ss-22', skill: 'Can demonstrate the correct way to lift a boat' },
+                    { id: 'ss-23', skill: 'Can move their boat around the dinghy park without colliding with other boats' },
+                    { id: 'ss-24', skill: 'Can identify the hazard presented by overhead cables' },
+                    { id: 'ss-25', skill: 'Can safely manoeuvre the boat on the trolley with the sails up' },
+                    { id: 'ss-26', skill: 'Can, with assistance, launch their boat and sail away from the shore' },
+                    { id: 'ss-27', skill: 'Can lower their centre/dagger board and rudder' },
+                    { id: 'ss-28', skill: 'Can park their trolley while they are on the water. (tide & other slip users)' },
+                    { id: 'ss-29', skill: 'Can, with assistance, return to the shore, recover their boat on to its trolley and drop the sails' },
+                    { id: 'ss-30', skill: 'When approaching shore, can slow the boat down and raise the centre/dagger board and rudder to avoid grounding them' },
+                    { id: 'ss-31', skill: 'Can secure their boat alongside' },
+                    { id: 'ss-32', skill: 'Can secure their boat to a mooring' }
+                ]
+            },
+            {
+                name: 'Sailing Techniques & Manoeuvres',
+                competencies: [
+                    { id: 'ss-33', skill: 'Can paddle or row a boat in a straight line' },
+                    { id: 'ss-34', skill: 'It is vital that in two person boats, sailors spend equal amounts of time as both helm and crew' },
+                    { id: 'ss-35', skill: 'Can reach the boat across the wind while controlling speed and avoiding obstacles' },
+                    { id: 'ss-36', skill: 'Can sail the boat close to the wind and while doing so steer a reasonably constant course avoiding unintended tacks maintaining proper sheeting positions keeping the boat balanced' },
+                    { id: 'ss-37', skill: 'Can sail the boat down wind on a training run (very broad reach but not dead run) while steering a reasonably constant course avoiding unintended gybes maintain correct sail setting' },
+                    { id: 'ss-38', skill: 'Can tack the boat through the wind, from close reach to close reach while maintaining boat speed through the manoeuvre maintaining an awareness of, and avoiding other water users maintaining control of the boat before, during and after the manoeuvre using the tiller extension if normally fitted to type of boat keeping crew informed of intentions & progress' },
+                    { id: 'ss-39', skill: 'Can gybe the boat, from training run and avoid luffing up beyond a reach, while maintaining boat speed through the manoeuvre maintaining an awareness of, and avoiding other water users maintaining control of the boat before, during and after the manoeuvre using the tiller extension if normally fitted to type of boat keeping crew informed of intentions & progress' },
+                    { id: 'ss-40', skill: 'Can get the boat out of irons' },
+                    { id: 'ss-41', skill: 'Can stop the boat' }
+                ]
+            },
+            {
+                name: 'Sailing Knowledge',
+                competencies: [
+                    { id: 'ss-42', skill: 'Can describe the different points of sailing - Beam reach, Run, Training Run, Close hauled' },
+                    { id: 'ss-43', skill: 'Can take the correct action when boats on different tacks meet' },
+                    { id: 'ss-44', skill: 'Can describe how tides and currents can affect them' },
+                    { id: 'ss-45', skill: 'Can identify when sailors are required to wear PFDs by law' },
+                    { id: 'ss-46', skill: 'Can identify and use common sailing terms - Sheet in, sheet out, luff up, bear away, up wind, down wind, tacking, gybing, in irons' }
+                ]
+            },
+            {
+                name: 'Coastal Knowledge',
+                competencies: [
+                    { id: 'ss-47', skill: 'Can describe how often high and low tides occur' },
+                    { id: 'ss-48', skill: 'Can describe implications of tides on activities' }
+                ]
+            },
+            {
+                name: 'Weather',
+                competencies: [
+                    { id: 'ss-49', skill: 'Can describe how onshore and offshore winds can affect their sailing activity & safety' },
+                    { id: 'ss-50', skill: 'Can describe how high winds can affect their sailing activity & safety' },
+                    { id: 'ss-51', skill: 'Can describe how no wind can affect their sailing activity & safety' }
+                ]
+            },
+            {
+                name: 'Safety',
+                competencies: [
+                    { id: 'ss-52', skill: 'Can describe what details to leave about what they are doing onshore and who to leave it with' },
+                    { id: 'ss-53', skill: 'Can describe how to summon assistance while they are on/in the water' },
+                    { id: 'ss-54', skill: 'Can describe how to summon assistance for someone else who is on/in the water' }
+                ]
+            },
+            {
+                name: 'What Next',
+                competencies: [
+                    { id: 'ss-55', skill: 'Are aware that the next step for people completing this course is "Basic Skills"' },
+                    { id: 'ss-56', skill: 'Can identify why they should do this course and where to find information on it and course providers' }
+                ]
+            }
         ]
     },
     'basic-skills': {
         level: 'Basic Skills',
-        competencies: [
-            { id: 'bs-1', skill: 'Can decide what to wear before going sailing' },
-            { id: 'bs-2', skill: 'Can equip a sailing boat for use' },
-            { id: 'bs-3', skill: 'Can check integrity of hull, buoyancy, rigging, spars & foils' },
-            { id: 'bs-4', skill: 'Can identify all of the parts of the boat, rigging & sails' },
-            { id: 'bs-5', skill: 'Can rig a boat for use on their own' },
-            { id: 'bs-6', skill: 'Can make appropriate decisions as to what sails to use or whether or not they should reef' },
-            { id: 'bs-7', skill: 'Can identify effect of outhaul on the sail and its use in lighter & stronger winds' },
-            { id: 'bs-8', skill: 'Can wash, dry equipment, roll/fold sails, coil lines, fit covers' },
-            { id: 'bs-9', skill: 'Can rig a slab or roll reef boat while on the trolley' },
-            { id: 'bs-10', skill: 'Keelboat sailors can reef their boat while on a mooring' },
-            { id: 'bs-11', skill: 'Can tie a bowline and describe when to use it' },
-            { id: 'bs-12', skill: 'Can tie a clove hitch and describe when to use it' },
-            { id: 'bs-13', skill: 'Can launch a boat and sail away from shore' },
-            { id: 'bs-14', skill: 'Can sail back to shore and recover a boat' },
-            { id: 'bs-15', skill: 'Identify different methods of launching a keelboat' },
-            { id: 'bs-16', skill: 'Can describe how to launch a keelboat from a trailer using a slipway' },
-            { id: 'bs-17', skill: 'Can paddle or row a boat around a triangular course and come alongside' },
-            { id: 'bs-18', skill: 'Can leave and return to a beach or slipway in the prevailing wind direction' },
-            { id: 'bs-19', skill: 'Can describe how to land on a beach or slipway when the wind is offshore, cross shore and onshore' },
-            { id: 'bs-20', skill: 'Can reach across the wind' },
-            { id: 'bs-21', skill: 'Can sail up wind' },
-            { id: 'bs-22', skill: 'Can sail down wind' },
-            { id: 'bs-23', skill: 'Can tack the boat' },
-            { id: 'bs-24', skill: 'Can gybe the boat' },
-            { id: 'bs-25', skill: 'Can pick up and leave a mooring' },
-            { id: 'bs-26', skill: 'Can come alongside and leave a boat, pier, pontoon that is head to wind' },
-            { id: 'bs-27', skill: 'Can come alongside and leave a pier or pontoon that is not head to wind' },
-            { id: 'bs-28', skill: 'Can recover a man overboard' },
-            { id: 'bs-29', skill: 'Can heave to' },
-            { id: 'bs-30', skill: 'Can sail under jib only' },
-            { id: 'bs-31', skill: 'Can describe "The 5 Essentials" and apply them to all points of sailing' },
-            { id: 'bs-32', skill: 'Can use a trapeze if carried' },
-            { id: 'bs-33', skill: 'Can change a headsail' },
-            { id: 'bs-34', skill: 'Can right a capsized boat' },
-            { id: 'bs-35', skill: 'Can describe what to do if they are caught under an inverted boat' },
-            { id: 'bs-36', skill: 'Can describe how a sail works' },
-            { id: 'bs-37', skill: 'Can describe how a centre / dagger board works' },
-            { id: 'bs-38', skill: 'Can tell if risk of collision exist between two boats' },
-            { id: 'bs-39', skill: 'Can describe what should happen when a motor boat and sailing boat meet' },
-            { id: 'bs-40', skill: 'Can describe what should happen when two sailing boats on the same tack meet' },
-            { id: 'bs-41', skill: 'Can describe what should happen when boats are being overtaken' },
-            { id: 'bs-42', skill: 'Can identify when high and low tide occur using local tide tables' },
-            { id: 'bs-43', skill: 'Can describe how to estimate the rate and direction of the flow of tide and describe the effect that this might have on a sailor' },
-            { id: 'bs-44', skill: 'Can describe how wind speed is measured and how it may affect a sailor - Beaufort scale, knots, Kph' },
-            { id: 'bs-45', skill: 'Can describe how wind direction is measured and how it may affect a sailor - Compass headings, onshore & offshore winds' },
-            { id: 'bs-46', skill: 'Can describe how visibility is measured and how it may affect a sailor - Hazards associated with fog' },
-            { id: 'bs-47', skill: 'Can describe how temperature is measured and how it may affect a sailor- Actual and effects of wind chill' },
-            { id: 'bs-48', skill: 'Can obtain a weather forecast for a sailing area and describe how it might affect their planned activities' },
-            { id: 'bs-49', skill: 'Can explain the importance of telling someone where they are going and when they will be back' },
-            { id: 'bs-50', skill: 'Can describe how to use and care for distress flares' },
-            { id: 'bs-51', skill: 'Can describe how to care for someone who is very cold' },
-            { id: 'bs-52', skill: 'Can explain why it is important for a sailor to have some training in Emergency Care' },
-            { id: 'bs-53', skill: 'Can describe how to continue sailing and develop their sailing skills and knowledge' }
+        sections: [
+            {
+                name: 'Clothing & Equipment',
+                competencies: [
+                    { id: 'bs-1', skill: 'Can decide what to wear before going sailing' },
+                    { id: 'bs-2', skill: 'Can equip a sailing boat for use' },
+                    { id: 'bs-3', skill: 'Can check integrity of hull, buoyancy, rigging, spars & foils' }
+                ]
+            },
+            {
+                name: 'Rigging',
+                competencies: [
+                    { id: 'bs-4', skill: 'Can identify all of the parts of the boat, rigging & sails' },
+                    { id: 'bs-5', skill: 'Can rig a boat for use on their own' },
+                    { id: 'bs-6', skill: 'Can make appropriate decisions as to what sails to use or whether or not they should reef' },
+                    { id: 'bs-7', skill: 'Can identify effect of outhaul on the sail and its use in lighter & stronger winds' },
+                    { id: 'bs-8', skill: 'Can wash, dry equipment, roll/fold sails, coil lines, fit covers' },
+                    { id: 'bs-9', skill: 'Can rig a slab or roll reef boat while on the trolley' },
+                    { id: 'bs-10', skill: 'Keelboat sailors can reef their boat while on a mooring' }
+                ]
+            },
+            {
+                name: 'Ropework',
+                competencies: [
+                    { id: 'bs-11', skill: 'Can tie a bowline and describe when to use it' },
+                    { id: 'bs-12', skill: 'Can tie a clove hitch and describe when to use it' }
+                ]
+            },
+            {
+                name: 'Launch & Recovery',
+                competencies: [
+                    { id: 'bs-13', skill: 'Can launch a boat and sail away from shore' },
+                    { id: 'bs-14', skill: 'Can sail back to shore and recover a boat' },
+                    { id: 'bs-15', skill: 'Identify different methods of launching a keelboat' },
+                    { id: 'bs-16', skill: 'Can describe how to launch a keelboat from a trailer using a slipway' }
+                ]
+            },
+            {
+                name: 'Sailing Techniques & Manoeuvres',
+                competencies: [
+                    { id: 'bs-17', skill: 'Can paddle or row a boat around a triangular course and come alongside' },
+                    { id: 'bs-18', skill: 'Can leave and return to a beach or slipway in the prevailing wind direction' },
+                    { id: 'bs-19', skill: 'Can describe how to land on a beach or slipway when the wind is offshore, cross shore and onshore' },
+                    { id: 'bs-20', skill: 'Can reach across the wind' },
+                    { id: 'bs-21', skill: 'Can sail up wind' },
+                    { id: 'bs-22', skill: 'Can sail down wind' },
+                    { id: 'bs-23', skill: 'Can tack the boat' },
+                    { id: 'bs-24', skill: 'Can gybe the boat' },
+                    { id: 'bs-25', skill: 'Can pick up and leave a mooring' },
+                    { id: 'bs-26', skill: 'Can come alongside and leave a boat, pier, pontoon that is head to wind' },
+                    { id: 'bs-27', skill: 'Can come alongside and leave a pier or pontoon that is not head to wind' },
+                    { id: 'bs-28', skill: 'Can recover a man overboard' },
+                    { id: 'bs-29', skill: 'Can heave to' },
+                    { id: 'bs-30', skill: 'Can sail under jib only' },
+                    { id: 'bs-31', skill: 'Can describe "The 5 Essentials" and apply them to all points of sailing' },
+                    { id: 'bs-32', skill: 'Can use a trapeze if carried' },
+                    { id: 'bs-33', skill: 'Can change a headsail' }
+                ]
+            },
+            {
+                name: 'Capsize Recovery',
+                competencies: [
+                    { id: 'bs-34', skill: 'Can right a capsized boat' },
+                    { id: 'bs-35', skill: 'Can describe what to do if they are caught under an inverted boat' }
+                ]
+            },
+            {
+                name: 'Sailing Knowledge',
+                competencies: [
+                    { id: 'bs-36', skill: 'Can describe how a sail works' },
+                    { id: 'bs-37', skill: 'Can describe how a centre / dagger board works' },
+                    { id: 'bs-38', skill: 'Can tell if risk of collision exist between two boats' },
+                    { id: 'bs-39', skill: 'Can describe what should happen when a motor boat and sailing boat meet' },
+                    { id: 'bs-40', skill: 'Can describe what should happen when two sailing boats on the same tack meet' },
+                    { id: 'bs-41', skill: 'Can describe what should happen when boats are being overtaken' }
+                ]
+            },
+            {
+                name: 'Coastal Knowledge',
+                competencies: [
+                    { id: 'bs-42', skill: 'Can identify when high and low tide occur using local tide tables' },
+                    { id: 'bs-43', skill: 'Can describe how to estimate the rate and direction of the flow of tide and describe the effect that this might have on a sailor' }
+                ]
+            },
+            {
+                name: 'Weather',
+                competencies: [
+                    { id: 'bs-44', skill: 'Can describe how wind speed is measured and how it may affect a sailor - Beaufort scale, knots, Kph' },
+                    { id: 'bs-45', skill: 'Can describe how wind direction is measured and how it may affect a sailor - Compass headings, onshore & offshore winds' },
+                    { id: 'bs-46', skill: 'Can describe how visibility is measured and how it may affect a sailor - Hazards associated with fog' },
+                    { id: 'bs-47', skill: 'Can describe how temperature is measured and how it may affect a sailor- Actual and effects of wind chill' },
+                    { id: 'bs-48', skill: 'Can obtain a weather forecast for a sailing area and describe how it might affect their planned activities' }
+                ]
+            },
+            {
+                name: 'Safety',
+                competencies: [
+                    { id: 'bs-49', skill: 'Can explain the importance of telling someone where they are going and when they will be back' },
+                    { id: 'bs-50', skill: 'Can describe how to use and care for distress flares' },
+                    { id: 'bs-51', skill: 'Can describe how to care for someone who is very cold' },
+                    { id: 'bs-52', skill: 'Can explain why it is important for a sailor to have some training in Emergency Care' }
+                ]
+            },
+            {
+                name: 'What Next',
+                competencies: [
+                    { id: 'bs-53', skill: 'Can describe how to continue sailing and develop their sailing skills and knowledge' }
+                ]
+            }
         ]
     },
     'improving-skills': {
         level: 'Improving Skills',
-        competencies: [
-            { id: 'is-1', skill: 'Can rig their own boats' },
-            { id: 'is-2', skill: 'Can de-rig the boat' },
-            { id: 'is-3', skill: 'Care for sails by washing, drying, folding/rolling up and stowing in sail bags' },
-            { id: 'is-4', skill: 'Care for hull by washing, bailing, drying, fitting covers' },
-            { id: 'is-5', skill: 'Check for damage, tidy sheets and lines, and secure equipment' },
-            { id: 'is-6', skill: 'Can identify and demonstrate / describe the use of sail telltales in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-7', skill: 'Can identify and demonstrate / describe the use of jib sheeting angles in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-8', skill: 'Can identify and demonstrate / describe the use of halyard tension in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-9', skill: 'Can identify and demonstrate / describe the use of outhaul in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-10', skill: 'Can identify and demonstrate / describe the use of Cunningham / downhaul in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-11', skill: 'Can identify and demonstrate / describe the use of kicker or vang in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-12', skill: 'Can identify and demonstrate / describe the use of main sheet traveller in order to optimise a boat / rig for a particular set of conditions' },
-            { id: 'is-13', skill: 'Can use boat and rig controls to optimise the performance of a boat in a variety of conditions including light, medium and moderate wind conditions and on all points of sailing' },
-            { id: 'is-14', skill: 'Can tack effectively in all wind conditions' },
-            { id: 'is-15', skill: 'Can gybe effectively in all wind conditions' },
-            { id: 'is-16', skill: 'Can perform a basic roll tack in light wind conditions' },
-            { id: 'is-17', skill: 'Can perform a basic roll gybe in light wind conditions' },
-            { id: 'is-18', skill: 'Pick up a mooring in moderate conditions and with little or no assistance from the instructor' },
-            { id: 'is-19', skill: 'Safely approach, come alongside and leave a pier or pontoon allowing for wind and current in moderate conditions and with little or no assistance from the instructor' },
-            { id: 'is-20', skill: 'Can consistently recover a man overboard in moderate conditions and with little or no assistance from the instructor' },
-            { id: 'is-21', skill: 'Sail effectively under jib only in moderate conditions' },
-            { id: 'is-22', skill: 'Can describe the principles of sailing without a rudder and sail a beam reach without a rudder' },
-            { id: 'is-23', skill: 'Can sail backwards for short distances' },
-            { id: 'is-24', skill: 'Can confidently use a trapeze if carried' },
-            { id: 'is-25', skill: 'Will know how to get the centre/ dagger board down if it has retracted' },
-            { id: 'is-26', skill: 'Will know how to break a vacuum formed under the hull' },
-            { id: 'is-27', skill: 'Will know how to tell if mast is stuck in bottom and what to/ not to do if it is' },
-            { id: 'is-28', skill: 'Can describe what to do if someone is caught under an inverted boat' },
-            { id: 'is-29', skill: 'Are constantly aware of and apply "The 5 Essentials"' },
-            { id: 'is-30', skill: 'Can set the boat up' },
-            { id: 'is-31', skill: 'Can sail efficiently up wind' },
-            { id: 'is-32', skill: 'Can sail efficiently down wind' },
-            { id: 'is-33', skill: 'Can sail efficiently on a reach' },
-            { id: 'is-34', skill: 'Can demonstrate how to obtain maximum leverage when hiking' },
-            { id: 'is-35', skill: 'Can demonstrate use of optimum sheeting on all points of sailing' },
-            { id: 'is-36', skill: 'Can describe how wind speed, wind direction, visibility, precipitation and temperature can affect planned activities' },
-            { id: 'is-37', skill: 'Can find forecasts on radio, VHF radio, television, internet, phone, fax & newspapers as well as identify strengths & weaknesses of each types of forecast service' },
-            { id: 'is-38', skill: 'Can explain the significance of commonly used terms in marine forecasts (isobars, areas of high & low pressure, cold & warm fronts)' },
-            { id: 'is-39', skill: 'Can identify the significance to sailors of common weather patterns illustrated on synoptic chart' },
-            { id: 'is-40', skill: 'Can obtain a forecast for the day and then explain how the weather it predicts will affect the sailing area & activities planned for the day' },
-            { id: 'is-41', skill: 'Can describe what causes tides and how neap and spring tides might affect sailors' },
-            { id: 'is-42', skill: 'Can explain how centre of effort (sails) & centre of lateral resistance (hull & foils) interact to drive boat forwards and to steer the boat' },
-            { id: 'is-43', skill: 'Can describe how sails & foils generate lift and what stalling is' },
-            { id: 'is-44', skill: 'Can describe how to continue sailing and develop their sailing skills and knowledge' }
+        sections: [
+            {
+                name: 'Rigging',
+                competencies: [
+                    { id: 'is-1', skill: 'Can rig their own boats' },
+                    { id: 'is-2', skill: 'Can de-rig the boat' },
+                    { id: 'is-3', skill: 'Care for sails by washing, drying, folding/rolling up and stowing in sail bags' },
+                    { id: 'is-4', skill: 'Care for hull by washing, bailing, drying, fitting covers' },
+                    { id: 'is-5', skill: 'Check for damage, tidy sheets and lines, and secure equipment' }
+                ]
+            },
+            {
+                name: 'Tuning',
+                competencies: [
+                    { id: 'is-6', skill: 'Can identify and demonstrate / describe the use of sail telltales in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-7', skill: 'Can identify and demonstrate / describe the use of jib sheeting angles in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-8', skill: 'Can identify and demonstrate / describe the use of halyard tension in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-9', skill: 'Can identify and demonstrate / describe the use of outhaul in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-10', skill: 'Can identify and demonstrate / describe the use of Cunningham / downhaul in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-11', skill: 'Can identify and demonstrate / describe the use of kicker or vang in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-12', skill: 'Can identify and demonstrate / describe the use of main sheet traveller in order to optimise a boat / rig for a particular set of conditions' },
+                    { id: 'is-13', skill: 'Can use boat and rig controls to optimise the performance of a boat in a variety of conditions including light, medium and moderate wind conditions and on all points of sailing' }
+                ]
+            },
+            {
+                name: 'Boat Handling',
+                competencies: [
+                    { id: 'is-14', skill: 'Can tack effectively in all wind conditions' },
+                    { id: 'is-15', skill: 'Can gybe effectively in all wind conditions' },
+                    { id: 'is-16', skill: 'Can perform a basic roll tack in light wind conditions' },
+                    { id: 'is-17', skill: 'Can perform a basic roll gybe in light wind conditions' },
+                    { id: 'is-18', skill: 'Pick up a mooring in moderate conditions and with little or no assistance from the instructor' },
+                    { id: 'is-19', skill: 'Safely approach, come alongside and leave a pier or pontoon allowing for wind and current in moderate conditions and with little or no assistance from the instructor' },
+                    { id: 'is-20', skill: 'Can consistently recover a man overboard in moderate conditions and with little or no assistance from the instructor' },
+                    { id: 'is-21', skill: 'Sail effectively under jib only in moderate conditions' },
+                    { id: 'is-22', skill: 'Can describe the principles of sailing without a rudder and sail a beam reach without a rudder' },
+                    { id: 'is-23', skill: 'Can sail backwards for short distances' }
+                ]
+            },
+            {
+                name: 'Capsize Recovery',
+                competencies: [
+                    { id: 'is-24', skill: 'Can confidently use a trapeze if carried' },
+                    { id: 'is-25', skill: 'Will know how to get the centre/ dagger board down if it has retracted' },
+                    { id: 'is-26', skill: 'Will know how to break a vacuum formed under the hull' },
+                    { id: 'is-27', skill: 'Will know how to tell if mast is stuck in bottom and what to/ not to do if it is' },
+                    { id: 'is-28', skill: 'Can describe what to do if someone is caught under an inverted boat' }
+                ]
+            },
+            {
+                name: 'Boat Speed',
+                competencies: [
+                    { id: 'is-29', skill: 'Are constantly aware of and apply "The 5 Essentials"' },
+                    { id: 'is-30', skill: 'Can set the boat up' },
+                    { id: 'is-31', skill: 'Can sail efficiently up wind' },
+                    { id: 'is-32', skill: 'Can sail efficiently down wind' },
+                    { id: 'is-33', skill: 'Can sail efficiently on a reach' },
+                    { id: 'is-34', skill: 'Can demonstrate how to obtain maximum leverage when hiking' },
+                    { id: 'is-35', skill: 'Can demonstrate use of optimum sheeting on all points of sailing' }
+                ]
+            },
+            {
+                name: 'Weather',
+                competencies: [
+                    { id: 'is-36', skill: 'Can describe how wind speed, wind direction, visibility, precipitation and temperature can affect planned activities' },
+                    { id: 'is-37', skill: 'Can find forecasts on radio, VHF radio, television, internet, phone, fax & newspapers as well as identify strengths & weaknesses of each types of forecast service' },
+                    { id: 'is-38', skill: 'Can explain the significance of commonly used terms in marine forecasts (isobars, areas of high & low pressure, cold & warm fronts)' },
+                    { id: 'is-39', skill: 'Can identify the significance to sailors of common weather patterns illustrated on synoptic chart' },
+                    { id: 'is-40', skill: 'Can obtain a forecast for the day and then explain how the weather it predicts will affect the sailing area & activities planned for the day' }
+                ]
+            },
+            {
+                name: 'Coastal Knowledge',
+                competencies: [
+                    { id: 'is-41', skill: 'Can describe what causes tides and how neap and spring tides might affect sailors' }
+                ]
+            },
+            {
+                name: 'Sailing Knowledge',
+                competencies: [
+                    { id: 'is-42', skill: 'Can explain how centre of effort (sails) & centre of lateral resistance (hull & foils) interact to drive boat forwards and to steer the boat' },
+                    { id: 'is-43', skill: 'Can describe how sails & foils generate lift and what stalling is' }
+                ]
+            },
+            {
+                name: 'What Next',
+                competencies: [
+                    { id: 'is-44', skill: 'Can describe how to continue sailing and develop their sailing skills and knowledge' }
+                ]
+            }
         ]
     },
     'advanced': {
         level: 'Advanced Boat Handling',
-        competencies: [
-            { id: 'adv-1', skill: 'Can rig any sailing boat' },
-            { id: 'adv-2', skill: 'Can identify and demonstrate / describe the use of mast rake in order to optimise the boat / rig for a particular set of conditions' },
-            { id: 'adv-3', skill: 'Can identify and demonstrate / describe the use of rig tension in order to optimise the boat / rig for a particular set of conditions' },
-            { id: 'adv-4', skill: 'Can identify and demonstrate / describe the use of spreader length & angle in order to optimise the boat / rig for a particular set of conditions' },
-            { id: 'adv-5', skill: 'Can identify and demonstrate / describe the use of mast ram / chocks in order to optimise the boat / rig for a particular set of conditions' },
-            { id: 'adv-6', skill: 'Can use boat and rig controls to optimise the performance of the boat in a variety of conditions' },
-            { id: 'adv-7', skill: 'Can safely pick up a mooring in all wind / tide conditions independent of the instructor' },
-            { id: 'adv-8', skill: 'Can safely approach, come alongside and leave a pier or pontoon allowing for wind and current in all conditions independent of the instructor' },
-            { id: 'adv-9', skill: 'Can consistently recover a man overboard in all conditions independent of the instructor' },
-            { id: 'adv-10', skill: 'Can set up and control a boat while on a plane' },
-            { id: 'adv-11', skill: 'Can perform an effective roll tack in all wind strengths' },
-            { id: 'adv-12', skill: 'Can perform an effective roll gybe in all wind strengths' },
-            { id: 'adv-13', skill: 'Can sail a tight circular course in moderate conditions' },
-            { id: 'adv-14', skill: 'Can follow the leader in moderate conditions' },
-            { id: 'adv-15', skill: 'Can sail effectively on all points of sail without a rudder in moderate conditions' },
-            { id: 'adv-16', skill: 'Demonstrate techniques for maximising speed in waves' },
-            { id: 'adv-17', skill: 'Demonstrate optimum course to steer and steering technique on all points of sailing' },
-            { id: 'adv-18', skill: 'Demonstrate adaptation of 5 Essentials to suit boat / prevailing conditions' },
-            { id: 'adv-19', skill: 'Describe how to optimise effectiveness of hull, spars and sails within class rules' },
-            { id: 'adv-20', skill: 'Describe how sails interact and demonstrate techniques to maximise this effect' },
-            { id: 'adv-21', skill: 'Can demonstrate a range of activities designed to develop and practice specific aspects of boat handling & boat speed' },
-            { id: 'adv-22', skill: 'Can describe how to continue sailing and develop their sailing skills and knowledge' }
+        sections: [
+            {
+                name: 'Rigging',
+                competencies: [
+                    { id: 'adv-1', skill: 'Can rig any sailing boat' }
+                ]
+            },
+            {
+                name: 'Tuning',
+                competencies: [
+                    { id: 'adv-2', skill: 'Can identify and demonstrate / describe the use of mast rake in order to optimise the boat / rig for a particular set of conditions' },
+                    { id: 'adv-3', skill: 'Can identify and demonstrate / describe the use of rig tension in order to optimise the boat / rig for a particular set of conditions' },
+                    { id: 'adv-4', skill: 'Can identify and demonstrate / describe the use of spreader length & angle in order to optimise the boat / rig for a particular set of conditions' },
+                    { id: 'adv-5', skill: 'Can identify and demonstrate / describe the use of mast ram / chocks in order to optimise the boat / rig for a particular set of conditions' },
+                    { id: 'adv-6', skill: 'Can use boat and rig controls to optimise the performance of the boat in a variety of conditions' }
+                ]
+            },
+            {
+                name: 'Boat Handling',
+                competencies: [
+                    { id: 'adv-7', skill: 'Can safely pick up a mooring in all wind / tide conditions independent of the instructor' },
+                    { id: 'adv-8', skill: 'Can safely approach, come alongside and leave a pier or pontoon allowing for wind and current in all conditions independent of the instructor' },
+                    { id: 'adv-9', skill: 'Can consistently recover a man overboard in all conditions independent of the instructor' },
+                    { id: 'adv-10', skill: 'Can set up and control a boat while on a plane' },
+                    { id: 'adv-11', skill: 'Can perform an effective roll tack in all wind strengths' },
+                    { id: 'adv-12', skill: 'Can perform an effective roll gybe in all wind strengths' },
+                    { id: 'adv-13', skill: 'Can sail a tight circular course in moderate conditions' },
+                    { id: 'adv-14', skill: 'Can follow the leader in moderate conditions' },
+                    { id: 'adv-15', skill: 'Can sail effectively on all points of sail without a rudder in moderate conditions' }
+                ]
+            },
+            {
+                name: 'Boat Speed',
+                competencies: [
+                    { id: 'adv-16', skill: 'Demonstrate techniques for maximising speed in waves' },
+                    { id: 'adv-17', skill: 'Demonstrate optimum course to steer and steering technique on all points of sailing' },
+                    { id: 'adv-18', skill: 'Demonstrate adaptation of 5 Essentials to suit boat / prevailing conditions' }
+                ]
+            },
+            {
+                name: 'Sailing Knowledge',
+                competencies: [
+                    { id: 'adv-19', skill: 'Describe how to optimise effectiveness of hull, spars and sails within class rules' },
+                    { id: 'adv-20', skill: 'Describe how sails interact and demonstrate techniques to maximise this effect' },
+                    { id: 'adv-21', skill: 'Can demonstrate a range of activities designed to develop and practice specific aspects of boat handling & boat speed' }
+                ]
+            },
+            {
+                name: 'What Next',
+                competencies: [
+                    { id: 'adv-22', skill: 'Can describe how to continue sailing and develop their sailing skills and knowledge' }
+                ]
+            }
         ]
     }
 };
@@ -4125,46 +4325,110 @@ function loadStudentSkillsChecklist() {
     db.ref(skillsPath).once('value').then(snap => {
         const assessments = snap.val() || {};
 
+        // State indicators with emoji
+        const stateEmojis = {
+            'not_assessed': '🔵',
+            'not_demonstrated': '❌',
+            'partially_achieved': '⚠️',
+            'achieved': '✅'
+        };
+
         // Build the checklist HTML
         let html = '';
-        skillsData.competencies.forEach(competency => {
-            const skillId = competency.id;
-            const currentState = assessments[skillId] || 'not_assessed';
-            const displayState = SKILL_ASSESSMENT_STATES[currentState] || 'Not Yet Assessed';
 
-            // State indicators with emoji
-            const stateEmojis = {
-                'not_assessed': '🔵',
-                'not_demonstrated': '❌',
-                'partially_achieved': '⚠️',
-                'achieved': '✅'
-            };
-
-            const emoji = stateEmojis[currentState] || '🔵';
-
-            html += `
-                <div class="border border-gray-200 rounded p-3 bg-white hover:bg-gray-50 transition">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-grow">
-                            <p class="text-sm font-medium text-gray-800">${escapeHtml(competency.skill)}</p>
-                            <p class="text-xs text-gray-500 mt-1">ID: ${skillId}</p>
+        // Check if this level has sections or flat competencies (for backward compatibility)
+        if (skillsData.sections && Array.isArray(skillsData.sections)) {
+            // New section-based structure
+            skillsData.sections.forEach((section, sectionIndex) => {
+                const sectionId = `section-${sectionIndex}`;
+                const isCollapsed = localStorage.getItem(`${levelKey}-${sectionId}-collapsed`) === 'true';
+                
+                html += `
+                    <div class="border border-gray-300 rounded overflow-hidden bg-white">
+                        <div class="bg-blue-100 border-b border-gray-300 p-3 cursor-pointer hover:bg-blue-200 transition flex items-center justify-between"
+                            onclick="toggleSection('${sectionId}')">
+                            <h4 class="font-semibold text-blue-800">${escapeHtml(section.name)}</h4>
+                            <span id="${sectionId}-toggle" class="text-lg">
+                                ${isCollapsed ? '▶️' : '▼'}
+                            </span>
                         </div>
-                        <button onclick="cycleSkillState('${levelKey}', '${studentId}', '${skillId}')"
-                            class="px-3 py-1 rounded font-semibold text-sm whitespace-nowrap cursor-pointer transition hover:shadow-md"
-                            id="skill-btn-${skillId}"
-                            data-state="${currentState}"
-                            data-skill-id="${skillId}">
-                            ${emoji} ${displayState}
-                        </button>
+                        <div id="${sectionId}" class="space-y-3 p-3 ${isCollapsed ? 'hidden' : ''}">
+                `;
+
+                section.competencies.forEach(competency => {
+                    const skillId = competency.id;
+                    const currentState = assessments[skillId] || 'not_assessed';
+                    const displayState = SKILL_ASSESSMENT_STATES[currentState] || 'Not Yet Assessed';
+                    const emoji = stateEmojis[currentState] || '🔵';
+
+                    html += `
+                        <div class="border border-gray-200 rounded p-3 bg-white hover:bg-gray-50 transition">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex-grow">
+                                    <p class="text-sm font-medium text-gray-800">${escapeHtml(competency.skill)}</p>
+                                    <p class="text-xs text-gray-500 mt-1">ID: ${skillId}</p>
+                                </div>
+                                <button onclick="cycleSkillState('${levelKey}', '${studentId}', '${skillId}')"
+                                    class="px-3 py-1 rounded font-semibold text-sm whitespace-nowrap cursor-pointer transition hover:shadow-md"
+                                    id="skill-btn-${skillId}"
+                                    data-state="${currentState}"
+                                    data-skill-id="${skillId}">
+                                    ${emoji} ${displayState}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
                     </div>
-                </div>
-            `;
-        });
+                `;
+            });
+        } else if (skillsData.competencies && Array.isArray(skillsData.competencies)) {
+            // Legacy flat competencies structure
+            skillsData.competencies.forEach(competency => {
+                const skillId = competency.id;
+                const currentState = assessments[skillId] || 'not_assessed';
+                const displayState = SKILL_ASSESSMENT_STATES[currentState] || 'Not Yet Assessed';
+                const emoji = stateEmojis[currentState] || '🔵';
+
+                html += `
+                    <div class="border border-gray-200 rounded p-3 bg-white hover:bg-gray-50 transition">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex-grow">
+                                <p class="text-sm font-medium text-gray-800">${escapeHtml(competency.skill)}</p>
+                                <p class="text-xs text-gray-500 mt-1">ID: ${skillId}</p>
+                            </div>
+                            <button onclick="cycleSkillState('${levelKey}', '${studentId}', '${skillId}')"
+                                class="px-3 py-1 rounded font-semibold text-sm whitespace-nowrap cursor-pointer transition hover:shadow-md"
+                                id="skill-btn-${skillId}"
+                                data-state="${currentState}"
+                                data-skill-id="${skillId}">
+                                ${emoji} ${displayState}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
         checklistContainer.innerHTML = html;
 
-        // Apply color styling to buttons
-        skillsData.competencies.forEach(competency => {
+        // Apply color styling to all skill buttons
+        const getAllSkills = () => {
+            const skills = [];
+            if (skillsData.sections && Array.isArray(skillsData.sections)) {
+                skillsData.sections.forEach(section => {
+                    skills.push(...section.competencies);
+                });
+            } else if (skillsData.competencies && Array.isArray(skillsData.competencies)) {
+                skills.push(...skillsData.competencies);
+            }
+            return skills;
+        };
+
+        getAllSkills().forEach(competency => {
             const skillId = competency.id;
             const btn = document.getElementById(`skill-btn-${skillId}`);
             if (btn) {
@@ -4186,6 +4450,26 @@ function loadStudentSkillsChecklist() {
         console.error('Error loading skills checklist:', err);
         checklistContainer.innerHTML = `<p class="text-red-600">Error loading checklist: ${err.message}</p>`;
     });
+}
+
+// Toggle section collapse/expand
+window.toggleSection = function(sectionId) {
+    const section = document.getElementById(sectionId);
+    const toggle = document.getElementById(`${sectionId}-toggle`);
+    
+    if (section) {
+        const isCurrentlyHidden = section.classList.contains('hidden');
+        
+        if (isCurrentlyHidden) {
+            section.classList.remove('hidden');
+            if (toggle) toggle.textContent = '▼';
+            localStorage.removeItem(`${sectionId.split('-').slice(0, -1).join('-')}-${sectionId}-collapsed`);
+        } else {
+            section.classList.add('hidden');
+            if (toggle) toggle.textContent = '▶️';
+            localStorage.setItem(`${sectionId.split('-').slice(0, -1).join('-')}-${sectionId}-collapsed`, 'true');
+        }
+    }
 }
 
 // Cycle through assessment states for a skill
@@ -4299,6 +4583,7 @@ function printStudentSkills() {
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; }
                 h2 { color: #16a34a; margin-top: 20px; }
+                h3 { color: #1e40af; margin-top: 15px; background-color: #dbeafe; padding: 8px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                 th { background-color: #f3f4f6; font-weight: bold; }
@@ -4315,31 +4600,68 @@ function printStudentSkills() {
             <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
 
             <h2>Assessment Summary</h2>
+    `;
+
+    // Check if this level has sections or flat competencies
+    if (skillsData.sections && Array.isArray(skillsData.sections)) {
+        // Section-based structure
+        skillsData.sections.forEach(section => {
+            printHtml += `<h3>${escapeHtml(section.name)}</h3>
+                <table>
+                    <tr>
+                        <th>Skill</th>
+                        <th>Assessment State</th>
+                    </tr>
+            `;
+
+            section.competencies.forEach(competency => {
+                const skillId = competency.id;
+                const state = states[skillId] || 'not_assessed';
+                const displayState = SKILL_ASSESSMENT_STATES[state];
+                const rowClass = state === 'achieved' ? 'achieved' :
+                                state === 'partially_achieved' ? 'partially' :
+                                state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
+
+                printHtml += `
+                    <tr class="${rowClass}">
+                        <td>${escapeHtml(competency.skill)}</td>
+                        <td><strong>${displayState}</strong></td>
+                    </tr>
+                `;
+            });
+
+            printHtml += `</table>`;
+        });
+    } else if (skillsData.competencies && Array.isArray(skillsData.competencies)) {
+        // Legacy flat competencies structure
+        printHtml += `
             <table>
                 <tr>
                     <th>Skill</th>
                     <th>Assessment State</th>
                 </tr>
-    `;
-
-    skillsData.competencies.forEach(competency => {
-        const skillId = competency.id;
-        const state = states[skillId] || 'not_assessed';
-        const displayState = SKILL_ASSESSMENT_STATES[state];
-        const rowClass = state === 'achieved' ? 'achieved' :
-                        state === 'partially_achieved' ? 'partially' :
-                        state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
-
-        printHtml += `
-            <tr class="${rowClass}">
-                <td>${escapeHtml(competency.skill)}</td>
-                <td><strong>${displayState}</strong></td>
-            </tr>
         `;
-    });
+
+        skillsData.competencies.forEach(competency => {
+            const skillId = competency.id;
+            const state = states[skillId] || 'not_assessed';
+            const displayState = SKILL_ASSESSMENT_STATES[state];
+            const rowClass = state === 'achieved' ? 'achieved' :
+                            state === 'partially_achieved' ? 'partially' :
+                            state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
+
+            printHtml += `
+                <tr class="${rowClass}">
+                    <td>${escapeHtml(competency.skill)}</td>
+                    <td><strong>${displayState}</strong></td>
+                </tr>
+            `;
+        });
+
+        printHtml += `</table>`;
+    }
 
     printHtml += `
-            </table>
             <div class="footer">
                 <p>Generated by Rathmullan Sailing School Instructor System</p>
             </div>
