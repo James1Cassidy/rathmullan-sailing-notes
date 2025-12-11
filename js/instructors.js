@@ -3806,7 +3806,7 @@ function clearMyAvailability() {
 }
 
 // Track current calendar month offset (0 = current month)
-let calendarMonthOffset = 0;
+var calendarMonthOffset = 0;
 
 function loadAvailabilityDisplay() {
     const calendarDiv = document.getElementById('availability-calendar');
@@ -4922,7 +4922,7 @@ window.printStudentSkills = printStudentSkills;
 window.emailReportCard = emailReportCard;
 
 // --- CURRENT SESSION FUNCTIONS ---
-let sessionSelectedSkills = []; // Array of {id, name} objects
+var sessionSelectedSkills = []; // Array of {id, name} objects
 
 function loadSessionStudents() {
     const levelSelect = document.getElementById('session-level-select');
@@ -5566,7 +5566,7 @@ function clearAllWeeklyActivities() {
 }
 
 // --- ENHANCED CHAT FEATURES ---
-let currentChatView = 'general';
+var currentChatView = 'general';
 let selectedPrivateRecipient = null;
 
 // Private messages realtime helpers
