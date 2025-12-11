@@ -4211,8 +4211,8 @@ function loadStudentNotes() {
             const pathForAttr = (note.__path || `${studentPath}/${note.id}`).replace(/'/g, "\\'");
             const actions = canEdit ? `
                 <div class="flex gap-2">
-                    <button type="button" class="px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">Edit</button>
-                    <button type="button" class="px-2 py-0.5 rounded bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">Delete</button>
+                    <button type="button" onclick="editStudentNote('${pathForAttr}', '${escapeHtml(note.text).replace(/'/g, "\\'")}', this)" class="px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">Edit</button>
+                    <button type="button" onclick="deleteStudentNote('${pathForAttr}')" class="px-2 py-0.5 rounded bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">Delete</button>
                 </div>
             ` : '';
             div.innerHTML = `
@@ -4264,6 +4264,28 @@ function saveStudentNote() {
 
 window.loadStudentNotes = loadStudentNotes;
 window.saveStudentNote = saveStudentNote;
+
+// Edit a student note
+window.editStudentNote = function(notePath, currentText, buttonElement) {
+    const newText = prompt('Edit note:', currentText);
+    if (newText === null || newText.trim() === '') return;
+
+    db.ref(notePath).update({
+        text: newText.trim(),
+        editedAt: Date.now()
+    }).then(() => {
+        loadStudentNotes();
+    }).catch(err => alert('Error updating note: ' + err.message));
+};
+
+// Delete a student note
+window.deleteStudentNote = function(notePath) {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+
+    db.ref(notePath).remove().then(() => {
+        loadStudentNotes();
+    }).catch(err => alert('Error deleting note: ' + err.message));
+};
 
 // --- SKILLS CHECKLIST FUNCTIONS ---
 function switchStudentTab(tab) {
@@ -4341,12 +4363,14 @@ function loadStudentSkillsChecklist() {
             // New section-based structure
             skillsData.sections.forEach((section, sectionIndex) => {
                 const sectionId = `section-${sectionIndex}`;
-                const isCollapsed = localStorage.getItem(`${levelKey}-${sectionId}-collapsed`) === 'true';
+                // Default to collapsed unless localStorage explicitly says expanded
+                const isExpanded = localStorage.getItem(`${levelKey}-${sectionId}-expanded`) === 'true';
+                const isCollapsed = !isExpanded;
 
                 html += `
                     <div class="border border-gray-300 rounded overflow-hidden bg-white">
                         <div class="bg-blue-100 border-b border-gray-300 p-3 cursor-pointer hover:bg-blue-200 transition flex items-center justify-between"
-                            onclick="toggleSection('${sectionId}')">
+                            onclick="toggleSection('${sectionId}', '${levelKey}')">
                             <h4 class="font-semibold text-blue-800">${escapeHtml(section.name)}</h4>
                             <span id="${sectionId}-toggle" class="text-lg">
                                 ${isCollapsed ? '▶️' : '▼'}
@@ -4453,7 +4477,7 @@ function loadStudentSkillsChecklist() {
 }
 
 // Toggle section collapse/expand
-window.toggleSection = function(sectionId) {
+window.toggleSection = function(sectionId, levelKey) {
     const section = document.getElementById(sectionId);
     const toggle = document.getElementById(`${sectionId}-toggle`);
 
@@ -4461,13 +4485,15 @@ window.toggleSection = function(sectionId) {
         const isCurrentlyHidden = section.classList.contains('hidden');
 
         if (isCurrentlyHidden) {
+            // Expanding
             section.classList.remove('hidden');
             if (toggle) toggle.textContent = '▼';
-            localStorage.removeItem(`${sectionId.split('-').slice(0, -1).join('-')}-${sectionId}-collapsed`);
+            localStorage.setItem(`${levelKey}-${sectionId}-expanded`, 'true');
         } else {
+            // Collapsing
             section.classList.add('hidden');
             if (toggle) toggle.textContent = '▶️';
-            localStorage.setItem(`${sectionId.split('-').slice(0, -1).join('-')}-${sectionId}-collapsed`, 'true');
+            localStorage.removeItem(`${levelKey}-${sectionId}-expanded`);
         }
     }
 }
