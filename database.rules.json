@@ -6,16 +6,16 @@
         "users": {
         ".read": "auth != null",
         "$uid": {
-            ".write": "auth != null && (auth.uid === $uid || auth.token.admin === true)",
+            ".write": "auth != null && (auth.uid === $uid || auth.token.admin === true || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
             "notificationPrefs": {
             ".read": "$uid === auth.uid",
             ".write": "$uid === auth.uid"
             },
             "approved": {
-            ".write": "auth.token.admin === true"
+            ".write": "auth.token.admin === true || root.child('users').child(auth.uid).child('isAdmin').val() === true"
             },
             "role": {
-            ".write": "auth.token.admin === true"
+            ".write": "auth.token.admin === true || root.child('users').child(auth.uid).child('isAdmin').val() === true"
             }
         }
         },
