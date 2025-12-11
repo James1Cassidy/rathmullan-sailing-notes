@@ -4605,31 +4605,49 @@ function generateMasterReport() {
                 reportWindow.document.write(`<div class="student-name">${student.name || 'Unknown'}</div>`);
 
                 // Get skill assessments for this student
-                const studentLevelKey = level.replace(/-/g, '_');
-                const skills = SAILING_SKILLS[studentLevelKey] || [];
+                const levelData = SAILING_SKILLS[level];
 
-                if (skills.length > 0) {
-                    reportWindow.document.write(`<div class="skills-grid">`);
-
+                if (levelData && levelData.sections && levelData.sections.length > 0) {
                     let achievedCount = 0;
                     let partialCount = 0;
                     let notDemonstratedCount = 0;
                     let notAssessedCount = 0;
+                    let totalSkills = 0;
 
-                    skills.forEach(skill => {
-                        const assessment = student.skillsChecklist && student.skillsChecklist[skill.id] ? student.skillsChecklist[skill.id] : 'not_assessed';
+                    // Iterate through sections
+                    levelData.sections.forEach(section => {
+                        if (section.competencies && section.competencies.length > 0) {
+                            reportWindow.document.write(`<div style="margin-top: 15px;"><strong style="color: #1e40af; font-size: 1.1em;">${section.name}</strong></div>`);
+                            reportWindow.document.write(`<div class="skills-grid">`);
 
-                        reportWindow.document.write(`
+                            section.competencies.forEach(competency => {
+                                totalSkills++;
+                                const assessment = student.skillsChecklist && student.skillsChecklist[competency.id] ? student.skillsChecklist[competency.id] : 'not_assessed';
+                                const statusClass = assessment.replace('_', '-');
+                                const statusText = {
+                                    'achieved': '✓ Achieved',
+                                    'partially_achieved': '◐ Partial',
+                                    'not_demonstrated': '✗ Not Yet',
+                                    'not_assessed': '○ Not Assessed'
+                                }[assessment] || '○ Not Assessed';
+
+                                if (assessment === 'achieved') achievedCount++;
+                                else if (assessment === 'partially_achieved') partialCount++;
+                                else if (assessment === 'not_demonstrated') notDemonstratedCount++;
+                                else notAssessedCount++;
+
+                                reportWindow.document.write(`
                             <div class="skill ${statusClass}">
-                                <strong>${statusText}:</strong> ${skill.skill}
+                                <strong>${statusText}:</strong> ${competency.skill}
                             </div>
                         `);
+                            });
+
+                            reportWindow.document.write(`</div>`);
+                        }
                     });
 
-                    reportWindow.document.write(`</div>`);
-
                     // Add summary stats for this student
-                    const totalSkills = skills.length;
                     const progressPercent = totalSkills > 0 ? Math.round((achievedCount / totalSkills) * 100) : 0;
                     reportWindow.document.write(`
                         <div style="margin-top: 10px; padding: 8px; background: white; border-radius: 4px; font-size: 0.9em;">
