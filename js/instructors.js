@@ -981,6 +981,15 @@ function loadInstructorsFromFirebase() {
         if (flexWrap.children.length === 0) {
             flexWrap.innerHTML = '<div class="text-gray-600 italic text-sm">No approved instructors yet</div>';
         }
+
+        // Attach drag listeners to newly created instructor elements
+        const newDraggables = flexWrap.querySelectorAll('.draggable');
+        newDraggables.forEach(item => {
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', e.target.id);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+        });
     }).catch(err => {
         console.error('Error loading instructors from Firebase:', err);
         const flexWrap = availableZone.querySelector('.flex.flex-wrap') || availableZone;
@@ -989,6 +998,111 @@ function loadInstructorsFromFirebase() {
 }
 
 window.loadInstructorsFromFirebase = loadInstructorsFromFirebase;
+
+// Boat Management Functions
+function loadBoatsFromFirebase() {
+    const availableBoatsZone = document.getElementById('available-boats-zone');
+    if (!availableBoatsZone) return;
+
+    db.ref('boats').once('value').then(snap => {
+        const boatsData = snap.val() || {};
+        const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
+        flexWrap.innerHTML = ''; // Clear loading message
+
+        Object.entries(boatsData).forEach(([boatId, boatData]) => {
+            if (boatData && boatData.name) {
+                const div = document.createElement('div');
+                div.className = `relative group draggable boat ${boatData.color || 'bg-yellow-500'} text-white px-3 py-1 rounded-md cursor-pointer`;
+                div.id = boatId;
+                div.draggable = true;
+                div.innerHTML = `
+                    <span>${boatData.name}</span>
+                    <button onclick="deleteBoat('${boatId}')" class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 bg-red-700 text-white text-xs px-1.5 py-0.5 rounded-bl transition-opacity" title="Delete boat">✕</button>
+                `;
+                flexWrap.appendChild(div);
+            }
+        });
+
+        if (flexWrap.children.length === 0) {
+            flexWrap.innerHTML = '<div class="text-gray-600 italic text-sm">No boats yet - click "Add Boat" to create one</div>';
+        }
+
+        // Attach drag listeners to newly created boat elements
+        const newDraggables = flexWrap.querySelectorAll('.draggable.boat');
+        newDraggables.forEach(item => {
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', e.target.closest('.draggable').id);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+        });
+    }).catch(err => {
+        console.error('Error loading boats from Firebase:', err);
+        const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
+        flexWrap.innerHTML = '<div class="text-red-600 text-sm">Error loading boats</div>';
+    });
+}
+
+window.loadBoatsFromFirebase = loadBoatsFromFirebase;
+
+function toggleAddBoatForm() {
+    const form = document.getElementById('add-boat-form');
+    if (form) {
+        form.classList.toggle('hidden');
+        if (!form.classList.contains('hidden')) {
+            document.getElementById('boat-name-input').focus();
+        }
+    }
+}
+
+window.toggleAddBoatForm = toggleAddBoatForm;
+
+function selectBoatColor(colorClass) {
+    document.getElementById('selected-boat-color').value = colorClass;
+    // Visual feedback - highlight selected color
+    const buttons = document.querySelectorAll('#color-picker button');
+    buttons.forEach(btn => btn.classList.remove('ring-2'));
+    event.target.classList.add('ring-2');
+}
+
+window.selectBoatColor = selectBoatColor;
+
+function addBoat() {
+    const name = document.getElementById('boat-name-input').value.trim();
+    const color = document.getElementById('selected-boat-color').value;
+
+    if (!name) {
+        alert('Please enter a boat name');
+        return;
+    }
+
+    const boatId = 'boat-' + Date.now();
+    db.ref('boats/' + boatId).set({ name, color }).then(() => {
+        document.getElementById('boat-name-input').value = '';
+        document.getElementById('selected-boat-color').value = 'bg-yellow-500';
+        toggleAddBoatForm();
+        loadBoatsFromFirebase();
+    }).catch(err => {
+        console.error('Error adding boat:', err);
+        alert('Error creating boat: ' + err.message);
+    });
+}
+
+window.addBoat = addBoat;
+
+function deleteBoat(boatId) {
+    if (!confirm('Are you sure you want to delete this boat?')) return;
+
+    db.ref('boats/' + boatId).remove().then(() => {
+        // Also remove from arrangement if it's placed
+        db.ref('arrangement/' + boatId).remove().catch(() => {});
+        loadBoatsFromFirebase();
+    }).catch(err => {
+        console.error('Error deleting boat:', err);
+        alert('Error deleting boat: ' + err.message);
+    });
+}
+
+window.deleteBoat = deleteBoat;
 
 document.addEventListener('DOMContentLoaded', () => {
     // If not authenticated show login & enforce interactivity
@@ -1034,6 +1148,7 @@ auth.onAuthStateChanged(user => {
                 showMainContent();
                 loadWeeklyPlans();
                 loadInstructorsFromFirebase();
+                loadBoatsFromFirebase();
                 applyRoleBasedVisibility(userData.role || 'instructor');
                 initChat();
 
@@ -2021,11 +2136,6 @@ function clearArrangement() {
     }).catch(err => console.error('Error clearing arrangement from Firebase:', err));
 }
 // --- Arrangement Reset Helpers (restored after corruption) ---
-const DEFAULT_BOAT_ORDER = [
-    'boat-feva-1', 'boat-feva-2', 'boat-feva-3', 'boat-feva-4', 'boat-feva-5',
-    'boat-topaz-1', 'boat-topaz-2', 'boat-topaz-3', 'boat-topaz-4', 'boat-topaz-5',
-    'boat-vago-1', 'boat-bahia-1', 'boat-bahia-2'
-];
 const DEFAULT_INSTRUCTOR_ORDER = [
     'instructor-7', 'instructor-8',
     'instructor-1', 'instructor-2', 'instructor-3', 'instructor-4', 'instructor-5', 'instructor-6',
@@ -2080,17 +2190,8 @@ function clearBoats() {
         return null;
     }).catch(err => console.error('Error clearing boats from Firebase:', err))
         .finally(() => {
-            const zone = document.getElementById('available-boats-zone');
-            if (zone) {
-                const inner = zone.querySelector('.flex.flex-wrap') || zone;
-                DEFAULT_BOAT_ORDER.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.style.left = ''; el.style.top = ''; el.style.position = '';
-                        inner.appendChild(el);
-                    }
-                });
-            }
+            // Reload boats from Firebase which will reset them to available-boats-zone
+            loadBoatsFromFirebase();
         });
 }
 window.clearBoats = clearBoats;

@@ -867,36 +867,40 @@
 
             <div class="mt-8 flex flex-col md:flex-row gap-8 justify-center items-stretch">
                 <div class="flex-1">
-                    <h4 class="text-xl font-bold text-blue-700 mb-4 text-center">Available Boats</h4>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xl font-bold text-blue-700 text-center flex-1">Available Boats</h4>
+                        <button onclick="toggleAddBoatForm()" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm font-medium">+ Add Boat</button>
+                    </div>
+                    <div id="add-boat-form" class="hidden mb-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Boat Name:</label>
+                            <input type="text" id="boat-name-input" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter boat name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Color:</label>
+                            <div id="color-picker" class="flex flex-wrap gap-2">
+                                <button type="button" onclick="selectBoatColor('bg-yellow-400')" class="w-8 h-8 bg-yellow-400 rounded hover:ring-2 ring-gray-400" title="Yellow"></button>
+                                <button type="button" onclick="selectBoatColor('bg-yellow-500')" class="w-8 h-8 bg-yellow-500 rounded hover:ring-2 ring-gray-400" title="Orange-Yellow"></button>
+                                <button type="button" onclick="selectBoatColor('bg-orange-500')" class="w-8 h-8 bg-orange-500 rounded hover:ring-2 ring-gray-400" title="Orange"></button>
+                                <button type="button" onclick="selectBoatColor('bg-red-500')" class="w-8 h-8 bg-red-500 rounded hover:ring-2 ring-gray-400" title="Red"></button>
+                                <button type="button" onclick="selectBoatColor('bg-green-500')" class="w-8 h-8 bg-green-500 rounded hover:ring-2 ring-gray-400" title="Green"></button>
+                                <button type="button" onclick="selectBoatColor('bg-green-600')" class="w-8 h-8 bg-green-600 rounded hover:ring-2 ring-gray-400" title="Dark Green"></button>
+                                <button type="button" onclick="selectBoatColor('bg-blue-500')" class="w-8 h-8 bg-blue-500 rounded hover:ring-2 ring-gray-400" title="Blue"></button>
+                                <button type="button" onclick="selectBoatColor('bg-blue-600')" class="w-8 h-8 bg-blue-600 rounded hover:ring-2 ring-gray-400" title="Dark Blue"></button>
+                                <button type="button" onclick="selectBoatColor('bg-purple-500')" class="w-8 h-8 bg-purple-500 rounded hover:ring-2 ring-gray-400" title="Purple"></button>
+                                <button type="button" onclick="selectBoatColor('bg-gray-600')" class="w-8 h-8 bg-gray-600 rounded hover:ring-2 ring-gray-400" title="Gray"></button>
+                            </div>
+                            <input type="hidden" id="selected-boat-color" value="bg-yellow-500">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="addBoat()" class="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm font-medium">Create Boat</button>
+                            <button onclick="toggleAddBoatForm()" class="flex-1 bg-gray-400 text-white px-3 py-2 rounded hover:bg-gray-500 text-sm font-medium">Cancel</button>
+                        </div>
+                    </div>
                     <div class="dropzone bg-gray-200 p-4 rounded-md" id="available-boats-zone"
                         style="min-height: 140px;">
                         <div class="flex flex-wrap gap-3 justify-center text-sm">
-                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-feva-1" draggable="true">Feva-1</div>
-                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-feva-2" draggable="true">Feva-2</div>
-                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-feva-3" draggable="true">Feva-3</div>
-                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-feva-4" draggable="true">Feva-4</div>
-                            <div class="draggable boat bg-yellow-500 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-feva-5" draggable="true">Feva-5</div>
-                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-topaz-1" draggable="true">Topaz-1</div>
-                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-topaz-2" draggable="true">Topaz-2</div>
-                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-topaz-3" draggable="true">Topaz-3</div>
-                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-topaz-4" draggable="true">Topaz-4</div>
-                            <div class="draggable boat bg-green-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-topaz-5" draggable="true">Topaz-5</div>
-                            <div class="draggable boat bg-blue-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-vago-1" draggable="true">Vago</div>
-                            <div class="draggable boat bg-red-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-bahia-1" draggable="true">Bahia-1</div>
-                            <div class="draggable boat bg-red-600 text-white px-3 py-1 rounded-md cursor-pointer"
-                                id="boat-bahia-2" draggable="true">Bahia-2</div>
+                            <div class="text-gray-600 italic text-sm">Loading boats...</div>
                         </div>
                     </div>
                 </div>
