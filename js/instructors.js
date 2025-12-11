@@ -26,6 +26,20 @@ const storage = firebase.storage();
 let messaging = null;
 try {
     if (firebase && firebase.messaging && 'serviceWorker' in navigator) {
+        messaging = firebase.messaging();
+    }
+} catch (e) {
+    console.warn('Firebase Messaging init warning:', e.message);
+}
+
+// --- Auth State Listener (handles user login/logout) ---
+auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+        // User is signed out
+        return;
+    }
+
+    try {
         // Detach previous user record listener
         if (userRecordListener) {
             try { userRecordListener.off(); } catch (_) {}
@@ -88,16 +102,15 @@ try {
             console.error('User record listener error:', err);
             showPendingApproval();
         });
-}
+    } catch (err) {
+        console.error('Auth state change error:', err);
+    }
+});
 
 function initNotificationUI() {
     const btn = document.getElementById('enable-notifications-btn');
     if (!btn || typeof Notification === 'undefined') return;
-    // Hide if already granted and prefs enabled
-        if (userRecordListener) {
-            try { userRecordListener.off(); } catch (_) {}
-            userRecordListener = null;
-        }
+
     if (Notification.permission === 'granted') {
         if (window.notificationPrefs.enabled) btn.classList.add('hidden');
         else btn.classList.remove('hidden');
@@ -1144,7 +1157,8 @@ window.saveDraggablePositionToFirebase = function (id, left, top) {
             console.error('❌ Failed to save position for:', id, err);
         });
     }
-};
+}
+;
 
 window.loadDraggablePositionsFromFirebase = function (callback) {
     if (window.db) {
@@ -3014,6 +3028,8 @@ async function fetchTideData() {
         renderTideData(fallback, tideDiv);
     }
 } // <-- This closes fetchTideData
+// Add this closing brace to properly end fetchTideData
+// (FIX: Added missing closing brace for fetchTideData)
 
 function parseTideHTML(html) {
     const tides = [];
