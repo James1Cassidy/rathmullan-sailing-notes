@@ -1856,18 +1856,18 @@ function toggleRatiosTable() {
     } else {
         content.style.display = 'none';
         icon.textContent = '▼';
-
-    function toggleWeeklyPlanning() {
-        const content = document.getElementById('weekly-planning-content');
-        const icon = document.getElementById('weekly-planning-toggle-icon');
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            icon.textContent = '▲';
-        } else {
-            content.style.display = 'none';
-            icon.textContent = '▼';
-        }
     }
+}
+
+function toggleWeeklyPlanning() {
+    const content = document.getElementById('weekly-planning-content');
+    const icon = document.getElementById('weekly-planning-toggle-icon');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
     }
 }
 
