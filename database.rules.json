@@ -74,6 +74,11 @@
         ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
         },
 
+        "boats": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
+        },
+
         "mapPositions": {
         ".read": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true",
         ".write": "auth != null && root.child('users').child(auth.uid).child('approved').val() === true"
