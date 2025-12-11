@@ -917,7 +917,38 @@ function ensureLoginInteractivity() {
     } catch (err) { console.error('[Auth] ensureLoginInteractivity error', err); }
 }
 
-// Load instructors from Firebase users and populate the available zone
+// Apply role-based visibility
+function applyRoleBasedVisibility(userRole) {
+    const isAssistant = userRole === 'assistant';
+
+    // Hide Current Session section from assistants
+    const currentSessionSection = document.getElementById('current-session-section');
+    if (currentSessionSection) {
+        currentSessionSection.style.display = isAssistant ? 'none' : 'block';
+    }
+
+    // Hide student notes tab (Skills Checklist) content from assistants
+    const skillsTab = document.getElementById('tab-skills-btn');
+    if (skillsTab) {
+        skillsTab.style.display = isAssistant ? 'none' : 'block';
+    }
+
+    // Hide "Move to Next Level" button from assistants
+    const progressButtons = document.querySelectorAll('[onclick*="progressStudent"]');
+    progressButtons.forEach(btn => {
+        btn.style.display = isAssistant ? 'none' : 'block';
+    });
+
+    // Hide delete student button from assistants
+    const deleteButtons = document.querySelectorAll('[onclick*="removeStudent"]');
+    deleteButtons.forEach(btn => {
+        btn.style.display = isAssistant ? 'none' : 'block';
+    });
+}
+
+window.applyRoleBasedVisibility = applyRoleBasedVisibility;
+
+
 function loadInstructorsFromFirebase() {
     const availableZone = document.getElementById('available-zone');
     if (!availableZone) return;
@@ -928,9 +959,10 @@ function loadInstructorsFromFirebase() {
         flexWrap.innerHTML = ''; // Clear loading message
 
         const colors = {
-            'instructor': 'bg-blue-500',
-            'assistant': 'bg-green-600',
-            'admin': 'bg-purple-600'
+            'assistant': 'bg-green-500',
+            'instructor': 'bg-blue-600',
+            'senior instructor': 'bg-purple-600',
+            'admin': 'bg-red-700'
         };
 
         Object.entries(usersData).forEach(([uid, userData]) => {
@@ -1002,6 +1034,7 @@ auth.onAuthStateChanged(user => {
                 showMainContent();
                 loadWeeklyPlans();
                 loadInstructorsFromFirebase();
+                applyRoleBasedVisibility(userData.role || 'instructor');
                 initChat();
 
                 userApproved = true;
@@ -1176,10 +1209,18 @@ window.approveUser = function (uid) {
         if (!isAdmin) {
             return alert('Your account does not have admin access.');
         }
-        if (!confirm('Are you sure you want to approve this user?')) return;
+
+        // Prompt for role selection
+        const role = prompt('Select role:\n1. assistant\n2. instructor\n3. senior instructor\n\nEnter the number (1-3):', '2');
+        if (role === null) return; // User cancelled
+
+        const roleMap = { '1': 'assistant', '2': 'instructor', '3': 'senior instructor' };
+        const selectedRole = roleMap[role];
+        if (!selectedRole) return alert('Invalid role selection');
+
         db.ref('users/' + uid).once('value').then(snapshot => {
             const userData = snapshot.val();
-            return db.ref('users/' + uid).update({ approved: true }).then(() => {
+            return db.ref('users/' + uid).update({ approved: true, role: selectedRole }).then(() => {
                     if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' && userData && userData.email) {
                         sendAdminNotification('approval_notification', {
                             email: userData.email,
@@ -1187,10 +1228,11 @@ window.approveUser = function (uid) {
                             instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/',
                             // Send admin's display name (avoid exposing UID)
                             createdByName: current ? (current.displayName || (current.email ? current.email.split('@')[0] : 'Admin')) : null,
-                            action: 'approved'
+                            action: 'approved',
+                            role: selectedRole
                         }).catch(e => console.error('sendAdminNotification error', e));
                     }
-                alert('User approved! Notification email sent.');
+                alert(`User approved as ${selectedRole}! Notification email sent.`);
                 loadPendingUsers();
             });
         }).catch(err => {
