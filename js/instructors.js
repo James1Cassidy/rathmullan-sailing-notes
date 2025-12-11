@@ -4178,7 +4178,7 @@ function loadStudentNotes() {
         rootSnap.forEach(child => {
             if (child.key === 'notes' || child.key === 'skillsChecklist') return;
             const val = child.val();
-            if (val && typeof val === 'object' && (val.text || val.timestamp)) {
+            if (val && typeof val === 'object' && val.text && Number.isFinite(val.timestamp)) {
                 notes.push({ id: child.key, __path: `${studentPath}/${child.key}`, ...val });
             }
         });
@@ -4187,7 +4187,7 @@ function loadStudentNotes() {
         if (nestedSnap && nestedSnap.exists()) {
             nestedSnap.forEach(child => {
                 const val = child.val();
-                if (val && typeof val === 'object' && (val.text || val.timestamp)) {
+                if (val && typeof val === 'object' && val.text && Number.isFinite(val.timestamp)) {
                     notes.push({ id: child.key, __path: `${studentPath}/notes/${child.key}`, ...val });
                 }
             });
@@ -4608,9 +4608,12 @@ function printStudentSkills() {
         const notes = [];
         if (notesData) {
             Object.keys(notesData).forEach(noteId => {
+                if (noteId === 'skillsChecklist' || noteId === 'notes') return;
                 const note = notesData[noteId];
-                note.id = noteId;
-                notes.push(note);
+                if (note && note.text && Number.isFinite(note.timestamp)) {
+                    note.id = noteId;
+                    notes.push(note);
+                }
             });
             notes.sort((a, b) => b.timestamp - a.timestamp);
         }
