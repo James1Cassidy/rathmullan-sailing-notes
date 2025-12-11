@@ -1014,11 +1014,11 @@ if (googleSignInBtn) {
 // Handle redirect result
 firebase.auth().getRedirectResult().then(result => {
     if (!result || !result.user) return;
-    
+
     const user = result.user;
     window.__signupInFlight = true;
     try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
-    
+
     db.ref('users/' + user.uid).once('value').then(snap => {
         const val = snap.val();
         if (!val) {
@@ -1063,8 +1063,6 @@ firebase.auth().getRedirectResult().then(result => {
     console.error('[DEBUG][google-signin] getRedirectResult error:', err);
     window.__signupInFlight = false;
 });
-    });
-}
 
 // --- Weekly Planning Logic ---
 const weeklyLevels = [
