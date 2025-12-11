@@ -1,8 +1,10 @@
 // Service Worker for Offline Support
-const CACHE_NAME = 'rathmullan-sailing-v3';
+const CACHE_NAME = 'rathmullan-sailing-v4';
 const urlsToCache = [
     '/',
     '/instructors.html',
+    '/index.html',
+    '/offline.html',
     '/style.css',
     // Intentionally excluding '/js/instructors.js' so it is always fetched fresh
     '/images/logo.png'];
@@ -37,12 +39,8 @@ self.addEventListener('fetch', event => {
                 // Try to serve a cached copy if available
                 return caches.match('/instructors.html').then(cached => {
                     if (cached) return cached;
-                    // Otherwise return a minimal offline HTML response so navigation still works
-                    return new Response('<!doctype html><meta charset="utf-8"><title>Offline</title><body><h1>Offline</h1><p>Unable to load page (offline).</p></body>', {
-                        status: 503,
-                        statusText: 'Service Unavailable',
-                        headers: { 'Content-Type': 'text/html' }
-                    });
+                    // Otherwise return offline fallback page
+                    return caches.match('/offline.html').then(off => off || new Response('<!doctype html><meta charset="utf-8"><title>Offline</title><body><h1>Offline</h1><p>Unable to load page (offline).</p></body>', { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/html' } }));
                 });
             })
         );
@@ -75,8 +73,8 @@ self.addEventListener('fetch', event => {
                     return response;
                 })
                 .catch(() => {
-                    // Fallback to cache if offline
-                    return caches.match(event.request);
+                    // Fallback to offline page or cached document if available
+                    return caches.match('/offline.html').then(off => off || caches.match(event.request));
                 })
         );
         return;

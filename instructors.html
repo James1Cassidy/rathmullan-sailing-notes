@@ -7,7 +7,18 @@
         content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
     <meta name="theme-color" content="#1e3a8a">
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/logo.png?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta property="og:title" content="Sailing Instructor Resources">
+    <meta property="og:description" content="Instructor dashboard: announcements, weather, boats, student notes, and master reports.">
+    <meta property="og:image" content="/images/logo.png">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="/instructors.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sailing Instructor Resources">
+    <meta name="twitter:description" content="Instructor dashboard: announcements, weather, boats, student notes, and master reports.">
+    <meta name="twitter:image" content="/images/logo.png">
     <title>Sailing Instructor Resources</title>
     <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="tailwind-ui.min.css">
@@ -1765,6 +1776,7 @@
                 <script>document.write('<script src="js/tides.js?v=' + new Date().getTime() + '"><\/script>');</script>
 
                 <script src="js/pwa.js" defer></script>
+                <script src="js/lazy-images.js" defer></script>
 
     <!-- Back to top button -->
     <button id="back-to-top" title="Back to top"

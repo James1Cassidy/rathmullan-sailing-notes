@@ -4999,6 +4999,7 @@ function buildReportCardHtml(levelKey, studentId, studentName) {
     }
 
     // Collect current states from buttons
+    
     const states = {};
     const buttons = checklistContainer.querySelectorAll('button[id^="skill-btn-"]');
     buttons.forEach(btn => {
