@@ -35,7 +35,11 @@ try {
 // --- Auth State Listener (handles user login/logout) ---
 auth.onAuthStateChanged(async (user) => {
     if (!user) {
-        // User is signed out - show login page
+        // User is signed out - detach listener and show login page
+        if (userRecordListener) {
+            try { userRecordListener.off(); } catch (_) {}
+            userRecordListener = null;
+        }
         showLogin();
         return;
     }
