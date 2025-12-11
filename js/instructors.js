@@ -21,6 +21,25 @@ window.db = db; // Expose db globally for inline scripts
 window.firebase = firebase; // Ensure firebase is globally accessible
 const auth = firebase.auth();
 const storage = firebase.storage();
+
+// Handle redirect result immediately after Firebase init
+console.log('[DEBUG] Checking for redirect result...');
+auth.getRedirectResult().then(result => {
+    console.log('[DEBUG][google-redirect] getRedirectResult called', result);
+
+    if (result && result.user) {
+        console.log('[DEBUG][google-redirect] User returned from Google sign-in:', result.user.email, result.user.uid);
+        // Mark as recent signup so auth listener knows it's from Google
+        try { sessionStorage.setItem('__recentSignupUid', result.user.uid); } catch (_) {}
+    } else {
+        console.log('[DEBUG][google-redirect] No redirect result found');
+    }
+    window.__signupInFlight = false;
+}).catch(err => {
+    console.error('[DEBUG][google-redirect] getRedirectResult error:', err);
+    window.__signupInFlight = false;
+});
+
 // --- Firebase Messaging (FCM) client integration ---
 // Note: `firebase-messaging.js` is included in pages that use messaging (instructors.html).
 let messaging = null;
@@ -1009,27 +1028,6 @@ if (googleSignInBtn) {
         });
     });
 }
-
-// Handle redirect result for new Google sign-ups only
-auth.getRedirectResult().then(result => {
-    console.log('[DEBUG][google-redirect] getRedirectResult called', result);
-    
-    if (!result || !result.user) {
-        console.log('[DEBUG][google-redirect] No redirect result');
-        return;
-    }
-    
-    const user = result.user;
-    console.log('[DEBUG][google-redirect] User returned from Google sign-in', user.email, user.uid);
-    
-    // Just mark this as a recent signup so the auth listener knows it's a new Google user
-    // The auth listener will handle everything else (checking approved status, creating record, etc)
-    try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
-    window.__signupInFlight = false;
-}).catch(err => {
-    console.error('[DEBUG][google-signin] getRedirectResult error:', err);
-    window.__signupInFlight = false;
-});
 
 // --- Weekly Planning Logic ---
 const weeklyLevels = [
