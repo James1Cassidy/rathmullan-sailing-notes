@@ -3013,7 +3013,7 @@ async function fetchTideData() {
         fallback.note = 'Approximate (live unavailable)';
         renderTideData(fallback, tideDiv);
     }
-}
+} // <-- This closes fetchTideData
 
 function parseTideHTML(html) {
     const tides = [];
