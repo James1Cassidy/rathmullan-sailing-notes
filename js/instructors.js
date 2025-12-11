@@ -746,6 +746,7 @@ const authError = document.getElementById('auth-error');
 const logoutBtn = document.getElementById('logout-btn');
 const pendingLogoutBtn = document.getElementById('pending-logout-btn');
 const adminPanel = document.getElementById('admin-panel');
+const currentUserDisplay = document.getElementById('current-user-display');
 // Auth mode toggle elements
 const nameWrapper = document.getElementById('signup-name-wrapper');
 const authHeading = document.getElementById('auth-heading');
@@ -841,6 +842,20 @@ async function refreshAdminStatus() {
     currentUserIsAdmin = emailIsSuper || claimAdmin || dbFlags.isAdmin;
     currentUserCanGrant = emailIsSuper || claimGrant || dbFlags.canGrantAdmin;
     return currentUserIsAdmin;
+}
+
+function setUserDisplay(user, userData, status) {
+    if (!currentUserDisplay) return;
+    if (!user) {
+        currentUserDisplay.classList.add('hidden');
+        currentUserDisplay.textContent = '';
+        return;
+    }
+    const name = (userData && userData.name) || currentUserName || (user.email ? user.email.split('@')[0] : 'User');
+    const email = user.email || '';
+    const suffix = status === 'pending' ? ' (pending approval)' : '';
+    currentUserDisplay.textContent = email ? `${name} · ${email}${suffix}` : `${name}${suffix}`;
+    currentUserDisplay.classList.remove('hidden');
 }
 
 // --- LOGIN FALLBACK & DEFENSIVE REBIND ---
@@ -1148,6 +1163,7 @@ auth.onAuthStateChanged(user => {
                 if (recentUid && recentUid === user.uid) {
                     console.log('[DEBUG][auth.onAuthStateChanged] recent signup detected, skipping duplicate DB write', { uid: user.uid, ts: Date.now() });
                     showPendingApproval();
+                    setUserDisplay(user, null, 'pending');
                 } else {
                     // Create default entry (instrumented for duplicate-signup debugging)
                     console.log('[DEBUG][auth.onAuthStateChanged] creating default user record', { uid: user.uid, email: user.email, ts: Date.now() });
@@ -1158,6 +1174,7 @@ auth.onAuthStateChanged(user => {
                     }).then(() => {
                         console.log('[DEBUG][auth.onAuthStateChanged] users/<uid> set', { uid: user.uid, ts: Date.now() });
                         showPendingApproval();
+                        setUserDisplay(user, null, 'pending');
                     }).catch(err => {
                         console.error('[DEBUG][auth.onAuthStateChanged] error setting users/<uid>:', err);
                     });
@@ -1165,6 +1182,7 @@ auth.onAuthStateChanged(user => {
             } else if (userData.approved) {
                 // User is approved
                 currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Instructor');
+                setUserDisplay(user, userData, 'approved');
                 showMainContent();
                 loadWeeklyPlans();
                 loadInstructorsFromFirebase();
@@ -1187,6 +1205,7 @@ auth.onAuthStateChanged(user => {
                         if (idToken && idToken.claims && idToken.claims.admin) {
                             // Ensure admin sees main content and admin panel even if DB approved flag is missing
                             currentUserName = userData && userData.name ? userData.name : (user.email ? user.email.split('@')[0] : 'Admin');
+                            setUserDisplay(user, userData, 'approved');
                             showMainContent();
                             showAdminPanel();
                             userApproved = true;
@@ -1205,6 +1224,7 @@ auth.onAuthStateChanged(user => {
                 // User is NOT approved
                 currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Pending');
                 showPendingApproval();
+                setUserDisplay(user, userData, 'pending');
                 userApproved = false;
                 // Still attach announcements so user can see board (read-only behavior handled by UI/roles)
                 loadAnnouncements();
@@ -1214,11 +1234,13 @@ auth.onAuthStateChanged(user => {
             console.error("Error fetching user data:", err);
             // Fallback: show pending if error
             showPendingApproval();
+            setUserDisplay(user, null, 'pending');
         });
 
     } else {
         // No user is signed in.
         showLogin();
+        setUserDisplay(null, null, null);
         userApproved = false;
         // Detach listeners if previously attached
         if (announcementsListenerAttached) {
@@ -1257,6 +1279,7 @@ function showLogin() {
     if (pendingApproval) pendingApproval.classList.add('hidden');
     if (logoutBtn) logoutBtn.classList.add('hidden');
     if (adminPanel) adminPanel.classList.add('hidden');
+    setUserDisplay(null, null, null);
 }
 
 function showAdminPanel() {
@@ -1631,6 +1654,7 @@ if (loginForm) {
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         auth.signOut().then(() => {
+            setUserDisplay(null, null, null);
             showLogin();
         }).catch(err => {
             console.error('Logout error:', err);
@@ -1642,6 +1666,7 @@ if (logoutBtn) {
 if (pendingLogoutBtn) {
     pendingLogoutBtn.addEventListener('click', () => {
         auth.signOut().then(() => {
+            setUserDisplay(null, null, null);
             showLogin();
         }).catch(err => {
             console.error('Logout error:', err);
@@ -4999,7 +5024,7 @@ function buildReportCardHtml(levelKey, studentId, studentName) {
     }
 
     // Collect current states from buttons
-    
+
     const states = {};
     const buttons = checklistContainer.querySelectorAll('button[id^="skill-btn-"]');
     buttons.forEach(btn => {

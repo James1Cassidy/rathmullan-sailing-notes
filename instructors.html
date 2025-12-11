@@ -166,16 +166,19 @@
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold text-white"><a href="index.html" class="hover:underline">Rathmullan Sailing
                     School Notes</a></h1>
-            <nav class="space-x-4 text-white text-sm">
-                <a href="taste_of_sailing.html" class="hover:underline">Taste of Sailing</a>
-                <a href="start_sailing.html" class="hover:underline">Start Sailing</a>
-                <a href="basic_skills.html" class="hover:underline">Basic Skills</a>
-                <a href="improving_skills.html" class="hover:underline">Improving Skills</a>
-                <a href="advanced.html" class="hover:underline">Advanced</a>
-                <a href="instructors.html" class="font-semibold underline">Instructors</a>
-            </nav>
-            <button id="logout-btn"
-                class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-4">Logout</button>
+            <div class="flex items-center gap-3">
+                <nav class="space-x-4 text-white text-sm">
+                    <a href="taste_of_sailing.html" class="hover:underline">Taste of Sailing</a>
+                    <a href="start_sailing.html" class="hover:underline">Start Sailing</a>
+                    <a href="basic_skills.html" class="hover:underline">Basic Skills</a>
+                    <a href="improving_skills.html" class="hover:underline">Improving Skills</a>
+                    <a href="advanced.html" class="hover:underline">Advanced</a>
+                    <a href="instructors.html" class="font-semibold underline">Instructors</a>
+                </nav>
+                <span id="current-user-display" class="hidden text-xs sm:text-sm text-white bg-white/15 px-3 py-1 rounded-full border border-white/20"></span>
+                <button id="logout-btn"
+                    class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-1">Logout</button>
+            </div>
         </div>
     </header>
     <main id="main-content" class="hidden container mx-auto px-4 py-8 flex-grow">
@@ -1133,7 +1136,7 @@
                     <div class="flex-1">
                         <h4 class="text-xl font-semibold text-blue-700 mb-1">AI Plan Assistant</h4>
                         <p class="text-sm text-gray-600">Let AI suggest a weekly plan based on levels, students, and
-                            weather. API key is managed server-side.</p>
+                            weather.</p>
                     </div>
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">
