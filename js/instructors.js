@@ -5056,10 +5056,10 @@ function loadSessionStudentsList() {
 
             const states = ['not_assessed', 'not_demonstrated', 'partially_achieved', 'achieved'];
             const stateLabels = {
-                'not_assessed': '🔵',
-                'not_demonstrated': 'not demonstrated',
-                'partially_achieved': 'partially achieved',
-                'achieved': 'achieved'
+                'not_assessed': 'Not assessed',
+                'not_demonstrated': 'Not demonstrated',
+                'partially_achieved': 'Partially achieved',
+                'achieved': 'Achieved'
             };
             const stateColors = {
                 'not_assessed': 'bg-gray-200 text-gray-800',
@@ -5108,10 +5108,9 @@ function loadSessionStudentsList() {
                                 data-student-id="${studentId}"
                                 data-skill-id="${skill.id}"
                                 data-current-state="${currentState}"
+                                aria-label="${stateLabels[currentState]}"
                                 onclick="cycleSessionSkillState(this)"
-                                title="Click to cycle through states">
-                                ${currentState === 'not_assessed' ? '○' : stateLabels[currentState]}
-                            </button>
+                                title="Click to cycle through states">&nbsp;</button>
                         </td>
                     `;
                 });
@@ -5151,10 +5150,10 @@ function loadSessionStudentsList() {
 function cycleSessionSkillState(button) {
     const states = ['not_assessed', 'not_demonstrated', 'partially_achieved', 'achieved'];
     const stateLabels = {
-        'not_assessed': '○',
-        'not_demonstrated': 'not demonstrated',
-        'partially_achieved': 'partially achieved',
-        'achieved': 'achieved'
+        'not_assessed': 'Not assessed',
+        'not_demonstrated': 'Not demonstrated',
+        'partially_achieved': 'Partially achieved',
+        'achieved': 'Achieved'
     };
     const stateColors = {
         'not_assessed': 'bg-gray-200 text-gray-800',
@@ -5168,9 +5167,10 @@ function cycleSessionSkillState(button) {
     const nextIndex = (currentIndex + 1) % states.length;
     const nextState = states[nextIndex];
 
-    // Update button appearance
+    // Update button appearance (color only)
     button.dataset.currentState = nextState;
-    button.textContent = stateLabels[nextState];
+    button.setAttribute('aria-label', stateLabels[nextState]);
+    button.innerHTML = '&nbsp;';
     button.className = `session-skill-cell ${stateColors[nextState]} px-3 py-2 rounded text-xs font-semibold cursor-pointer hover:shadow-md transition w-full`;
 
     // Save immediately
