@@ -5028,71 +5028,168 @@ function loadSessionStudentsList() {
         db.ref(`studentNotes/${level}`).once('value').then(notesSnap => {
             const notesData = notesSnap.val() || {};
 
-            let html = '';
-            students.forEach((student, idx) => {
-                const studentId = student.id || `student-${idx}`;
-                const studentName = student.name || student;
-                const existingChecklist = (notesData[studentId] && notesData[studentId].skillsChecklist) || {};
+            const states = ['not_assessed', 'not_demonstrated', 'partially_achieved', 'achieved'];
+            const stateLabels = {
+                'not_assessed': '🔵',
+                'not_demonstrated': 'not demonstrated',
+                'partially_achieved': 'partially achieved',
+                'achieved': 'achieved'
+            };
+            const stateColors = {
+                'not_assessed': 'bg-gray-200 text-gray-800',
+                'not_demonstrated': 'bg-red-500 text-white font-semibold',
+                'partially_achieved': 'bg-yellow-400 text-yellow-900 font-semibold',
+                'achieved': 'bg-green-500 text-white font-semibold'
+            };
 
+            // Build table
+            let html = `
+                <div class="overflow-x-auto bg-white rounded border border-gray-200">
+                    <table class="w-full border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-100 border-b-2 border-gray-300">
+                                <th class="border border-gray-200 px-3 py-2 text-left font-semibold text-gray-800 w-48">Skill</th>
+            `;
+
+            // Add student headers
+            students.forEach((student, idx) => {
+                const studentName = student.name || student;
+                html += `<th class="border border-gray-200 px-2 py-2 text-center font-semibold text-gray-800 min-w-[120px]">${escapeHtml(studentName)}</th>`;
+            });
+
+            html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Add skill rows
+            sessionSelectedSkills.forEach(skill => {
                 html += `
-                    <div class="bg-gray-50 border border-gray-200 rounded p-3 mb-2">
-                        <div class="font-semibold text-gray-800 mb-2">${escapeHtml(studentName)}</div>
-                        <div class="space-y-1">
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="border border-gray-200 px-3 py-2 text-left text-gray-700 font-medium max-w-xs">${escapeHtml(skill.skillName)}</td>
                 `;
 
-                sessionSelectedSkills.forEach(skill => {
+                students.forEach((student, idx) => {
+                    const studentId = student.id || `student-${idx}`;
+                    const existingChecklist = (notesData[studentId] && notesData[studentId].skillsChecklist) || {};
                     const currentState = existingChecklist[skill.id] || 'not_assessed';
-                    const stateEmojis = {
-                        'not_assessed': '🔵',
-                        'not_demonstrated': '❌',
-                        'partially_achieved': '⚠️',
-                        'achieved': '✅'
-                    };
 
                     html += `
-                        <label class="flex items-center cursor-pointer hover:bg-white p-1 rounded">
-                            <input type="checkbox" class="session-student-skill"
+                        <td class="border border-gray-200 px-2 py-2 text-center">
+                            <button class="session-skill-cell ${stateColors[currentState]} px-3 py-2 rounded text-xs font-semibold cursor-pointer hover:shadow-md transition w-full"
                                 data-level="${level}"
                                 data-student-id="${studentId}"
                                 data-skill-id="${skill.id}"
                                 data-current-state="${currentState}"
-                                ${currentState === 'achieved' ? 'checked' : ''}>
-                            <span class="ml-2 text-sm text-gray-700">
-                                <span class="mr-2">${stateEmojis[currentState]}</span>
-                                ${escapeHtml(skill.skillName)}
-                            </span>
-                        </label>
+                                onclick="cycleSessionSkillState(this)"
+                                title="Click to cycle through states">
+                                ${currentState === 'not_assessed' ? '○' : stateLabels[currentState]}
+                            </button>
+                        </td>
                     `;
                 });
 
-                html += '</div></div>';
+                html += `</tr>`;
             });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex items-center gap-4 text-xs">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-gray-200 rounded"></div>
+                        <span>Not assessed</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-red-500 rounded"></div>
+                        <span>Not demonstrated</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-yellow-400 rounded"></div>
+                        <span>Partially achieved</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-green-500 rounded"></div>
+                        <span>Achieved</span>
+                    </div>
+                </div>
+            `;
 
             studentsList.innerHTML = html;
         });
     });
 }
 
-function saveSessionAssessments() {
-    const checkboxes = document.querySelectorAll('.session-student-skill:checked');
+function cycleSessionSkillState(button) {
+    const states = ['not_assessed', 'not_demonstrated', 'partially_achieved', 'achieved'];
+    const stateLabels = {
+        'not_assessed': '○',
+        'not_demonstrated': 'not demonstrated',
+        'partially_achieved': 'partially achieved',
+        'achieved': 'achieved'
+    };
+    const stateColors = {
+        'not_assessed': 'bg-gray-200 text-gray-800',
+        'not_demonstrated': 'bg-red-500 text-white font-semibold',
+        'partially_achieved': 'bg-yellow-400 text-yellow-900 font-semibold',
+        'achieved': 'bg-green-500 text-white font-semibold'
+    };
 
-    if (checkboxes.length === 0) {
-        alert('No students/skills selected');
+    let currentState = button.dataset.currentState;
+    const currentIndex = states.indexOf(currentState);
+    const nextIndex = (currentIndex + 1) % states.length;
+    const nextState = states[nextIndex];
+
+    // Update button appearance
+    button.dataset.currentState = nextState;
+    button.textContent = stateLabels[nextState];
+    button.className = `session-skill-cell ${stateColors[nextState]} px-3 py-2 rounded text-xs font-semibold cursor-pointer hover:shadow-md transition w-full`;
+
+    // Save immediately
+    const level = button.dataset.level;
+    const studentId = button.dataset.studentId;
+    const skillId = button.dataset.skillId;
+
+    const path = `studentNotes/${level}/${studentId}/skillsChecklist/${skillId}`;
+    db.ref(path).set(nextState).catch(err => {
+        console.error('Error saving assessment:', err.message);
+    });
+}
+
+function saveSessionAssessments() {
+    const buttons = document.querySelectorAll('.session-skill-cell');
+
+    if (buttons.length === 0) {
+        alert('No assessments to save');
         return;
     }
 
     const updates = {};
-    checkboxes.forEach(cb => {
-        const level = cb.dataset.level;
-        const studentId = cb.dataset.studentId;
-        const skillId = cb.dataset.skillId;
-        const path = `studentNotes/${level}/${studentId}/skillsChecklist/${skillId}`;
-        updates[path] = 'achieved';
+    let count = 0;
+
+    buttons.forEach(btn => {
+        const level = btn.dataset.level;
+        const studentId = btn.dataset.studentId;
+        const skillId = btn.dataset.skillId;
+        const state = btn.dataset.currentState;
+
+        // Only save non-default states
+        if (state !== 'not_assessed') {
+            const path = `studentNotes/${level}/${studentId}/skillsChecklist/${skillId}`;
+            updates[path] = state;
+            count++;
+        }
     });
 
+    if (count === 0) {
+        alert('All assessments are still "not assessed" - nothing to save');
+        return;
+    }
+
     db.ref().update(updates).then(() => {
-        alert(`✅ Saved ${checkboxes.length} skill assessment(s) for this session!`);
-        loadSessionStudentsList(); // Refresh to show updated states
+        alert(`✅ Saved ${count} skill assessment(s) for this session!`);
     }).catch(err => {
         alert('Error saving assessments: ' + err.message);
     });
@@ -5111,6 +5208,7 @@ window.loadSessionStudents = loadSessionStudents;
 window.updateSessionSelectedSkills = updateSessionSelectedSkills;
 window.removeSessionSkill = removeSessionSkill;
 window.filterSessionSkills = filterSessionSkills;
+window.cycleSessionSkillState = cycleSessionSkillState;
 window.saveSessionAssessments = saveSessionAssessments;
 window.clearSessionForm = clearSessionForm;
 
