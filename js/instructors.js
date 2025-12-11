@@ -975,61 +975,60 @@ if (googleSignInBtn) {
         }
         window.__signupInFlight = true;
         const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup(provider).then(result => {
-            const user = result.user;
-            if (!user) {
-                window.__signupInFlight = false;
-                alert('Google sign-in did not return a user. Please try again.');
-                return;
-            }
-            // Avoid duplicate DB creation from onAuthStateChanged
-            try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
-            // Ensure a users/<uid> record exists (do not overwrite existing)
-            db.ref('users/' + user.uid).once('value').then(snap => {
-                const val = snap.val();
-                if (!val) {
-                    // If the user explicitly chose signup mode and provided a name, prefer that
-                    const nameInputEl = document.getElementById('name-input');
-                    let preferredName = user.displayName || (user.email ? user.email.split('@')[0] : 'Instructor');
-                    if (authMode === 'signup' && nameInputEl && nameInputEl.value && nameInputEl.value.trim()) {
-                        preferredName = nameInputEl.value.trim();
-                    }
-                    return db.ref('users/' + user.uid).set({
-                        email: user.email,
-                        name: preferredName,
-                        approved: false,
-                        role: 'instructor'
-                    }).then(() => {
-                        console.log('[DEBUG][google-signin] users/<uid> created', { uid: user.uid, ts: Date.now() });
-                        // For signup flow, show pending approval
-                        if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                            // Notify admin of new signup (DB fallback will be used if webhook fails)
-                            sendAdminNotification('signup_notification', {
-                                email: user.email,
-                                adminEmail: ADMIN_EMAIL,
-                                instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
-                            }).catch(() => {});
-                        }
-                        showPendingApproval();
-                    });
-                } else {
-                    // If already approved, let auth.onAuthStateChanged handle showing main content
-                    if (val.approved) {
-                        showMainContent();
-                    } else {
-                        showPendingApproval();
-                    }
+        firebase.auth().signInWithPopup(provider)
+            .then(result => {
+                const user = result.user;
+                if (!user) {
+                    alert('Google sign-in did not return a user. Please try again.');
+                    throw new Error('No user returned from popup');
                 }
-            }).catch(err => {
-                console.error('[DEBUG][google-signin] error ensuring user record:', err);
-            }).finally(() => { window.__signupInFlight = false; });
-        }).catch(err => {
-            console.error('[DEBUG][google-signin] signInWithPopup error:', err);
-            alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
-            window.__signupInFlight = false;
-        }).finally(() => {
-            window.__signupInFlight = false;
-        });
+                // Avoid duplicate DB creation from onAuthStateChanged
+                try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
+                // Ensure a users/<uid> record exists (do not overwrite existing)
+                return db.ref('users/' + user.uid).once('value').then(snap => {
+                    const val = snap.val();
+                    if (!val) {
+                        // If the user explicitly chose signup mode and provided a name, prefer that
+                        const nameInputEl = document.getElementById('name-input');
+                        let preferredName = user.displayName || (user.email ? user.email.split('@')[0] : 'Instructor');
+                        if (authMode === 'signup' && nameInputEl && nameInputEl.value && nameInputEl.value.trim()) {
+                            preferredName = nameInputEl.value.trim();
+                        }
+                        return db.ref('users/' + user.uid).set({
+                            email: user.email,
+                            name: preferredName,
+                            approved: false,
+                            role: 'instructor'
+                        }).then(() => {
+                            console.log('[DEBUG][google-signin] users/<uid> created', { uid: user.uid, ts: Date.now() });
+                            // For signup flow, show pending approval
+                            if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                                // Notify admin of new signup (DB fallback will be used if webhook fails)
+                                sendAdminNotification('signup_notification', {
+                                    email: user.email,
+                                    adminEmail: ADMIN_EMAIL,
+                                    instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
+                                }).catch(() => {});
+                            }
+                            showPendingApproval();
+                        });
+                    } else {
+                        // If already approved, let auth.onAuthStateChanged handle showing main content
+                        if (val.approved) {
+                            showMainContent();
+                        } else {
+                            showPendingApproval();
+                        }
+                    }
+                });
+            })
+            .catch(err => {
+                console.error('[DEBUG][google-signin] error:', err);
+                alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
+            })
+            .finally(() => {
+                window.__signupInFlight = false;
+            });
     });
 }
 
