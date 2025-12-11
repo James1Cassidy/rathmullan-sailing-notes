@@ -866,6 +866,9 @@ window.revokeAdmin = function (uid) {
         if (!isAdmin) {
             return alert('Your account does not have admin access.');
         }
+        if (!currentUserCanGrant) {
+            return alert('You do not have permission to revoke admin privileges. Only admins with "make admin" privilege can revoke admins.');
+        }
         if (!confirm('Revoke admin privileges for this user? This will remove both database flags and custom claims.')) return;
 
         try {

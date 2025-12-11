@@ -15,7 +15,7 @@
             ".write": "auth.token.admin === true || root.child('users').child(auth.uid).child('isAdmin').val() === true"
             },
             "role": {
-            ".write": "auth.token.admin === true || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+            ".write": "auth.token.canGrantAdmin === true || root.child('users').child(auth.uid).child('canGrantAdmin').val() === true"
             }
         }
         },
