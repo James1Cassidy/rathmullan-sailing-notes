@@ -140,5 +140,63 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Handle notification clicks: focus existing tab or open a new one
-// Notification click handler removed (no push notifications)
+// ======== PUSH NOTIFICATION HANDLERS ========
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+    console.log('[SW-Push] Push event received');
+    const options = {
+        icon: '/images/logo.png',
+        badge: '/images/logo.png',
+        requireInteraction: true,
+        actions: [
+            { action: 'open', title: 'Open' },
+            { action: 'close', title: 'Close' }
+        ]
+    };
+    
+    if (event.data) {
+        try {
+            const payload = event.data.json();
+            console.log('[SW-Push] Payload:', payload);
+            options.title = payload.notification?.title || 'Sailing School';
+            options.body = payload.notification?.body || 'New message';
+            options.data = payload.data || {};
+        } catch (e) {
+            options.title = 'Sailing School';
+            options.body = event.data.text();
+        }
+    }
+    
+    event.waitUntil(
+        self.registration.showNotification(options.title, {
+            body: options.body,
+            icon: options.icon,
+            badge: options.badge,
+            requireInteraction: options.requireInteraction,
+            data: options.data,
+            actions: options.actions,
+            tag: options.data?.type || 'default'
+        }).catch(err => console.error('[SW-Push] showNotification failed:', err))
+    );
+});
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+    console.log('[SW-NotifClick] Action:', event.action, 'Notification:', event.notification.title);
+    event.notification.close();
+    
+    if (event.action === 'close') return;
+    
+    // Focus existing window or open new one
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            for (let client of clientList) {
+                if (client.url === '/' || client.url.includes('instructors.html')) {
+                    return client.focus();
+                }
+            }
+            return clients.openWindow('/instructors.html');
+        }).catch(err => console.error('[SW-NotifClick] Failed:', err))
+    );
+});

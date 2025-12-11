@@ -4554,3 +4554,73 @@ window.windChartSliderChange = function(value) {
         } catch (e) { console.error('windChartSliderChange error', e); }
     }
 };
+
+// ======== NOTIFICATION FUNCTIONS ========
+
+// Show a browser notification (Notification API)
+function showNotification(title, options = {}) {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return Promise.reject('No permission');
+    return new Notification(title, {
+        icon: '/images/logo.png',
+        badge: '/images/logo.png',
+        ...options
+    });
+}
+
+// Register device for push notifications via Firebase Messaging
+async function registerForPush() {
+    if (!messaging || !auth.currentUser) {
+        console.warn('[Push] Messaging or user not available');
+        return;
+    }
+    try {
+        const token = await messaging.getToken({
+            vapidKey: 'BPUS6ZvQdWg8bLQ_N2_YvtVqfXkPuHplV4JvQcS5RrB9zy_s6v_R_zSQSN77TY7oVVtjzRvUiqlpHfPjhqXs0AM'
+        });
+        if (token) {
+            console.log('[Push] Device token obtained:', token.substring(0, 20) + '...');
+            // Store token in Firebase
+            await db.ref('users/' + auth.currentUser.uid + '/pushToken').set(token);
+            console.log('[Push] Token stored in database');
+        }
+    } catch (error) {
+        console.error('[Push] Registration failed:', error);
+    }
+}
+
+// Handle incoming FCM messages when the app is in foreground
+if (messaging) {
+    messaging.onMessage((payload) => {
+        console.log('[FCM] Message received in foreground:', payload);
+        const { notification, data } = payload;
+        if (notification && window.notificationPrefs?.enabled) {
+            showNotification(notification.title || 'Sailing School', {
+                body: notification.body || '',
+                tag: data?.type || 'message',
+                requireInteraction: data?.type === 'urgent'
+            }).catch(e => console.warn('[FCM] Notification show failed:', e));
+        }
+    });
+}
+
+// Handle foreground message arrival for real-time updates
+if (messaging) {
+    messaging.onBackgroundMessage?.((payload) => {
+        console.log('[FCM] Background message:', payload);
+        // This runs automatically in the service worker - no manual handling needed
+    });
+}
+
+// Listen for notification clicks in service worker (if available)
+if ('serviceWorker' in navigator && messaging) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'notification-click') {
+            const data = event.data.data || {};
+            console.log('[SW] Notification clicked:', data);
+            // You can handle notification clicks here (e.g., navigate to specific page)
+            if (data.targetUrl) {
+                window.location.href = data.targetUrl;
+            }
+        }
+    });
+}
