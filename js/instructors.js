@@ -1011,19 +1011,24 @@ if (googleSignInBtn) {
 }
 
 // Handle redirect result for new Google sign-ups only
-firebase.auth().getRedirectResult().then(result => {
-    if (!result || !result.user) return;
+auth.getRedirectResult().then(result => {
+    console.log('[DEBUG][google-redirect] getRedirectResult called', result);
+    
+    if (!result || !result.user) {
+        console.log('[DEBUG][google-redirect] No redirect result');
+        return;
+    }
     
     const user = result.user;
-    console.log('[DEBUG][google-redirect] User returned from Google sign-in', user.email);
+    console.log('[DEBUG][google-redirect] User returned from Google sign-in', user.email, user.uid);
     
     // Just mark this as a recent signup so the auth listener knows it's a new Google user
     // The auth listener will handle everything else (checking approved status, creating record, etc)
     try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
+    window.__signupInFlight = false;
 }).catch(err => {
-    if (err.code !== 'auth/popup-closed-by-user') {
-        console.error('[DEBUG][google-signin] getRedirectResult error:', err);
-    }
+    console.error('[DEBUG][google-signin] getRedirectResult error:', err);
+    window.__signupInFlight = false;
 });
 
 // --- Weekly Planning Logic ---
