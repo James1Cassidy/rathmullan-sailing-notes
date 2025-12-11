@@ -4829,13 +4829,19 @@ function printStudentSkills() {
 
 // Email the report card via Google Apps Script (free, uses Gmail)
 function emailReportCard() {
+    console.log('emailReportCard called');
     const levelSelect = document.getElementById('notes-level-select');
     const studentSelect = document.getElementById('notes-student-select');
-    if (!levelSelect || !studentSelect) return;
+    if (!levelSelect || !studentSelect) {
+        alert('Could not find level or student select elements');
+        return;
+    }
 
     const levelKey = levelSelect.value;
     const studentId = studentSelect.value;
     const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+
+    console.log('Selected:', levelKey, studentId, studentName);
 
     const recipient = prompt('Enter parent/student email address:');
     if (!recipient || !/^\S+@\S+\.\S+$/.test(recipient.trim())) {
@@ -4843,8 +4849,10 @@ function emailReportCard() {
         return;
     }
 
+    console.log('Building report card HTML...');
     buildReportCardHtml(levelKey, studentId, studentName)
         .then(reportHtml => {
+            console.log('Report card HTML built, sending...');
             // Use Google Apps Script to send email (free, no Blaze plan needed)
             const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbwV-dJfWHuPgdzpPS3GilqNDbYhwlzLQGot8n3bwwWkleOPS5Zet6dMAXiX2j-gaxNv_g/exec';
 
@@ -4860,17 +4868,24 @@ function emailReportCard() {
                 }
             };
 
+            console.log('Fetching with payload:', payload);
             // Send via Apps Script Web App
             return fetch(appsScriptUrl, {
                 method: 'POST',
                 body: JSON.stringify(payload),
-                headers: { 'Content-Type': 'application/json' },
-                mode: 'no-cors'
+                headers: { 'Content-Type': 'application/json' }
             });
         })
         .then(res => {
-            // Apps Script with no-cors mode doesn't give us response data, so just assume success
-            alert('Report card sent to ' + recipient + '. Check your email shortly.');
+            console.log('Response status:', res.status);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error from server'));
+            }
         })
         .catch(err => {
             console.error('Error sending report card:', err);
