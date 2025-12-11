@@ -4531,9 +4531,26 @@ function generateMasterReport() {
         'advanced': 'Advanced Boat Handling'
     };
 
+    // Fetch both students and their skill assessments
     Promise.all(levels.map(level => {
-        return db.ref(studentKey(level)).once('value').then(snap => {
-            return { level, students: snap.val() || [] };
+        return Promise.all([
+            db.ref(studentKey(level)).once('value'),
+            db.ref(`studentNotes/${level}`).once('value')
+        ]).then(([studentsSnap, notesSnap]) => {
+            const students = studentsSnap.val() || [];
+            const notes = notesSnap.val() || {};
+
+            // Merge skill assessments into student data
+            const studentsWithSkills = students.map(student => {
+                const studentNotes = notes[student.id] || {};
+                const skillsChecklist = studentNotes.skillsChecklist || {};
+                return {
+                    ...student,
+                    skillsChecklist
+                };
+            });
+
+            return { level, students: studentsWithSkills };
         });
     })).then(results => {
         // Open new window for the report
@@ -4600,19 +4617,7 @@ function generateMasterReport() {
                     let notAssessedCount = 0;
 
                     skills.forEach(skill => {
-                        const assessment = student.skills && student.skills[skill.id] ? student.skills[skill.id] : 'not_assessed';
-                        const statusClass = assessment.replace('_', '-');
-                        const statusText = {
-                            'achieved': '✓ Achieved',
-                            'partially_achieved': '◐ Partial',
-                            'not_demonstrated': '✗ Not Yet',
-                            'not_assessed': '○ Not Assessed'
-                        }[assessment] || '○ Not Assessed';
-
-                        if (assessment === 'achieved') achievedCount++;
-                        else if (assessment === 'partially_achieved') partialCount++;
-                        else if (assessment === 'not_demonstrated') notDemonstratedCount++;
-                        else notAssessedCount++;
+                        const assessment = student.skillsChecklist && student.skillsChecklist[skill.id] ? student.skillsChecklist[skill.id] : 'not_assessed';
 
                         reportWindow.document.write(`
                             <div class="skill ${statusClass}">
