@@ -4342,7 +4342,7 @@ function loadStudentSkillsChecklist() {
             skillsData.sections.forEach((section, sectionIndex) => {
                 const sectionId = `section-${sectionIndex}`;
                 const isCollapsed = localStorage.getItem(`${levelKey}-${sectionId}-collapsed`) === 'true';
-                
+
                 html += `
                     <div class="border border-gray-300 rounded overflow-hidden bg-white">
                         <div class="bg-blue-100 border-b border-gray-300 p-3 cursor-pointer hover:bg-blue-200 transition flex items-center justify-between"
@@ -4456,10 +4456,10 @@ function loadStudentSkillsChecklist() {
 window.toggleSection = function(sectionId) {
     const section = document.getElementById(sectionId);
     const toggle = document.getElementById(`${sectionId}-toggle`);
-    
+
     if (section) {
         const isCurrentlyHidden = section.classList.contains('hidden');
-        
+
         if (isCurrentlyHidden) {
             section.classList.remove('hidden');
             if (toggle) toggle.textContent = '▼';
@@ -4573,34 +4573,110 @@ function printStudentSkills() {
         states[skillId] = btn.dataset.state || 'not_assessed';
     });
 
-    // Build HTML for print
-    let printHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Skills Checklist - ${escapeHtml(studentName)}</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; }
-                h2 { color: #16a34a; margin-top: 20px; }
-                h3 { color: #1e40af; margin-top: 15px; background-color: #dbeafe; padding: 8px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f3f4f6; font-weight: bold; }
-                .achieved { background-color: #dcfce7; }
-                .partially { background-color: #fef3c7; }
-                .not-demonstrated { background-color: #fee2e2; }
-                .not-assessed { background-color: #dbeafe; }
-                .footer { margin-top: 30px; font-size: 12px; color: #666; }
-            </style>
-        </head>
-        <body>
-            <h1>Skills Checklist: ${escapeHtml(studentName)}</h1>
-            <p><strong>Level:</strong> ${escapeHtml(skillsData.level)}</p>
-            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+    // Fetch student notes for the report card
+    const notesPath = `studentNotes/${levelKey}/${studentId}`;
 
-            <h2>Assessment Summary</h2>
-    `;
+    db.ref(notesPath).once('value').then(notesSnap => {
+        const notesData = notesSnap.val();
+        const notes = [];
+        if (notesData) {
+            Object.keys(notesData).forEach(noteId => {
+                const note = notesData[noteId];
+                note.id = noteId;
+                notes.push(note);
+            });
+            notes.sort((a, b) => b.timestamp - a.timestamp);
+        }
+
+        // Build HTML for print
+        let printHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Skills Report Card - ${escapeHtml(studentName)}</title>
+                <style>
+                    @media print {
+                        @page { margin: 1cm; }
+                        body { margin: 0; }
+                    }
+                    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; max-width: 900px; }
+                    .header-box { border: 3px solid #1e3a8a; padding: 20px; margin-bottom: 20px; background: linear-gradient(to bottom, #f0f9ff 0%, #ffffff 100%); }
+                    h1 { color: #1e3a8a; margin: 0; font-size: 28px; }
+                    .student-info { display: flex; justify-content: space-between; margin-top: 10px; }
+                    .student-info div { font-size: 14px; }
+                    h2 { color: #16a34a; margin-top: 25px; border-bottom: 2px solid #16a34a; padding-bottom: 5px; }
+                    h3 { color: #1e40af; margin-top: 15px; background-color: #dbeafe; padding: 8px; border-left: 4px solid #1e3a8a; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
+                    th { background-color: #f3f4f6; font-weight: bold; }
+                    .achieved { background-color: #dcfce7; font-weight: 500; }
+                    .partially { background-color: #fef3c7; }
+                    .not-demonstrated { background-color: #fee2e2; }
+                    .not-assessed { background-color: #f0f9ff; }
+                    .notes-section { border: 2px solid #94a3b8; padding: 15px; margin-top: 25px; background-color: #f8fafc; page-break-inside: avoid; }
+                    .notes-section h2 { color: #475569; margin-top: 0; }
+                    .note-item { background-color: white; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                    .note-meta { color: #64748b; font-size: 11px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+                    .note-text { color: #1e293b; line-height: 1.6; font-size: 13px; }
+                    .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 11px; color: #666; text-align: center; }
+                    .summary-stats { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+                    .stat-box { padding: 10px 15px; border-radius: 4px; flex: 1; min-width: 120px; text-align: center; }
+                    .stat-label { font-size: 11px; color: #666; }
+                    .stat-value { font-size: 20px; font-weight: bold; margin-top: 5px; }
+                </style>
+            </head>
+            <body>
+                <div class="header-box">
+                    <h1>⛵ Sailing Skills Report Card</h1>
+                    <div class="student-info">
+                        <div><strong>Student:</strong> ${escapeHtml(studentName)}</div>
+                        <div><strong>Level:</strong> ${escapeHtml(skillsData.level)}</div>
+                        <div><strong>Report Date:</strong> ${new Date().toLocaleDateString('en-IE', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                    </div>
+                </div>
+
+                <h2>📊 Skills Assessment Summary</h2>
+        `;
+
+        // Calculate statistics
+        const statsCount = {
+            achieved: 0,
+            partially_achieved: 0,
+            not_demonstrated: 0,
+            not_assessed: 0,
+            total: 0
+        };
+
+        Object.values(states).forEach(state => {
+            statsCount[state]++;
+            statsCount.total++;
+        });
+
+        const achievedPercent = statsCount.total > 0 ? Math.round((statsCount.achieved / statsCount.total) * 100) : 0;
+
+        printHtml += `
+            <div class="summary-stats">
+                <div class="stat-box achieved">
+                    <div class="stat-label">Achieved</div>
+                    <div class="stat-value">${statsCount.achieved}</div>
+                </div>
+                <div class="stat-box partially">
+                    <div class="stat-label">Partially Achieved</div>
+                    <div class="stat-value">${statsCount.partially_achieved}</div>
+                </div>
+                <div class="stat-box not-demonstrated">
+                    <div class="stat-label">Not Demonstrated</div>
+                    <div class="stat-value">${statsCount.not_demonstrated}</div>
+                </div>
+                <div class="stat-box not-assessed">
+                    <div class="stat-label">Not Yet Assessed</div>
+                    <div class="stat-value">${statsCount.not_assessed}</div>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 16px; margin-top: 15px;">
+                <strong>Overall Progress: ${achievedPercent}%</strong> (${statsCount.achieved}/${statsCount.total} skills achieved)
+            </p>
+        `;
 
     // Check if this level has sections or flat competencies
     if (skillsData.sections && Array.isArray(skillsData.sections)) {
@@ -4661,17 +4737,62 @@ function printStudentSkills() {
         printHtml += `</table>`;
     }
 
+    // Add instructor notes section
+    if (notes.length > 0) {
+        printHtml += `
+            <div class="notes-section">
+                <h2>📝 Instructor Comments & Notes</h2>
+        `;
+
+        notes.forEach(note => {
+            const noteDate = new Date(note.timestamp).toLocaleDateString('en-IE', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const editedTag = note.editedAt ? ' <em>(edited)</em>' : '';
+
+            printHtml += `
+                <div class="note-item">
+                    <div class="note-meta">
+                        <span><strong>${escapeHtml(note.author || 'Instructor')}</strong></span>
+                        <span>${noteDate}${editedTag}</span>
+                    </div>
+                    <div class="note-text">${escapeHtml(note.text)}</div>
+                </div>
+            `;
+        });
+
+        printHtml += `
+            </div>
+        `;
+    } else {
+        printHtml += `
+            <div class="notes-section">
+                <h2>📝 Instructor Comments & Notes</h2>
+                <p style="color: #64748b; font-style: italic;">No instructor notes recorded yet.</p>
+            </div>
+        `;
+    }
+
     printHtml += `
             <div class="footer">
                 <p>Generated by Rathmullan Sailing School Instructor System</p>
+                <p>© ${new Date().getFullYear()} Rathmullan Sailing School</p>
             </div>
         </body>
         </html>
     `;
 
-    printWindow.document.write(printHtml);
-    printWindow.document.close();
-    printWindow.print();
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+        printWindow.print();
+    }).catch(err => {
+        console.error('Error loading notes for print:', err);
+        alert('Error loading notes for report card: ' + err.message);
+    });
 }
 
 window.cycleSkillState = window.cycleSkillState || cycleSkillState;
