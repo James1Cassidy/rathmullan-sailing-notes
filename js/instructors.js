@@ -33,6 +33,177 @@ try {
     console.warn('Firebase Messaging init warning:', e.message);
 }
 
+// --- SAILING SKILLS CHECKLIST DATA ---
+// Competencies organized by level (from SBSS Joe Soap Sheets)
+const SAILING_SKILLS = {
+    'taste-of-sailing': {
+        level: 'Taste of Sailing',
+        competencies: [
+            { id: 'tos-1', skill: 'Identify wind direction (windward side, wind indicators)' },
+            { id: 'tos-2', skill: 'Steer a boat using the tiller' },
+            { id: 'tos-3', skill: 'Trim sails (sheet in/out) for beam reach' },
+            { id: 'tos-4', skill: 'Understand luffing and "in irons" position' },
+            { id: 'tos-5', skill: 'Perform basic tacking manoeuvre' },
+            { id: 'tos-6', skill: 'Balance the boat through body weight (hiking)' },
+            { id: 'tos-7', skill: 'Operate daggerboard/centreboard and rudder' },
+            { id: 'tos-8', skill: 'Stay with boat in capsize event' },
+            { id: 'tos-9', skill: 'Wear Personal Flotation Device (PFD)' }
+        ]
+    },
+    'start-sailing': {
+        level: 'Start Sailing',
+        competencies: [
+            { id: 'ss-1', skill: 'Select appropriate clothing for water conditions' },
+            { id: 'ss-2', skill: 'Distinguish between Buoyancy Aid (50N) and Lifejacket (100N+)' },
+            { id: 'ss-3', skill: 'Tie Figure-of-Eight knot' },
+            { id: 'ss-4', skill: 'Tie Round Turn and Two Half Hitches' },
+            { id: 'ss-5', skill: 'Secure rope using Cam Cleat, Horned Cleat, Jam Cleat' },
+            { id: 'ss-6', skill: 'Coil and throw lines' },
+            { id: 'ss-7', skill: 'Push/pull boat safely on trolley' },
+            { id: 'ss-8', skill: 'Lift heavy components safely with others' },
+            { id: 'ss-9', skill: 'Launch boat considering wind and water depth' },
+            { id: 'ss-10', skill: 'Recover boat onto trolley' },
+            { id: 'ss-11', skill: 'Paddle/row in straight line' },
+            { id: 'ss-12', skill: 'Spend equal time as helm and crew' },
+            { id: 'ss-13', skill: 'Stop boat using "in irons" technique' },
+            { id: 'ss-14', skill: 'Get out of irons and get underway' },
+            { id: 'ss-15', skill: 'Sail across the wind (beam reach) with speed control' },
+            { id: 'ss-16', skill: 'Sail close to wind without luffing (close-hauled)' },
+            { id: 'ss-17', skill: 'Maintain constant course on reaches' },
+            { id: 'ss-18', skill: 'Sail downwind with constant course' },
+            { id: 'ss-19', skill: 'Avoid unintended tacks and gybes' },
+            { id: 'ss-20', skill: 'Tack smoothly with coordinated helm/crew movement' },
+            { id: 'ss-21', skill: 'Maintain boat speed through tacks' },
+            { id: 'ss-22', skill: 'Gybe with boom control' },
+            { id: 'ss-23', skill: 'Use tiller extension correctly' },
+            { id: 'ss-24', skill: 'Communicate intentions clearly' },
+            { id: 'ss-25', skill: 'Describe points of sailing (close-hauled, beam reach, broad reach, run)' },
+            { id: 'ss-26', skill: 'Understand right-of-way rules (different tacks, same tack, port/starboard)' },
+            { id: 'ss-27', skill: 'Identify tidal patterns and current effects' },
+            { id: 'ss-28', skill: 'Use sailing terminology accurately' },
+            { id: 'ss-29', skill: 'Describe how often tides occur (twice daily)' },
+            { id: 'ss-30', skill: 'Identify onshore vs offshore wind effects' }
+        ]
+    },
+    'basic-skills': {
+        level: 'Basic Skills',
+        competencies: [
+            { id: 'bs-1', skill: 'Equip boat with safety gear (PFD, bailing device, painter)' },
+            { id: 'bs-2', skill: 'Check integrity of hull, buoyancy, rigging, spars, foils' },
+            { id: 'bs-3', skill: 'Rig boat independently' },
+            { id: 'bs-4', skill: 'Make appropriate sail decisions based on wind' },
+            { id: 'bs-5', skill: 'Decide when to reef' },
+            { id: 'bs-6', skill: 'Identify effect of outhaul in different wind strengths' },
+            { id: 'bs-7', skill: 'Rig slab or roll reef on trolley' },
+            { id: 'bs-8', skill: 'Tie Bowline knot' },
+            { id: 'bs-9', skill: 'Tie Clove Hitch knot' },
+            { id: 'bs-10', skill: 'Understand knot characteristics and applications' },
+            { id: 'bs-11', skill: 'Paddle and come alongside a target' },
+            { id: 'bs-12', skill: 'Precise stopping at chosen location' },
+            { id: 'bs-13', skill: 'Control speed (accelerate/decelerate)' },
+            { id: 'bs-14', skill: 'Maintain Course Made Good (desired direction)' },
+            { id: 'bs-15', skill: 'Optimize sail trim' },
+            { id: 'bs-16', skill: 'Keep boat flat using weight (boat balance)' },
+            { id: 'bs-17', skill: 'Control fore-aft weight distribution (boat trim)' },
+            { id: 'bs-18', skill: 'Adjust daggerboard/centreboard for conditions' },
+            { id: 'bs-19', skill: 'Reach across wind efficiently' },
+            { id: 'bs-20', skill: 'Sail upwind zig-zagging against wind' },
+            { id: 'bs-21', skill: 'Sail downwind' },
+            { id: 'bs-22', skill: 'Tack and gybe effortlessly and controlled' },
+            { id: 'bs-23', skill: 'Heave to (stop with steerage)' },
+            { id: 'bs-24', skill: 'Sail under jib only' },
+            { id: 'bs-25', skill: 'Land on beach/slipway in various wind conditions' },
+            { id: 'bs-26', skill: 'Pick up and leave mooring buoy' },
+            { id: 'bs-27', skill: 'Come alongside pier/pontoon (head to wind & not head to wind)' },
+            { id: 'bs-28', skill: 'Recover man overboard safely' },
+            { id: 'bs-29', skill: 'Right boat using scoop method (capsize recovery)' },
+            { id: 'bs-30', skill: 'Describe how sails work (lift generation like airplane wing)' },
+            { id: 'bs-31', skill: 'Describe centreboard/daggerboard function and adjustment' },
+            { id: 'bs-32', skill: 'Tell if risk of collision exists (bearing/range indicators)' },
+            { id: 'bs-33', skill: 'Describe Rules of the Road for various sailing situations' },
+            { id: 'bs-34', skill: 'Identify high and low tide times from local tide tables' },
+            { id: 'bs-35', skill: 'Estimate tidal stream rate and direction' },
+            { id: 'bs-36', skill: 'Describe effect of tidal stream on boat' },
+            { id: 'bs-37', skill: 'Measure wind speed in knots, Kph, Beaufort scale' },
+            { id: 'bs-38', skill: 'Describe wind effects on sailing (light/medium/strong winds)' },
+            { id: 'bs-39', skill: 'Understand wind direction implications (onshore/offshore)' },
+            { id: 'bs-40', skill: 'Describe effects of visibility and precipitation' }
+        ]
+    },
+    'improving-skills': {
+        level: 'Improving Skills',
+        competencies: [
+            { id: 'is-1', skill: 'Rig boat independently and optimized for conditions' },
+            { id: 'is-2', skill: 'Adjust mast rake, boom vang, halyard/sheet leads, foil settings' },
+            { id: 'is-3', skill: 'De-rig boat systematically' },
+            { id: 'is-4', skill: 'Care for sails (wash, dry, fold, stow)' },
+            { id: 'is-5', skill: 'Care for hull (wash, bail, dry, fit covers)' },
+            { id: 'is-6', skill: 'Check for damage and secure equipment' },
+            { id: 'is-7', skill: 'Use sail telltales to indicate optimal airflow' },
+            { id: 'is-8', skill: 'Use outhaul for sail flattening/fullness' },
+            { id: 'is-9', skill: 'Use kicker/vang for leech tension control' },
+            { id: 'is-10', skill: 'Adjust halyard tension for luff shape' },
+            { id: 'is-11', skill: 'Use cunningham/downhaul to move draft forward' },
+            { id: 'is-12', skill: 'Adjust jib sheeting angles for optimal shape' },
+            { id: 'is-13', skill: 'Use main sheet traveller for boom positioning' },
+            { id: 'is-14', skill: 'Use boat and rig controls across light, medium, and moderate wind conditions' },
+            { id: 'is-15', skill: 'Optimize on all points of sailing' },
+            { id: 'is-16', skill: 'Apply tuning controls continuously' },
+            { id: 'is-17', skill: 'Tack effectively in all wind conditions' },
+            { id: 'is-18', skill: 'Gybe effectively in all wind conditions' },
+            { id: 'is-19', skill: 'Perform basic roll tack in light wind' },
+            { id: 'is-20', skill: 'Perform basic roll gybe in light wind' },
+            { id: 'is-21', skill: 'Pick up mooring in moderate conditions with little assistance' },
+            { id: 'is-22', skill: 'Approach and come alongside pier/pontoon with little assistance' },
+            { id: 'is-23', skill: 'Leave piers/pontoons safely' },
+            { id: 'is-24', skill: 'Sail under jib only in moderate conditions' },
+            { id: 'is-25', skill: 'Describe principles of rudderless sailing' },
+            { id: 'is-26', skill: 'Sail beam reach without rudder' },
+            { id: 'is-27', skill: 'Sail backwards for short distances' },
+            { id: 'is-28', skill: 'Consistently recover man overboard in moderate conditions' },
+            { id: 'is-29', skill: 'Continuously apply The 5 Essentials intuitively' },
+            { id: 'is-30', skill: 'Calculate best VMG (Velocity Made Good) on upwind/downwind legs' },
+            { id: 'is-31', skill: 'Set boat up for specific wind strength and water conditions' },
+            { id: 'is-32', skill: 'Sail efficiently upwind (best pointing and speed)' },
+            { id: 'is-33', skill: 'Sail efficiently downwind (maximize power and drive)' },
+            { id: 'is-34', skill: 'Sail efficiently on reaches (maximize speed)' },
+            { id: 'is-35', skill: 'Demonstrate maximum hiking leverage' },
+            { id: 'is-36', skill: 'Demonstrate optimum sheeting on all points' },
+            { id: 'is-37', skill: 'Apply precise mainsheet and jib sheet trim' },
+            { id: 'is-38', skill: 'Get centreboard/daggerboard down if retracted (capsize recovery)' },
+            { id: 'is-39', skill: 'Break vacuum formed under hull (capsize recovery)' },
+            { id: 'is-40', skill: 'Describe wind speed implications (light, medium, moderate to strong winds)' }
+        ]
+    },
+    'advanced': {
+        level: 'Advanced Boat Handling',
+        competencies: [
+            { id: 'adv-1', skill: 'Full rigging of any boat type (dinghy, keelboat, catamaran)' },
+            { id: 'adv-2', skill: 'Demonstrate all prerequisite knots and splices' },
+            { id: 'adv-3', skill: 'Understand spreader adjustments (length and angle effects)' },
+            { id: 'adv-4', skill: 'Use mast ram/chocks for pre-bending' },
+            { id: 'adv-5', skill: 'Dynamic on-water adjustments and continuous optimization' },
+            { id: 'adv-6', skill: 'Apply understanding of how sails and foils work together' },
+            { id: 'adv-7', skill: 'Understand slot effect (jib-mainsail interaction)' },
+            { id: 'adv-8', skill: 'Understand helm and weather helm management' },
+            { id: 'adv-9', skill: 'Execute confident manoeuvres in strong winds' },
+            { id: 'adv-10', skill: 'Controlled tacks and gybes in challenging conditions' },
+            { id: 'adv-11', skill: 'Optimized sail setup for performance' },
+            { id: 'adv-12', skill: 'Extract maximum speed and efficiency' },
+            { id: 'adv-13', skill: 'Apply continuous interplay of theory, precise control, physical technique' },
+            { id: 'adv-14', skill: 'Respond to emergency situations with confidence in strong winds' }
+        ]
+    }
+};
+
+// Assessment states for skills
+const SKILL_ASSESSMENT_STATES = {
+    'not_assessed': 'Not Yet Assessed',
+    'not_demonstrated': 'Not Demonstrated',
+    'partially_achieved': 'Partially Achieved',
+    'achieved': 'Achieved'
+};
+
 // --- Auth State Listener (handles user login/logout) ---
 auth.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -3708,6 +3879,7 @@ function loadStudentNotes() {
     const levelSelect = document.getElementById('notes-level-select');
     const studentSelect = document.getElementById('notes-student-select');
     const display = document.getElementById('student-notes-display');
+    const skillsDisplay = document.getElementById('student-skills-display');
     const nameEl = document.getElementById('notes-student-name');
     const historyEl = document.getElementById('notes-history');
 
@@ -3722,8 +3894,20 @@ function loadStudentNotes() {
         return;
     }
 
+    // Show both notes and skills displays, and switch to notes tab
     display.classList.remove('hidden');
+    skillsDisplay?.classList.add('hidden');
     nameEl.textContent = `Notes for: ${studentName}`;
+
+    // Activate notes tab styling
+    const notesBtn = document.getElementById('tab-notes-btn');
+    const skillsBtn = document.getElementById('tab-skills-btn');
+    if (notesBtn && skillsBtn) {
+        notesBtn.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+        notesBtn.classList.remove('border-transparent', 'text-gray-600');
+        skillsBtn.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+        skillsBtn.classList.add('border-transparent', 'text-gray-600');
+    }
 
     const studentPath = `studentNotes/${level}/${studentId}`;
     Promise.all([
@@ -3733,9 +3917,9 @@ function loadStudentNotes() {
         historyEl.innerHTML = '';
         const notes = [];
 
-        // Collect direct children notes (skip the 'notes' container itself)
+        // Collect direct children notes (skip the 'notes' container itself and skillsChecklist)
         rootSnap.forEach(child => {
-            if (child.key === 'notes') return;
+            if (child.key === 'notes' || child.key === 'skillsChecklist') return;
             const val = child.val();
             if (val && typeof val === 'object' && (val.text || val.timestamp)) {
                 notes.push({ id: child.key, __path: `${studentPath}/${child.key}`, ...val });
@@ -3823,6 +4007,299 @@ function saveStudentNote() {
 
 window.loadStudentNotes = loadStudentNotes;
 window.saveStudentNote = saveStudentNote;
+
+// --- SKILLS CHECKLIST FUNCTIONS ---
+function switchStudentTab(tab) {
+    const notesDisplay = document.getElementById('student-notes-display');
+    const skillsDisplay = document.getElementById('student-skills-display');
+    const notesBtn = document.getElementById('tab-notes-btn');
+    const skillsBtn = document.getElementById('tab-skills-btn');
+
+    if (tab === 'notes') {
+        notesDisplay?.classList.remove('hidden');
+        skillsDisplay?.classList.add('hidden');
+        notesBtn?.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+        skillsBtn?.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+        skillsBtn?.classList.add('border-transparent', 'text-gray-600');
+    } else if (tab === 'skills') {
+        notesDisplay?.classList.add('hidden');
+        skillsDisplay?.classList.remove('hidden');
+        notesBtn?.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+        notesBtn?.classList.add('border-transparent', 'text-gray-600');
+        skillsBtn?.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+        skillsBtn?.classList.remove('border-transparent', 'text-gray-600');
+        // Load skills when switching to this tab
+        loadStudentSkillsChecklist();
+    }
+}
+
+function loadStudentSkillsChecklist() {
+    const levelSelect = document.getElementById('notes-level-select');
+    const studentSelect = document.getElementById('notes-student-select');
+    const skillsDisplay = document.getElementById('student-skills-display');
+    const nameEl = document.getElementById('skills-student-name');
+    const checklistContainer = document.getElementById('skills-checklist-container');
+
+    if (!levelSelect || !studentSelect || !skillsDisplay || !nameEl || !checklistContainer) return;
+
+    const level = levelSelect.value;
+    const studentId = studentSelect.value;
+    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+
+    if (!level || !studentId) {
+        alert('Please select level and student');
+        return;
+    }
+
+    // Get the skills for this level
+    const levelKey = level; // use the level code directly (e.g., 'taste-of-sailing')
+    const skillsData = SAILING_SKILLS[levelKey];
+
+    if (!skillsData) {
+        checklistContainer.innerHTML = '<p class="text-red-600">Skills data not found for this level</p>';
+        return;
+    }
+
+    skillsDisplay.classList.remove('hidden');
+    nameEl.textContent = `Skills Checklist for ${studentName} - ${skillsData.level}`;
+
+    // Fetch existing assessment data from database
+    const skillsPath = `studentNotes/${level}/${studentId}/skillsChecklist`;
+    db.ref(skillsPath).once('value').then(snap => {
+        const assessments = snap.val() || {};
+
+        // Build the checklist HTML
+        let html = '';
+        skillsData.competencies.forEach(competency => {
+            const skillId = competency.id;
+            const currentState = assessments[skillId] || 'not_assessed';
+            const displayState = SKILL_ASSESSMENT_STATES[currentState] || 'Not Yet Assessed';
+
+            // State indicators with emoji
+            const stateEmojis = {
+                'not_assessed': '🔵',
+                'not_demonstrated': '❌',
+                'partially_achieved': '⚠️',
+                'achieved': '✅'
+            };
+
+            const emoji = stateEmojis[currentState] || '🔵';
+
+            html += `
+                <div class="border border-gray-200 rounded p-3 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-grow">
+                            <p class="text-sm font-medium text-gray-800">${escapeHtml(competency.skill)}</p>
+                            <p class="text-xs text-gray-500 mt-1">ID: ${skillId}</p>
+                        </div>
+                        <button onclick="cycleSkillState('${levelKey}', '${studentId}', '${skillId}')"
+                            class="px-3 py-1 rounded font-semibold text-sm whitespace-nowrap cursor-pointer transition hover:shadow-md"
+                            id="skill-btn-${skillId}"
+                            data-state="${currentState}"
+                            data-skill-id="${skillId}">
+                            ${emoji} ${displayState}
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        checklistContainer.innerHTML = html;
+
+        // Apply color styling to buttons
+        skillsData.competencies.forEach(competency => {
+            const skillId = competency.id;
+            const btn = document.getElementById(`skill-btn-${skillId}`);
+            if (btn) {
+                const state = btn.dataset.state;
+                btn.classList.remove('bg-blue-100', 'text-blue-700', 'bg-red-100', 'text-red-700', 'bg-yellow-100', 'text-yellow-700', 'bg-green-100', 'text-green-700');
+
+                if (state === 'not_assessed') {
+                    btn.classList.add('bg-blue-100', 'text-blue-700');
+                } else if (state === 'not_demonstrated') {
+                    btn.classList.add('bg-red-100', 'text-red-700');
+                } else if (state === 'partially_achieved') {
+                    btn.classList.add('bg-yellow-100', 'text-yellow-700');
+                } else if (state === 'achieved') {
+                    btn.classList.add('bg-green-100', 'text-green-700');
+                }
+            }
+        });
+    }).catch(err => {
+        console.error('Error loading skills checklist:', err);
+        checklistContainer.innerHTML = `<p class="text-red-600">Error loading checklist: ${err.message}</p>`;
+    });
+}
+
+// Cycle through assessment states for a skill
+window.cycleSkillState = function(levelKey, studentId, skillId) {
+    const btn = document.getElementById(`skill-btn-${skillId}`);
+    if (!btn) return;
+
+    const currentState = btn.dataset.state || 'not_assessed';
+
+    // Cycle: not_assessed → not_demonstrated → partially_achieved → achieved → not_assessed
+    const stateOrder = ['not_assessed', 'not_demonstrated', 'partially_achieved', 'achieved'];
+    const currentIndex = stateOrder.indexOf(currentState);
+    const nextIndex = (currentIndex + 1) % stateOrder.length;
+    const nextState = stateOrder[nextIndex];
+
+    // Update button display
+    const displayState = SKILL_ASSESSMENT_STATES[nextState];
+    const stateEmojis = {
+        'not_assessed': '🔵',
+        'not_demonstrated': '❌',
+        'partially_achieved': '⚠️',
+        'achieved': '✅'
+    };
+
+    btn.textContent = `${stateEmojis[nextState]} ${displayState}`;
+    btn.dataset.state = nextState;
+
+    // Update button colors
+    btn.classList.remove('bg-blue-100', 'text-blue-700', 'bg-red-100', 'text-red-700', 'bg-yellow-100', 'text-yellow-700', 'bg-green-100', 'text-green-700');
+    if (nextState === 'not_assessed') {
+        btn.classList.add('bg-blue-100', 'text-blue-700');
+    } else if (nextState === 'not_demonstrated') {
+        btn.classList.add('bg-red-100', 'text-red-700');
+    } else if (nextState === 'partially_achieved') {
+        btn.classList.add('bg-yellow-100', 'text-yellow-700');
+    } else if (nextState === 'achieved') {
+        btn.classList.add('bg-green-100', 'text-green-700');
+    }
+};
+
+function saveStudentSkills() {
+    const levelSelect = document.getElementById('notes-level-select');
+    const studentSelect = document.getElementById('notes-student-select');
+    const checklistContainer = document.getElementById('skills-checklist-container');
+
+    if (!levelSelect || !studentSelect || !checklistContainer) return;
+
+    const level = levelSelect.value;
+    const studentId = studentSelect.value;
+
+    if (!level || !studentId) {
+        alert('Please select level and student');
+        return;
+    }
+
+    // Collect all current skill states from the buttons
+    const skillsData = {};
+    const buttons = checklistContainer.querySelectorAll('button[id^="skill-btn-"]');
+    buttons.forEach(btn => {
+        const skillId = btn.dataset.skillId;
+        const state = btn.dataset.state || 'not_assessed';
+        if (skillId) {
+            skillsData[skillId] = state;
+        }
+    });
+
+    // Save to database
+    const skillsPath = `studentNotes/${level}/${studentId}/skillsChecklist`;
+    db.ref(skillsPath).set(skillsData).then(() => {
+        alert('Skills progress saved!');
+    }).catch(err => {
+        alert('Error saving skills: ' + err.message);
+    });
+}
+
+function printStudentSkills() {
+    const levelSelect = document.getElementById('notes-level-select');
+    const studentSelect = document.getElementById('notes-student-select');
+    const checklistContainer = document.getElementById('skills-checklist-container');
+
+    if (!levelSelect || !studentSelect || !checklistContainer) return;
+
+    const level = levelSelect.value;
+    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+    const levelKey = level;
+    const skillsData = SAILING_SKILLS[levelKey];
+
+    if (!skillsData) {
+        alert('Skills data not found');
+        return;
+    }
+
+    // Create a new window for printing
+    const printWindow = window.open('', '', 'height=600,width=800');
+
+    // Collect current states from buttons
+    const states = {};
+    const buttons = checklistContainer.querySelectorAll('button[id^="skill-btn-"]');
+    buttons.forEach(btn => {
+        const skillId = btn.dataset.skillId;
+        states[skillId] = btn.dataset.state || 'not_assessed';
+    });
+
+    // Build HTML for print
+    let printHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Skills Checklist - ${escapeHtml(studentName)}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; }
+                h2 { color: #16a34a; margin-top: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f3f4f6; font-weight: bold; }
+                .achieved { background-color: #dcfce7; }
+                .partially { background-color: #fef3c7; }
+                .not-demonstrated { background-color: #fee2e2; }
+                .not-assessed { background-color: #dbeafe; }
+                .footer { margin-top: 30px; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <h1>Skills Checklist: ${escapeHtml(studentName)}</h1>
+            <p><strong>Level:</strong> ${escapeHtml(skillsData.level)}</p>
+            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+
+            <h2>Assessment Summary</h2>
+            <table>
+                <tr>
+                    <th>Skill</th>
+                    <th>Assessment State</th>
+                </tr>
+    `;
+
+    skillsData.competencies.forEach(competency => {
+        const skillId = competency.id;
+        const state = states[skillId] || 'not_assessed';
+        const displayState = SKILL_ASSESSMENT_STATES[state];
+        const rowClass = state === 'achieved' ? 'achieved' :
+                        state === 'partially_achieved' ? 'partially' :
+                        state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
+
+        printHtml += `
+            <tr class="${rowClass}">
+                <td>${escapeHtml(competency.skill)}</td>
+                <td><strong>${displayState}</strong></td>
+            </tr>
+        `;
+    });
+
+    printHtml += `
+            </table>
+            <div class="footer">
+                <p>Generated by Rathmullan Sailing School Instructor System</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+window.cycleSkillState = window.cycleSkillState || cycleSkillState;
+window.switchStudentTab = switchStudentTab;
+window.loadStudentSkillsChecklist = loadStudentSkillsChecklist;
+window.saveStudentSkills = saveStudentSkills;
+window.printStudentSkills = printStudentSkills;
 
 // Edit a student note at absolute DB path
 window.editStudentNoteAtPath = function (notePath) {

@@ -154,7 +154,7 @@ self.addEventListener('push', (event) => {
             { action: 'close', title: 'Close' }
         ]
     };
-    
+
     if (event.data) {
         try {
             const payload = event.data.json();
@@ -167,7 +167,7 @@ self.addEventListener('push', (event) => {
             options.body = event.data.text();
         }
     }
-    
+
     event.waitUntil(
         self.registration.showNotification(options.title, {
             body: options.body,
@@ -185,9 +185,9 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     console.log('[SW-NotifClick] Action:', event.action, 'Notification:', event.notification.title);
     event.notification.close();
-    
+
     if (event.action === 'close') return;
-    
+
     // Focus existing window or open new one
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
