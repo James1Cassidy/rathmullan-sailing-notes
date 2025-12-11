@@ -865,7 +865,18 @@ function ensureLoginInteractivity() {
                 }
                 if (authMode === 'login') {
                     auth.signInWithEmailAndPassword(email, password).catch(error => {
-                        authError.textContent = error.message;
+                        // Provide user-friendly error messages
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
+                            authError.textContent = 'No account found with this email. Please sign up to create an account.';
+                        } else if (error.code === 'auth/wrong-password') {
+                            authError.textContent = 'Incorrect password. Please try again.';
+                        } else if (error.code === 'auth/invalid-email') {
+                            authError.textContent = 'Invalid email address format.';
+                        } else if (error.code === 'auth/too-many-requests') {
+                            authError.textContent = 'Too many failed login attempts. Please try again later.';
+                        } else {
+                            authError.textContent = error.message;
+                        }
                         authError.classList.remove('hidden');
                     });
                 } else {
@@ -1555,7 +1566,18 @@ if (loginForm) {
         }
         if (authMode === 'login') {
             auth.signInWithEmailAndPassword(email, password).catch(error => {
-                authError.textContent = error.message;
+                // Provide user-friendly error messages
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
+                    authError.textContent = 'No account found with this email. Please sign up to create an account.';
+                } else if (error.code === 'auth/wrong-password') {
+                    authError.textContent = 'Incorrect password. Please try again.';
+                } else if (error.code === 'auth/invalid-email') {
+                    authError.textContent = 'Invalid email address format.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    authError.textContent = 'Too many failed login attempts. Please try again later.';
+                } else {
+                    authError.textContent = error.message;
+                }
                 authError.classList.remove('hidden');
             });
         } else { // signup
@@ -2199,6 +2221,18 @@ function clearBoats() {
         return null;
     }).catch(err => console.error('Error clearing boats from Firebase:', err))
         .finally(() => {
+            // Move all boat elements back to available-boats-zone before reloading
+            const availableBoatsZone = document.getElementById('available-boats-zone');
+            if (availableBoatsZone) {
+                const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
+                // Find all boat elements in dropzones and move them back
+                document.querySelectorAll('.dropzone .boat').forEach(boat => {
+                    boat.style.left = '';
+                    boat.style.top = '';
+                    boat.style.position = '';
+                    flexWrap.appendChild(boat);
+                });
+            }
             // Reload boats from Firebase which will reset them to available-boats-zone
             loadBoatsFromFirebase();
         });
@@ -4484,6 +4518,148 @@ function saveStudentNote() {
 
 window.loadStudentNotes = loadStudentNotes;
 window.saveStudentNote = saveStudentNote;
+
+// Generate Master Report of all students and their completions
+function generateMasterReport() {
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills', 'advanced'];
+    const levelNames = {
+        'cara-na-mara': 'Cara na Mara',
+        'taste-of-sailing': 'Taste of Sailing',
+        'start-sailing': 'Start Sailing',
+        'basic-skills': 'Basic Skills',
+        'improving-skills': 'Improving Skills',
+        'advanced': 'Advanced Boat Handling'
+    };
+
+    Promise.all(levels.map(level => {
+        return db.ref(studentKey(level)).once('value').then(snap => {
+            return { level, students: snap.val() || [] };
+        });
+    })).then(results => {
+        // Open new window for the report
+        const reportWindow = window.open('', '_blank');
+        reportWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Master Student Progress Report</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+                    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    h1 { color: #1e40af; border-bottom: 3px solid #1e40af; padding-bottom: 10px; }
+                    h2 { color: #2563eb; margin-top: 30px; background: #eff6ff; padding: 10px; border-left: 4px solid #2563eb; }
+                    .student { margin: 15px 0; padding: 15px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #93c5fd; }
+                    .student-name { font-weight: bold; color: #1e40af; font-size: 1.1em; margin-bottom: 8px; }
+                    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; margin-top: 10px; }
+                    .skill { padding: 6px 10px; border-radius: 4px; font-size: 0.9em; }
+                    .achieved { background: #dcfce7; color: #166534; border-left: 3px solid #22c55e; }
+                    .partially { background: #fef3c7; color: #92400e; border-left: 3px solid #fbbf24; }
+                    .not-demonstrated { background: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; }
+                    .not-assessed { background: #e5e7eb; color: #4b5563; border-left: 3px solid #9ca3af; }
+                    .summary { background: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+                    .summary-stat { display: inline-block; margin-right: 20px; font-weight: bold; }
+                    .no-students { color: #6b7280; font-style: italic; padding: 10px; }
+                    @media print {
+                        body { background: white; }
+                        .container { box-shadow: none; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>📊 Master Student Progress Report</h1>
+                    <div class="summary">
+                        <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
+                        <strong>Total Students:</strong> ${results.reduce((sum, r) => sum + r.students.length, 0)}
+                    </div>
+        `);
+
+        results.forEach(({ level, students }) => {
+            reportWindow.document.write(`<h2>${levelNames[level]} (${students.length} student${students.length !== 1 ? 's' : ''})</h2>`);
+
+            if (students.length === 0) {
+                reportWindow.document.write(`<div class="no-students">No students in this level</div>`);
+                return;
+            }
+
+            students.forEach(student => {
+                reportWindow.document.write(`<div class="student">`);
+                reportWindow.document.write(`<div class="student-name">${student.name || 'Unknown'}</div>`);
+
+                // Get skill assessments for this student
+                const studentLevelKey = level.replace(/-/g, '_');
+                const skills = SAILING_SKILLS[studentLevelKey] || [];
+
+                if (skills.length > 0) {
+                    reportWindow.document.write(`<div class="skills-grid">`);
+
+                    let achievedCount = 0;
+                    let partialCount = 0;
+                    let notDemonstratedCount = 0;
+                    let notAssessedCount = 0;
+
+                    skills.forEach(skill => {
+                        const assessment = student.skills && student.skills[skill.id] ? student.skills[skill.id] : 'not_assessed';
+                        const statusClass = assessment.replace('_', '-');
+                        const statusText = {
+                            'achieved': '✓ Achieved',
+                            'partially_achieved': '◐ Partial',
+                            'not_demonstrated': '✗ Not Yet',
+                            'not_assessed': '○ Not Assessed'
+                        }[assessment] || '○ Not Assessed';
+
+                        if (assessment === 'achieved') achievedCount++;
+                        else if (assessment === 'partially_achieved') partialCount++;
+                        else if (assessment === 'not_demonstrated') notDemonstratedCount++;
+                        else notAssessedCount++;
+
+                        reportWindow.document.write(`
+                            <div class="skill ${statusClass}">
+                                <strong>${statusText}:</strong> ${skill.skill}
+                            </div>
+                        `);
+                    });
+
+                    reportWindow.document.write(`</div>`);
+
+                    // Add summary stats for this student
+                    const totalSkills = skills.length;
+                    const progressPercent = totalSkills > 0 ? Math.round((achievedCount / totalSkills) * 100) : 0;
+                    reportWindow.document.write(`
+                        <div style="margin-top: 10px; padding: 8px; background: white; border-radius: 4px; font-size: 0.9em;">
+                            <span class="summary-stat" style="color: #22c55e;">✓ ${achievedCount}</span>
+                            <span class="summary-stat" style="color: #fbbf24;">◐ ${partialCount}</span>
+                            <span class="summary-stat" style="color: #ef4444;">✗ ${notDemonstratedCount}</span>
+                            <span class="summary-stat" style="color: #9ca3af;">○ ${notAssessedCount}</span>
+                            <span style="color: #1e40af; font-weight: bold;">| Progress: ${progressPercent}%</span>
+                        </div>
+                    `);
+                } else {
+                    reportWindow.document.write(`<div class="no-students">No skills defined for this level</div>`);
+                }
+
+                reportWindow.document.write(`</div>`);
+            });
+        });
+
+        reportWindow.document.write(`
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button onclick="window.print()" style="background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: bold;">Print Report</button>
+                        <button onclick="window.close()" style="background: #6b7280; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; margin-left: 10px;">Close</button>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        reportWindow.document.close();
+    }).catch(err => {
+        console.error('Error generating master report:', err);
+        alert('Error generating report: ' + err.message);
+    });
+}
+
+window.generateMasterReport = generateMasterReport;
 
 // Edit a student note
 window.editStudentNote = function(notePath, currentText, buttonElement) {
