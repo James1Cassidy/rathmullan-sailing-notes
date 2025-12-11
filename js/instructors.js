@@ -4895,6 +4895,217 @@ window.saveStudentSkills = saveStudentSkills;
 window.printStudentSkills = printStudentSkills;
 window.emailReportCard = emailReportCard;
 
+// --- CURRENT SESSION FUNCTIONS ---
+let sessionSelectedSkills = []; // Array of {id, name} objects
+
+function loadSessionStudents() {
+    const levelSelect = document.getElementById('session-level-select');
+    const level = levelSelect.value;
+    const skillsList = document.getElementById('session-skills-list');
+
+    if (!level) {
+        skillsList.innerHTML = '<p class="text-gray-500 text-sm">Select a level first</p>';
+        document.getElementById('session-students-list').innerHTML = '<p class="text-gray-500 text-sm">Select level and skills to begin</p>';
+        return;
+    }
+
+    // Load skills for this level
+    const skillsData = SAILING_SKILLS[level];
+    if (!skillsData) {
+        skillsList.innerHTML = '<p class="text-red-600 text-sm">Skills data not found</p>';
+        return;
+    }
+
+    // Build skills list with checkboxes
+    let html = '';
+    if (skillsData.sections && Array.isArray(skillsData.sections)) {
+        skillsData.sections.forEach(section => {
+            section.competencies.forEach(skill => {
+                const skillId = skill.id || skill.name.toLowerCase().replace(/\s+/g, '-');
+                html += `
+                    <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
+                        <input type="checkbox" class="session-skill-checkbox"
+                            data-skill-id="${skillId}"
+                            data-skill-name="${skill.name}"
+                            onchange="updateSessionSelectedSkills()">
+                        <span class="ml-2 text-sm text-gray-700">${skill.name}</span>
+                    </label>
+                `;
+            });
+        });
+    } else if (skillsData.competencies) {
+        skillsData.competencies.forEach(skill => {
+            const skillId = skill.id || skill.name.toLowerCase().replace(/\s+/g, '-');
+            html += `
+                <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
+                    <input type="checkbox" class="session-skill-checkbox"
+                        data-skill-id="${skillId}"
+                        data-skill-name="${skill.name}"
+                        onchange="updateSessionSelectedSkills()">
+                    <span class="ml-2 text-sm text-gray-700">${skill.name}</span>
+                </label>
+            `;
+        });
+    }
+
+    skillsList.innerHTML = html || '<p class="text-gray-500 text-sm">No skills found</p>';
+
+    // Load students for this level
+    loadSessionStudents();
+}
+
+function updateSessionSelectedSkills() {
+    const checkboxes = document.querySelectorAll('.session-skill-checkbox:checked');
+    sessionSelectedSkills = Array.from(checkboxes).map(cb => ({
+        id: cb.dataset.skillId,
+        name: cb.dataset.skillName
+    }));
+
+    // Update display
+    const display = document.getElementById('session-selected-skills');
+    if (sessionSelectedSkills.length === 0) {
+        display.innerHTML = '<p class="text-gray-500">None selected yet</p>';
+    } else {
+        display.innerHTML = sessionSelectedSkills.map(skill =>
+            `<div class="flex justify-between items-center bg-purple-100 p-2 rounded">
+                <span>${skill.name}</span>
+                <button onclick="removeSessionSkill('${skill.id}')" class="text-red-600 hover:text-red-800 text-sm">✕</button>
+            </div>`
+        ).join('');
+    }
+
+    // Reload students list
+    loadSessionStudentsList();
+}
+
+function removeSessionSkill(skillId) {
+    const checkbox = document.querySelector(`input[data-skill-id="${skillId}"]`);
+    if (checkbox) {
+        checkbox.checked = false;
+        updateSessionSelectedSkills();
+    }
+}
+
+function filterSessionSkills() {
+    const searchInput = document.getElementById('session-skill-search');
+    const query = searchInput.value.toLowerCase();
+    const checkboxes = document.querySelectorAll('.session-skill-checkbox');
+
+    checkboxes.forEach(cb => {
+        const label = cb.parentElement;
+        const skillName = cb.dataset.skillName.toLowerCase();
+        label.style.display = skillName.includes(query) ? 'flex' : 'none';
+    });
+}
+
+function loadSessionStudentsList() {
+    const levelSelect = document.getElementById('session-level-select');
+    const level = levelSelect.value;
+    const studentsList = document.getElementById('session-students-list');
+
+    if (!level || sessionSelectedSkills.length === 0) {
+        studentsList.innerHTML = '<p class="text-gray-500 text-sm">Select level and skills to begin</p>';
+        return;
+    }
+
+    db.ref('students/' + level).once('value').then(snap => {
+        const students = snap.val() || [];
+
+        if (students.length === 0) {
+            studentsList.innerHTML = '<p class="text-gray-500 text-sm">No students in this level</p>';
+            return;
+        }
+
+        // Fetch existing skill assessments for all students
+        db.ref(`studentNotes/${level}`).once('value').then(notesSnap => {
+            const notesData = notesSnap.val() || {};
+
+            let html = '';
+            students.forEach((student, idx) => {
+                const studentId = student.id || `student-${idx}`;
+                const studentName = student.name || student;
+                const existingChecklist = (notesData[studentId] && notesData[studentId].skillsChecklist) || {};
+
+                html += `
+                    <div class="bg-gray-50 border border-gray-200 rounded p-3 mb-2">
+                        <div class="font-semibold text-gray-800 mb-2">${escapeHtml(studentName)}</div>
+                        <div class="space-y-1">
+                `;
+
+                sessionSelectedSkills.forEach(skill => {
+                    const currentState = existingChecklist[skill.id] || 'not_assessed';
+                    const stateEmojis = {
+                        'not_assessed': '🔵',
+                        'not_demonstrated': '❌',
+                        'partially_achieved': '⚠️',
+                        'achieved': '✅'
+                    };
+
+                    html += `
+                        <label class="flex items-center cursor-pointer hover:bg-white p-1 rounded">
+                            <input type="checkbox" class="session-student-skill"
+                                data-level="${level}"
+                                data-student-id="${studentId}"
+                                data-skill-id="${skill.id}"
+                                data-current-state="${currentState}"
+                                ${currentState === 'achieved' ? 'checked' : ''}>
+                            <span class="ml-2 text-sm text-gray-700">
+                                <span class="mr-2">${stateEmojis[currentState]}</span>
+                                ${skill.name}
+                            </span>
+                        </label>
+                    `;
+                });
+
+                html += '</div></div>';
+            });
+
+            studentsList.innerHTML = html;
+        });
+    });
+}
+
+function saveSessionAssessments() {
+    const checkboxes = document.querySelectorAll('.session-student-skill:checked');
+
+    if (checkboxes.length === 0) {
+        alert('No students/skills selected');
+        return;
+    }
+
+    const updates = {};
+    checkboxes.forEach(cb => {
+        const level = cb.dataset.level;
+        const studentId = cb.dataset.studentId;
+        const skillId = cb.dataset.skillId;
+        const path = `studentNotes/${level}/${studentId}/skillsChecklist/${skillId}`;
+        updates[path] = 'achieved';
+    });
+
+    db.ref().update(updates).then(() => {
+        alert(`✅ Saved ${checkboxes.length} skill assessment(s) for this session!`);
+        loadSessionStudentsList(); // Refresh to show updated states
+    }).catch(err => {
+        alert('Error saving assessments: ' + err.message);
+    });
+}
+
+function clearSessionForm() {
+    document.getElementById('session-level-select').value = '';
+    document.getElementById('session-skill-search').value = '';
+    sessionSelectedSkills = [];
+    document.getElementById('session-skills-list').innerHTML = '<p class="text-gray-500 text-sm">Select a level first</p>';
+    document.getElementById('session-students-list').innerHTML = '<p class="text-gray-500 text-sm">Select level and skills to begin</p>';
+    document.getElementById('session-selected-skills').innerHTML = '<p class="text-gray-500">None selected yet</p>';
+}
+
+window.loadSessionStudents = loadSessionStudents;
+window.updateSessionSelectedSkills = updateSessionSelectedSkills;
+window.removeSessionSkill = removeSessionSkill;
+window.filterSessionSkills = filterSessionSkills;
+window.saveSessionAssessments = saveSessionAssessments;
+window.clearSessionForm = clearSessionForm;
+
 // Edit a student note at absolute DB path
 window.editStudentNoteAtPath = function (notePath) {
     const noteRef = db.ref(notePath);
