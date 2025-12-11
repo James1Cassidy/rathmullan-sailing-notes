@@ -4854,7 +4854,7 @@ function emailReportCard() {
         .then(reportHtml => {
             console.log('Report card HTML built, sending...');
             // Use Google Apps Script to send email (free, no Blaze plan needed)
-            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbwV-dJfWHuPgdzpPS3GilqNDbYhwlzLQGot8n3bwwWkleOPS5Zet6dMAXiX2j-gaxNv_g/exec';
+            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbxP5XpLshqbGReDyo9PN9WKbcL8B1XZmQJ9KEBGfH82jWv339hSe_maI4slAgMMzc04ng/exec';
 
             const payload = {
                 type: 'report_card_email',
