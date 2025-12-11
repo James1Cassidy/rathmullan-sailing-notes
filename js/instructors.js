@@ -4883,6 +4883,8 @@ function emailReportCard() {
         })
         .then(data => {
             console.log('Response data:', data);
+            if (data && data.ok) {
+                alert('Report card sent to ' + recipient + '. Check your email shortly.');
             } else {
                 alert('Error: ' + (data.error || 'Unknown error from server'));
             }
