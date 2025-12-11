@@ -1006,62 +1006,24 @@ if (googleSignInBtn) {
         firebase.auth().signInWithRedirect(provider).catch(err => {
             console.error('[DEBUG][google-signin] signInWithRedirect error:', err);
             alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
-            window.__signupInFlight = false;
         });
     });
 }
 
-// Handle redirect result
+// Handle redirect result for new Google sign-ups only
 firebase.auth().getRedirectResult().then(result => {
     if (!result || !result.user) return;
-
+    
     const user = result.user;
-    window.__signupInFlight = true;
+    console.log('[DEBUG][google-redirect] User returned from Google sign-in', user.email);
+    
+    // Just mark this as a recent signup so the auth listener knows it's a new Google user
+    // The auth listener will handle everything else (checking approved status, creating record, etc)
     try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
-
-    db.ref('users/' + user.uid).once('value').then(snap => {
-        const val = snap.val();
-        if (!val) {
-            const nameInputEl = document.getElementById('name-input');
-            let preferredName = user.displayName || (user.email ? user.email.split('@')[0] : 'Instructor');
-            if (authMode === 'signup' && nameInputEl && nameInputEl.value && nameInputEl.value.trim()) {
-                preferredName = nameInputEl.value.trim();
-            }
-            db.ref('users/' + user.uid).set({
-                email: user.email,
-                name: preferredName,
-                approved: false,
-                role: 'instructor'
-            }).then(() => {
-                console.log('[DEBUG][google-signin] user record created');
-                if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                    sendAdminNotification('signup_notification', {
-                        email: user.email,
-                        adminEmail: ADMIN_EMAIL,
-                        instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
-                    }).catch(() => {});
-                }
-                showPendingApproval();
-                window.__signupInFlight = false;
-            }).catch(err => {
-                console.error('[DEBUG][google-signin] error creating user record:', err);
-                window.__signupInFlight = false;
-            });
-        } else {
-            if (val.approved) {
-                showMainContent();
-            } else {
-                showPendingApproval();
-            }
-            window.__signupInFlight = false;
-        }
-    }).catch(err => {
-        console.error('[DEBUG][google-signin] error reading user record:', err);
-        window.__signupInFlight = false;
-    });
 }).catch(err => {
-    console.error('[DEBUG][google-signin] getRedirectResult error:', err);
-    window.__signupInFlight = false;
+    if (err.code !== 'auth/popup-closed-by-user') {
+        console.error('[DEBUG][google-signin] getRedirectResult error:', err);
+    }
 });
 
 // --- Weekly Planning Logic ---
