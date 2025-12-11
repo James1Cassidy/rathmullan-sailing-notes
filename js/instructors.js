@@ -1110,6 +1110,15 @@ document.addEventListener('DOMContentLoaded', () => {
         showLogin();
         ensureLoginInteractivity();
     }
+
+    // Enable horizontal scrolling on quick navigation when mouse is over it
+    const navScrollContainer = document.getElementById('nav-scroll-container');
+    if (navScrollContainer) {
+        navScrollContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            navScrollContainer.scrollLeft += e.deltaY;
+        }, { passive: false });
+    }
 });
 
 auth.onAuthStateChanged(user => {
