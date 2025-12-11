@@ -1847,6 +1847,30 @@ function progressStudent(fromLevel, toLevel, studentId, studentName) {
 
 window.progressStudent = progressStudent;
 
+function toggleRatiosTable() {
+    const content = document.getElementById('ratios-table-content');
+    const icon = document.getElementById('ratios-toggle-icon');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+
+    function toggleWeeklyPlanning() {
+        const content = document.getElementById('weekly-planning-content');
+        const icon = document.getElementById('weekly-planning-toggle-icon');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.textContent = '▲';
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▼';
+        }
+    }
+    }
+}
+
 function toggleResourcesSection() {
     const content = document.getElementById('resources-content');
     const icon = document.getElementById('resources-toggle-icon');
@@ -1859,6 +1883,8 @@ function toggleResourcesSection() {
     }
 }
 
+window.toggleRatiosTable = toggleRatiosTable;
+window.toggleWeeklyPlanning = toggleWeeklyPlanning;
 window.toggleResourcesSection = toggleResourcesSection;
 
 function removeStudent(level, studentId) {

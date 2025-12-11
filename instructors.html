@@ -420,6 +420,7 @@
             </div>
             <div class="mt-4 text-xs opacity-75 text-center">Weather updates every 30 minutes • <span
                     id="offline-indicator" class="hidden">📡 Offline Mode Active</span></div>
+            </div>
         </section>
 
         <!-- Instructor Availability Calendar -->
@@ -598,13 +599,12 @@
             <p class="text-lg text-gray-700 text-center mb-6">Drag and drop instructors, assistants, and boats into the
                 appropriate levels below or back to the available section.</p>
             <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-6">
-                <h4 class="text-xl font-bold text-blue-700 mb-4 text-center">Irish Sailing Teaching Ratios </h4>
+                <div class="flex items-center justify-between cursor-pointer mb-4" onclick="toggleRatiosTable()">
+                    <h4 class="text-xl font-bold text-blue-700">Irish Sailing Teaching Ratios</h4>
+                    <span id="ratios-toggle-icon" class="text-2xl text-blue-700 transition-transform duration-300">▼</span>
+                </div>
 
-
-
-
-
-                <div class="overflow-x-auto">
+                <div id="ratios-table-content" class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden shadow-lg">
                         <thead class="bg-blue-700">
                             <tr>
@@ -737,6 +737,7 @@
 
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
 
@@ -1127,8 +1128,11 @@
         <!-- Weekly Planning Section -->
         <section id="weekly-planning"
             class="container mx-auto px-4 py-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 rounded-2xl shadow-xl mt-12 border border-blue-200 scroll-mt-24">
-            <h3 class="text-3xl font-extrabold text-blue-800 mb-6 text-center tracking-tight drop-shadow">Weekly
-                Planning</h3>
+            <div class="flex items-center justify-between cursor-pointer mb-6" onclick="toggleWeeklyPlanning()">
+                <h3 class="text-3xl font-extrabold text-blue-800 tracking-tight drop-shadow">Weekly Planning</h3>
+                <span id="weekly-planning-toggle-icon" class="text-3xl text-blue-800 transition-transform duration-300">▼</span>
+            </div>
+            <div id="weekly-planning-content">
             <p class="text-lg text-gray-700 text-center mb-10">Plan and organize activities for each level. Drag
                 activities between timeslots. <span class="font-semibold text-blue-700">Tap/click a tile to edit or
                     delete.</span></p>
