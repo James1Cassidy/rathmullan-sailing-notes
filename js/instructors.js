@@ -4921,28 +4921,30 @@ function loadSessionStudents() {
     if (skillsData.sections && Array.isArray(skillsData.sections)) {
         skillsData.sections.forEach(section => {
             section.competencies.forEach(skill => {
-                const skillId = skill.id || skill.name.toLowerCase().replace(/\s+/g, '-');
+                const skillId = skill.id || skill.skill.toLowerCase().replace(/\s+/g, '-');
+                const skillName = skill.skill || skill.name || 'Unknown skill';
                 html += `
                     <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
                         <input type="checkbox" class="session-skill-checkbox"
                             data-skill-id="${skillId}"
-                            data-skill-name="${skill.name}"
+                            data-skill-name="${escapeHtml(skillName)}"
                             onchange="updateSessionSelectedSkills()">
-                        <span class="ml-2 text-sm text-gray-700">${skill.name}</span>
+                        <span class="ml-2 text-sm text-gray-700">${escapeHtml(skillName)}</span>
                     </label>
                 `;
             });
         });
     } else if (skillsData.competencies) {
         skillsData.competencies.forEach(skill => {
-            const skillId = skill.id || skill.name.toLowerCase().replace(/\s+/g, '-');
+            const skillId = skill.id || skill.skill.toLowerCase().replace(/\s+/g, '-');
+            const skillName = skill.skill || skill.name || 'Unknown skill';
             html += `
                 <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
                     <input type="checkbox" class="session-skill-checkbox"
                         data-skill-id="${skillId}"
-                        data-skill-name="${skill.name}"
+                        data-skill-name="${escapeHtml(skillName)}"
                         onchange="updateSessionSelectedSkills()">
-                    <span class="ml-2 text-sm text-gray-700">${skill.name}</span>
+                    <span class="ml-2 text-sm text-gray-700">${escapeHtml(skillName)}</span>
                 </label>
             `;
         });
@@ -4950,28 +4952,34 @@ function loadSessionStudents() {
 
     skillsList.innerHTML = html || '<p class="text-gray-500 text-sm">No skills found</p>';
 
+
     // Load students for this level
-    loadSessionStudents();
+    loadSessionStudentsList();
 }
 
 function updateSessionSelectedSkills() {
     const checkboxes = document.querySelectorAll('.session-skill-checkbox:checked');
+    const selectedContainer = document.getElementById('session-selected-skills');
+
     sessionSelectedSkills = Array.from(checkboxes).map(cb => ({
         id: cb.dataset.skillId,
-        name: cb.dataset.skillName
+        skillName: cb.dataset.skillName
     }));
 
-    // Update display
-    const display = document.getElementById('session-selected-skills');
     if (sessionSelectedSkills.length === 0) {
-        display.innerHTML = '<p class="text-gray-500">None selected yet</p>';
+        selectedContainer.innerHTML = '<p class="text-gray-500 text-sm">No skills selected</p>';
     } else {
-        display.innerHTML = sessionSelectedSkills.map(skill =>
-            `<div class="flex justify-between items-center bg-purple-100 p-2 rounded">
-                <span>${skill.name}</span>
-                <button onclick="removeSessionSkill('${skill.id}')" class="text-red-600 hover:text-red-800 text-sm">✕</button>
-            </div>`
-        ).join('');
+        let html = '<div class="space-y-1">';
+        sessionSelectedSkills.forEach(skill => {
+            html += `
+                <div class="flex items-center justify-between bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
+                    <span>${escapeHtml(skill.skillName)}</span>
+                    <button onclick="removeSessionSkill('${skill.id}')" class="ml-2 hover:text-red-600">×</button>
+                </div>
+            `;
+        });
+        html += '</div>';
+        selectedContainer.innerHTML = html;
     }
 
     // Reload students list
@@ -5051,7 +5059,7 @@ function loadSessionStudentsList() {
                                 ${currentState === 'achieved' ? 'checked' : ''}>
                             <span class="ml-2 text-sm text-gray-700">
                                 <span class="mr-2">${stateEmojis[currentState]}</span>
-                                ${skill.name}
+                                ${escapeHtml(skill.skillName)}
                             </span>
                         </label>
                     `;
