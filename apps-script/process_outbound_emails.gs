@@ -4,7 +4,7 @@
 
 // Configuration: change ADMIN_EMAIL if needed. You can also set an optional
 // SECRET_TOKEN in the script properties and include it in requests to restrict callers.
-const ADMIN_EMAIL = 'jamescassidylk@gmail.com';
+const ADMIN_EMAIL = 'jamescassidy.sailing@gmail.com';
 
 /**
  * Handle incoming POST requests.
@@ -185,6 +185,16 @@ function composeEmail(type, payload) {
     plainBody = (payload.message || payload.body || `Product launch notification`) + `\n\nSite: ${siteUrl}`;
     const bodyHtml = (payload.html || `<p>${escapeHtml(payload.message || '')}</p>`) + `<p style="margin-top:12px"><a href="${siteUrl}">Visit site</a></p>`;
     htmlBody = wrapHtml(subject, bodyHtml);
+    return { to, subject, plainBody, htmlBody };
+  } else if (type === 'report_card_email') {
+    // Report card email for sailing students
+    const to = payload.studentEmail || payload.parentEmail || payload.to || null;
+    const studentName = payload.studentName || 'Student';
+    const level = payload.level || 'Sailing Level';
+    subject = payload.subject || `Sailing Skills Report Card - ${studentName} (${level})`;
+    plainBody = `Sailing Skills Report Card for ${studentName}\n\nLevel: ${level}\n\nSee attached HTML version in email.\n\nSite: ${siteUrl}`;
+    // Use the pre-rendered HTML from the frontend
+    htmlBody = payload.html || `<p>Report card for ${escapeHtml(studentName)}</p>`;
     return { to, subject, plainBody, htmlBody };
   }
 

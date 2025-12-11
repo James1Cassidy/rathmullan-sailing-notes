@@ -4571,26 +4571,13 @@ function saveStudentSkills() {
     });
 }
 
-function printStudentSkills() {
-    const levelSelect = document.getElementById('notes-level-select');
-    const studentSelect = document.getElementById('notes-student-select');
+// Build report card HTML (shared by print and email)
+function buildReportCardHtml(levelKey, studentId, studentName) {
     const checklistContainer = document.getElementById('skills-checklist-container');
-
-    if (!levelSelect || !studentSelect || !checklistContainer) return;
-
-    const level = levelSelect.value;
-    const studentId = studentSelect.value;
-    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
-    const levelKey = level;
     const skillsData = SAILING_SKILLS[levelKey];
-
-    if (!skillsData) {
-        alert('Skills data not found');
-        return;
+    if (!checklistContainer || !skillsData) {
+        return Promise.reject(new Error('Missing skills data or checklist container'));
     }
-
-    // Create a new window for printing
-    const printWindow = window.open('', '', 'height=600,width=800');
 
     // Collect current states from buttons
     const states = {};
@@ -4603,7 +4590,7 @@ function printStudentSkills() {
     // Fetch student notes for the report card
     const notesPath = `studentNotes/${levelKey}/${studentId}`;
 
-    db.ref(notesPath).once('value').then(notesSnap => {
+    return db.ref(notesPath).once('value').then(notesSnap => {
         const notesData = notesSnap.val();
         const notes = [];
         if (notesData) {
@@ -4618,8 +4605,8 @@ function printStudentSkills() {
             notes.sort((a, b) => b.timestamp - a.timestamp);
         }
 
-        // Build HTML for print
-        let printHtml = `
+        // Build HTML for print/email
+        let html = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -4684,7 +4671,7 @@ function printStudentSkills() {
 
         const achievedPercent = statsCount.total > 0 ? Math.round((statsCount.achieved / statsCount.total) * 100) : 0;
 
-        printHtml += `
+        html += `
             <div class="summary-stats">
                 <div class="stat-box achieved">
                     <div class="stat-label">Achieved</div>
@@ -4708,11 +4695,37 @@ function printStudentSkills() {
             </p>
         `;
 
-    // Check if this level has sections or flat competencies
-    if (skillsData.sections && Array.isArray(skillsData.sections)) {
-        // Section-based structure
-        skillsData.sections.forEach(section => {
-            printHtml += `<h3>${escapeHtml(section.name)}</h3>
+        // Check if this level has sections or flat competencies
+        if (skillsData.sections && Array.isArray(skillsData.sections)) {
+            skillsData.sections.forEach(section => {
+                html += `<h3>${escapeHtml(section.name)}</h3>
+                    <table>
+                        <tr>
+                            <th>Skill</th>
+                            <th>Assessment State</th>
+                        </tr>
+                `;
+
+                section.competencies.forEach(competency => {
+                    const skillId = competency.id;
+                    const state = states[skillId] || 'not_assessed';
+                    const displayState = SKILL_ASSESSMENT_STATES[state];
+                    const rowClass = state === 'achieved' ? 'achieved' :
+                                    state === 'partially_achieved' ? 'partially' :
+                                    state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
+
+                    html += `
+                        <tr class="${rowClass}">
+                            <td>${escapeHtml(competency.skill)}</td>
+                            <td><strong>${displayState}</strong></td>
+                        </tr>
+                    `;
+                });
+
+                html += `</table>`;
+            });
+        } else if (skillsData.competencies && Array.isArray(skillsData.competencies)) {
+            html += `
                 <table>
                     <tr>
                         <th>Skill</th>
@@ -4720,7 +4733,7 @@ function printStudentSkills() {
                     </tr>
             `;
 
-            section.competencies.forEach(competency => {
+            skillsData.competencies.forEach(competency => {
                 const skillId = competency.id;
                 const state = states[skillId] || 'not_assessed';
                 const displayState = SKILL_ASSESSMENT_STATES[state];
@@ -4728,7 +4741,7 @@ function printStudentSkills() {
                                 state === 'partially_achieved' ? 'partially' :
                                 state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
 
-                printHtml += `
+                html += `
                     <tr class="${rowClass}">
                         <td>${escapeHtml(competency.skill)}</td>
                         <td><strong>${displayState}</strong></td>
@@ -4736,93 +4749,133 @@ function printStudentSkills() {
                 `;
             });
 
-            printHtml += `</table>`;
-        });
-    } else if (skillsData.competencies && Array.isArray(skillsData.competencies)) {
-        // Legacy flat competencies structure
-        printHtml += `
-            <table>
-                <tr>
-                    <th>Skill</th>
-                    <th>Assessment State</th>
-                </tr>
-        `;
+            html += `</table>`;
+        }
 
-        skillsData.competencies.forEach(competency => {
-            const skillId = competency.id;
-            const state = states[skillId] || 'not_assessed';
-            const displayState = SKILL_ASSESSMENT_STATES[state];
-            const rowClass = state === 'achieved' ? 'achieved' :
-                            state === 'partially_achieved' ? 'partially' :
-                            state === 'not_demonstrated' ? 'not-demonstrated' : 'not-assessed';
-
-            printHtml += `
-                <tr class="${rowClass}">
-                    <td>${escapeHtml(competency.skill)}</td>
-                    <td><strong>${displayState}</strong></td>
-                </tr>
+        // Add instructor notes section
+        if (notes.length > 0) {
+            html += `
+                <div class="notes-section">
+                    <h2>📝 Instructor Comments & Notes</h2>
             `;
-        });
 
-        printHtml += `</table>`;
-    }
+            notes.forEach(note => {
+                const noteDate = new Date(note.timestamp).toLocaleDateString('en-IE', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const editedTag = note.editedAt ? ' <em>(edited)</em>' : '';
 
-    // Add instructor notes section
-    if (notes.length > 0) {
-        printHtml += `
-            <div class="notes-section">
-                <h2>📝 Instructor Comments & Notes</h2>
-        `;
-
-        notes.forEach(note => {
-            const noteDate = new Date(note.timestamp).toLocaleDateString('en-IE', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            const editedTag = note.editedAt ? ' <em>(edited)</em>' : '';
-
-            printHtml += `
-                <div class="note-item">
-                    <div class="note-meta">
-                        <span><strong>${escapeHtml(note.author || 'Instructor')}</strong></span>
-                        <span>${noteDate}${editedTag}</span>
+                html += `
+                    <div class="note-item">
+                        <div class="note-meta">
+                            <span><strong>${escapeHtml(note.author || 'Instructor')}</strong></span>
+                            <span>${noteDate}${editedTag}</span>
+                        </div>
+                        <div class="note-text">${escapeHtml(note.text)}</div>
                     </div>
-                    <div class="note-text">${escapeHtml(note.text)}</div>
+                `;
+            });
+
+            html += `
                 </div>
             `;
-        });
+        } else {
+            html += `
+                <div class="notes-section">
+                    <h2>📝 Instructor Comments & Notes</h2>
+                    <p style="color: #64748b; font-style: italic;">No instructor notes recorded yet.</p>
+                </div>
+            `;
+        }
 
-        printHtml += `
-            </div>
+        html += `
+                <div class="footer">
+                    <p>Generated by Rathmullan Sailing School Instructor System</p>
+                    <p>© ${new Date().getFullYear()} Rathmullan Sailing School</p>
+                </div>
+            </body>
+            </html>
         `;
-    } else {
-        printHtml += `
-            <div class="notes-section">
-                <h2>📝 Instructor Comments & Notes</h2>
-                <p style="color: #64748b; font-style: italic;">No instructor notes recorded yet.</p>
-            </div>
-        `;
+
+        return html;
+    });
+}
+
+function printStudentSkills() {
+    const levelSelect = document.getElementById('notes-level-select');
+    const studentSelect = document.getElementById('notes-student-select');
+    if (!levelSelect || !studentSelect) return;
+
+    const levelKey = levelSelect.value;
+    const studentId = studentSelect.value;
+    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+
+    buildReportCardHtml(levelKey, studentId, studentName)
+        .then(printHtml => {
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write(printHtml);
+            printWindow.document.close();
+            printWindow.print();
+        })
+        .catch(err => {
+            console.error('Error loading notes for print:', err);
+            alert('Error loading notes for report card: ' + err.message);
+        });
+}
+
+// Email the report card via Google Apps Script (free, uses Gmail)
+function emailReportCard() {
+    const levelSelect = document.getElementById('notes-level-select');
+    const studentSelect = document.getElementById('notes-student-select');
+    if (!levelSelect || !studentSelect) return;
+
+    const levelKey = levelSelect.value;
+    const studentId = studentSelect.value;
+    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+
+    const recipient = prompt('Enter parent/student email address:');
+    if (!recipient || !/^\S+@\S+\.\S+$/.test(recipient.trim())) {
+        alert('Please enter a valid email address.');
+        return;
     }
 
-    printHtml += `
-            <div class="footer">
-                <p>Generated by Rathmullan Sailing School Instructor System</p>
-                <p>© ${new Date().getFullYear()} Rathmullan Sailing School</p>
-            </div>
-        </body>
-        </html>
-    `;
+    buildReportCardHtml(levelKey, studentId, studentName)
+        .then(reportHtml => {
+            // Use Google Apps Script to send email (free, no Blaze plan needed)
+            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbwV-dJfWHuPgdzpPS3GilqNDbYhwlzLQGot8n3bwwWkleOPS5Zet6dMAXiX2j-gaxNv_g/exec';
 
-        printWindow.document.write(printHtml);
-        printWindow.document.close();
-        printWindow.print();
-    }).catch(err => {
-        console.error('Error loading notes for print:', err);
-        alert('Error loading notes for report card: ' + err.message);
-    });
+            const payload = {
+                type: 'report_card_email',
+                payload: {
+                    to: recipient.trim(),
+                    studentEmail: recipient.trim(),
+                    subject: `Sailing Skills Report Card - ${studentName}`,
+                    studentName,
+                    level: SAILING_SKILLS[levelKey]?.level || levelKey,
+                    html: reportHtml
+                }
+            };
+
+            // Send via Apps Script Web App
+            return fetch(appsScriptUrl, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors'
+            });
+        })
+        .then(res => {
+            // Apps Script with no-cors mode doesn't give us response data, so just assume success
+            alert('Report card sent to ' + recipient + '. Check your email shortly.');
+        })
+        .catch(err => {
+            console.error('Error sending report card:', err);
+            alert('Failed to send report card: ' + (err.message || 'Unknown error'));
+        });
 }
 
 window.cycleSkillState = window.cycleSkillState || cycleSkillState;
@@ -4830,6 +4883,7 @@ window.switchStudentTab = switchStudentTab;
 window.loadStudentSkillsChecklist = loadStudentSkillsChecklist;
 window.saveStudentSkills = saveStudentSkills;
 window.printStudentSkills = printStudentSkills;
+window.emailReportCard = emailReportCard;
 
 // Edit a student note at absolute DB path
 window.editStudentNoteAtPath = function (notePath) {
