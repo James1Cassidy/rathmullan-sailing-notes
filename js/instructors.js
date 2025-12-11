@@ -35,7 +35,8 @@ try {
 // --- Auth State Listener (handles user login/logout) ---
 auth.onAuthStateChanged(async (user) => {
     if (!user) {
-        // User is signed out
+        // User is signed out - show login page
+        showLogin();
         return;
     }
 
@@ -455,9 +456,9 @@ function ensureLoginInteractivity() {
                             const uid = userCredential.user.uid;
                             // Mark recent signup to avoid auth.onAuthStateChanged duplicate write
                             try { sessionStorage.setItem('__recentSignupUid', uid); } catch (_) {}
-                            console.log('[DEBUG][signup] createUser resolved', { uid, email: userCredential.user.email, ts: Date.now() });
+                            console.log('[DEBUG][signup] createUser resolved', { uid: userCredential.user.uid, email: userCredential.user.email, ts: Date.now() });
                             return db.ref('users/' + uid).set({
-                                email,
+                                email: user.email,
                                 name: displayName,
                                 approved: false,
                                 role: 'instructor'
@@ -963,13 +964,23 @@ if (loginForm) {
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        auth.signOut();
+        auth.signOut().then(() => {
+            showLogin();
+        }).catch(err => {
+            console.error('Logout error:', err);
+            showLogin();
+        });
     });
 }
 
 if (pendingLogoutBtn) {
     pendingLogoutBtn.addEventListener('click', () => {
-        auth.signOut();
+        auth.signOut().then(() => {
+            showLogin();
+        }).catch(err => {
+            console.error('Logout error:', err);
+            showLogin();
+        });
     });
 }
 
@@ -1749,6 +1760,7 @@ const levelMap = {
     "improving-skills": "Improving Skills"
 };
 const draggableToLevel = {
+
     "cara-na-mara": "cara-na-mara",
     "taste-of-sailing": "taste-of-sailing",
     "start-sailing": "start-sailing",
@@ -1773,7 +1785,7 @@ function showLevelInfoModal(levelKey) {
         db.ref('students/' + levelKey).once('value')
     ]).then(([arrSnap, stuSnap]) => {
         const arrangement = arrSnap.val() || {};
-        const students = stuSnap.val() || [];
+        const students = stuSnap.val() || {};
         const zoneId = levelKey + '-zone';
         const instructorNames = []; const boatNames = [];
         Object.entries(arrangement).forEach(([dragId, val]) => {
@@ -3460,6 +3472,7 @@ function renderCalendarView(container, allAvailability) {
     html += '</div>';
 
     // Calendar grid
+
     html += '<div class="grid grid-cols-7 gap-2">';
 
     dates.forEach(({ date: dateObj, isCurrentMonth }) => {
@@ -3614,8 +3627,8 @@ function showAvailabilityPicker(dateStr) {
         const available = dayData.filter(d => d.status === 'available').map(d => d.name).sort();
         const unavailable = dayData.filter(d => d.status === 'unavailable').map(d => d.name).sort();
         let summaryHtml = '';
-        if (available.length) summaryHtml += `✅ Available (${available.length}): ${available.join(', ')}\n`;
-        if (unavailable.length) summaryHtml += `❌ Unavailable (${unavailable.length}): ${unavailable.join(', ')}`;
+        if (available.length > 0) summaryHtml += `✅ Available (${available.length}): ${available.join(', ')}\n`;
+        if (unavailable.length > 0) summaryHtml += `❌ Unavailable (${unavailable.length}): ${unavailable.join(', ')}`;
 
         const box = document.createElement('div');
         box.className = 'bg-white rounded-lg shadow-lg p-6 w-full max-w-md';
@@ -3788,8 +3801,8 @@ function loadStudentNotes() {
             const pathForAttr = (note.__path || `${studentPath}/${note.id}`).replace(/'/g, "\\'");
             const actions = canEdit ? `
                 <div class="flex gap-2">
-                    <button type="button" class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-[11px]" onclick="editStudentNoteAtPath('${pathForAttr}')">Edit</button>
-                    <button type="button" class="px-2 py-0.5 rounded bg-red-100 text-red-700 hover:bg-red-200 text-[11px]" onclick="deleteStudentNoteAtPath('${pathForAttr}')">Delete</button>
+                    <button type="button" class="px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">Edit</button>
+                    <button type="button" class="px-2 py-0.5 rounded bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">Delete</button>
                 </div>
             ` : '';
             div.innerHTML = `
@@ -4572,3 +4585,2320 @@ window.windChartSliderChange = function(value) {
         } catch (e) { console.error('windChartSliderChange error', e); }
     }
 };
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyBKwElTmL2vxEb6-pTH9B0eSxYRyV72To4",
+    authDomain: "sailingrathmullan.firebaseapp.com",
+    databaseURL: "https://sailingrathmullan-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "sailingrathmullan",
+    storageBucket: "sailingrathmullan.firebasestorage.app",
+    messagingSenderId: "677092232533",
+    appId: "1:677092232533:web:61610c76e7cfd3689db3dc",
+    measurementId: "G-5XTZ65J3TN"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+} else {
+    firebase.app(); // reuse existing app
+}
+const db = firebase.database();
+window.db = db; // Expose db globally for inline scripts
+window.firebase = firebase; // Ensure firebase is globally accessible
+const auth = firebase.auth();
+const storage = firebase.storage();
+// --- Firebase Messaging (FCM) client integration ---
+// Note: `firebase-messaging.js` is included in pages that use messaging (instructors.html).
+let messaging = null;
+try {
+    if (firebase && firebase.messaging && 'serviceWorker' in navigator) {
+        messaging = firebase.messaging();
+    }
+} catch (e) {
+    console.warn('Firebase Messaging init warning:', e.message);
+}
+
+// --- Auth State Listener (handles user login/logout) ---
+auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+        // User is signed out - show login page
+        showLogin();
+        return;
+    }
+
+    try {
+        // Detach previous user record listener
+        if (userRecordListener) {
+            try { userRecordListener.off(); } catch (_) {}
+            userRecordListener = null;
+        }
+
+        const userRef = db.ref('users/' + user.uid);
+        userRecordListener = userRef;
+
+        const handleUserSnapshot = async (snapshot) => {
+            const userData = snapshot.val();
+
+            // If user data doesn't exist (legacy users or direct firebase console creations), create pending record
+            if (!userData) {
+                let recentUid = null;
+                try { recentUid = sessionStorage.getItem('__recentSignupUid'); } catch (_) { recentUid = null; }
+                if (recentUid && recentUid === user.uid) {
+                    console.log('[DEBUG][auth.onAuthStateChanged] recent signup detected, skipping duplicate DB write', { uid: user.uid, ts: Date.now() });
+                    showPendingApproval();
+                    return;
+                }
+                console.log('[DEBUG][auth.onAuthStateChanged] creating default user record', { uid: user.uid, email: user.email, ts: Date.now() });
+                await userRef.set({ email: user.email, approved: false, role: 'instructor' });
+                showPendingApproval();
+                return;
+            }
+
+            currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Instructor');
+            userApproved = !!userData.approved;
+
+            // Refresh admin status (claims + DB + super-admin email)
+            await refreshAdminStatus();
+
+            if (userApproved) {
+                showMainContent();
+                loadWeeklyPlans();
+                initChat();
+                loadAnnouncements();
+                loadNotificationPrefs().then(() => {
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && window.notificationPrefs.enabled) {
+                        try { registerForPush().catch(e => console.warn('registerForPush failed', e)); } catch (_) {}
+                    }
+                }).catch(() => {});
+
+                // Show admin panel only if current user is admin
+                if (currentUserIsAdmin) {
+                    showAdminPanel();
+                } else {
+                    if (adminPanel) adminPanel.classList.add('hidden');
+                }
+            } else {
+                // User is NOT approved
+                showPendingApproval();
+                if (adminPanel) adminPanel.classList.add('hidden');
+            }
+        };
+
+        // Attach realtime listener to user record so approval/admin changes take effect immediately
+        userRef.on('value', handleUserSnapshot, (err) => {
+            console.error('User record listener error:', err);
+            showPendingApproval();
+        });
+    } catch (err) {
+        console.error('Auth state change error:', err);
+    }
+});
+
+function initNotificationUI() {
+    const btn = document.getElementById('enable-notifications-btn');
+    if (!btn || typeof Notification === 'undefined') return;
+
+    if (Notification.permission === 'granted') {
+        if (window.notificationPrefs.enabled) btn.classList.add('hidden');
+        else btn.classList.remove('hidden');
+    } else if (Notification.permission === 'denied') {
+        btn.textContent = 'Notifications blocked';
+        btn.disabled = true;
+        btn.classList.remove('hidden');
+    } else {
+        btn.classList.remove('hidden');
+    }
+    btn.addEventListener('click', () => {
+        Notification.requestPermission().then(p => {
+            if (p === 'granted') {
+                window.notificationPrefs.enabled = true;
+                saveNotificationPrefs();
+                applyNotificationPrefsToUI();
+                // Register with FCM (if available) to obtain and persist a push token
+                try { registerForPush().catch(e => console.warn('registerForPush failed', e)); } catch (_) {}
+                showNotification('Notifications enabled', { body: 'Urgent announcements will appear.' });
+                btn.classList.add('hidden');
+            } else if (p === 'denied') {
+                btn.textContent = 'Notifications blocked';
+            }
+        });
+    });
+}
+window.__urgentNotifiedIds = new Set();
+window.notificationPrefs = { enabled:false, urgent:true, weather:true, own:true };
+window.notificationPrefsLoaded = false;
+
+function loadNotificationPrefs() {
+    const user = auth.currentUser;
+    let fromDb = null;
+    if (user) {
+        // Attempt sync read
+        // (Realtime listener not needed; user can click save button to update)
+        return db.ref('users/' + user.uid + '/notificationPrefs').once('value').then(snap => {
+            fromDb = snap.val();
+            const localRaw = localStorage.getItem('notificationPrefs');
+            const localPrefs = localRaw ? JSON.parse(localRaw) : {};
+            const merged = { ...window.notificationPrefs, ...localPrefs, ...fromDb };
+            window.notificationPrefs = merged;
+            applyNotificationPrefsToUI();
+            window.notificationPrefsLoaded = true;
+        }).catch(() => {
+            applyNotificationPrefsToUI();
+        });
+    } else {
+        const localRaw = localStorage.getItem('notificationPrefs');
+        if (localRaw) {
+            window.notificationPrefs = { ...window.notificationPrefs, ...JSON.parse(localRaw) };
+        }
+        applyNotificationPrefsToUI();
+        return Promise.resolve();
+    }
+}
+
+function saveNotificationPrefs() {
+    const user = auth.currentUser;
+    localStorage.setItem('notificationPrefs', JSON.stringify(window.notificationPrefs));
+    if (user) {
+        db.ref('users/' + user.uid + '/notificationPrefs').set({ ...window.notificationPrefs, updated: Date.now() }).catch(e=>console.error('[Notify] Save error', e));
+    }
+    applyNotificationPrefsToUI();
+}
+
+function applyNotificationPrefsToUI() {
+    const enabledEl = document.getElementById('pref-enabled');
+    const urgentEl = document.getElementById('pref-urgent');
+    const weatherEl = document.getElementById('pref-weather');
+    const ownEl = document.getElementById('pref-own');
+    if (!enabledEl || !urgentEl || !weatherEl || !ownEl) return;
+    enabledEl.checked = !!window.notificationPrefs.enabled;
+    urgentEl.checked = !!window.notificationPrefs.urgent;
+    weatherEl.checked = !!window.notificationPrefs.weather;
+    ownEl.checked = !!window.notificationPrefs.own;
+}
+
+function initNotificationPreferencesUI() {
+    const toggleBtn = document.getElementById('toggle-prefs-btn');
+    const panel = document.getElementById('notification-preferences');
+    const saveBtn = document.getElementById('save-prefs-btn');
+    const disableAllBtn = document.getElementById('disable-all-prefs-btn');
+    const enabledEl = document.getElementById('pref-enabled');
+    const flashEl = document.getElementById('prefs-flash');
+    if (!toggleBtn || !panel) return;
+    function flash(msg) {
+        if (!flashEl) return;
+        flashEl.textContent = msg;
+        flashEl.classList.remove('hidden');
+        setTimeout(() => { flashEl.classList.add('hidden'); }, 1800);
+    }
+    toggleBtn.addEventListener('click', () => {
+        panel.classList.toggle('hidden');
+    });
+    saveBtn?.addEventListener('click', () => {
+        const urgentEl = document.getElementById('pref-urgent');
+        const weatherEl = document.getElementById('pref-weather');
+        const ownEl = document.getElementById('pref-own');
+        window.notificationPrefs.enabled = !!enabledEl.checked;
+        window.notificationPrefs.urgent = !!urgentEl.checked;
+        window.notificationPrefs.weather = !!weatherEl.checked;
+        window.notificationPrefs.own = !!ownEl.checked;
+        if (window.notificationPrefs.enabled && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission().then(p => {
+                if (p !== 'granted') { window.notificationPrefs.enabled = false; applyNotificationPrefsToUI(); flash('Permission denied'); }
+                saveNotificationPrefs();
+                flash('Preferences saved');
+            });
+        } else {
+            saveNotificationPrefs();
+            flash('Preferences saved');
+        }
+    });
+    disableAllBtn?.addEventListener('click', () => {
+        window.notificationPrefs.enabled = false;
+        window.notificationPrefs.urgent = false;
+        window.notificationPrefs.weather = false;
+        window.notificationPrefs.own = false;
+        saveNotificationPrefs();
+        applyNotificationPrefsToUI();
+        flash('All notifications disabled');
+        const enableBtn = document.getElementById('enable-notifications-btn');
+        if (enableBtn && Notification.permission === 'granted') enableBtn.classList.remove('hidden');
+    });
+}
+
+// Chat initialization guard to prevent multiple listeners
+let chatInitialized = false;
+let chatMessagesRef = null;
+
+// Apps Script webhook URL (deployed web app). Update if you deploy a new version.
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFWId3k2ySboWqDSuRkH-q7dOsUrS1AsUpXnYqHTRjGMk1503tIrGzQ0xgMczFKbQq/exec';
+
+// Send admin notification by POSTing form-encoded data to the Apps Script
+// web app. We use `application/x-www-form-urlencoded` so browsers avoid a
+// CORS preflight. The Apps Script accepts JSON or form-encoded payloads.
+async function sendAdminNotification(type, payload) {
+    if (!GOOGLE_SCRIPT_URL) {
+        console.warn('[AdminNotify] no script URL configured');
+        return false;
+    }
+
+    const bodyObj = { type, payload: payload || {} };
+    const params = new URLSearchParams();
+    params.append('type', type);
+    try {
+        params.append('payload', JSON.stringify(payload || {}));
+    } catch (_) {
+        params.append('payload', String(payload || ''));
+    }
+
+    try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        });
+
+        // Some browsers will block reading the response body cross-origin
+        // when the remote app doesn't set CORS headers. If the fetch resolves
+        // with no exception we've at least delivered the request.
+        if (res && (res.ok || res.type === 'opaque' || res.type === 'basic')) return true;
+        return false;
+    } catch (err) {
+        console.warn('[AdminNotify] webhook error', err);
+        return false;
+    }
+}
+
+// --- OFFLINE MODE & SERVICE WORKER ---
+let isOnline = navigator.onLine;
+let offlineCache = {};
+
+// Register service worker for offline support
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW registration failed:', err));
+}
+
+// Monitor online/offline status
+window.addEventListener('online', () => {
+    isOnline = true;
+    document.getElementById('offline-indicator')?.classList.add('hidden');
+});
+
+window.addEventListener('offline', () => {
+    isOnline = false;
+    document.getElementById('offline-indicator')?.classList.remove('hidden');
+});
+
+// Push notification & FCM logic removed
+const authContainer = document.getElementById('auth-container');
+const mainContent = document.getElementById('main-content');
+const pendingApproval = document.getElementById('pending-approval');
+const loginForm = document.getElementById('login-form');
+const emailInput = document.getElementById('email-input');
+const passwordInput = document.getElementById('password-input');
+const authError = document.getElementById('auth-error');
+const logoutBtn = document.getElementById('logout-btn');
+const pendingLogoutBtn = document.getElementById('pending-logout-btn');
+const adminPanel = document.getElementById('admin-panel');
+// Auth mode toggle elements
+const nameWrapper = document.getElementById('signup-name-wrapper');
+const authHeading = document.getElementById('auth-heading');
+const toggleAuthModeBtn = document.getElementById('toggle-auth-mode');
+const authSubmitBtn = document.getElementById('auth-submit-btn');
+let authMode = 'login'; // 'login' or 'signup'
+
+function setAuthMode(mode) {
+    authMode = mode;
+    if (mode === 'signup') {
+        if (nameWrapper) nameWrapper.classList.remove('hidden');
+        if (authHeading) authHeading.textContent = 'Create Account';
+        if (authSubmitBtn) authSubmitBtn.textContent = 'Create Account';
+        if (toggleAuthModeBtn) toggleAuthModeBtn.textContent = 'Already have an account? Sign in';
+    } else {
+        if (nameWrapper) nameWrapper.classList.add('hidden');
+        if (authHeading) authHeading.textContent = 'Instructor Login';
+        if (authSubmitBtn) authSubmitBtn.textContent = 'Sign In';
+        if (toggleAuthModeBtn) toggleAuthModeBtn.textContent = 'Need an account? Sign up';
+    }
+    if (authError) { authError.textContent = ''; authError.classList.add('hidden'); }
+    // Update Google button label to reflect signup vs signin
+    try {
+        const gbtn = document.getElementById('google-signin-btn');
+        if (gbtn) {
+            const span = gbtn.querySelector('span');
+            if (span) span.textContent = (mode === 'signup') ? 'Sign up with Google' : 'Sign in with Google';
+        }
+    } catch (_) {}
+}
+
+// Update Google button label when auth mode changes
+try {
+    const _origSetAuthMode = setAuthMode;
+} catch (_) {}
+
+if (toggleAuthModeBtn) {
+    toggleAuthModeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        setAuthMode(authMode === 'login' ? 'signup' : 'login');
+        if (authMode === 'signup') {
+            const nameInput = document.getElementById('name-input');
+            if (nameInput) nameInput.focus();
+        } else if (emailInput) {
+            emailInput.focus();
+        }
+    });
+}
+
+// Ensure initial state
+setAuthMode('login');
+
+// Admin Email
+const ADMIN_EMAIL = "jamescassidylk@gmail.com";
+let currentUserName = null;
+let currentUserIsAdmin = false;
+let currentUserCanGrant = false;
+// Realtime listener state flags
+let userApproved = false;
+let announcementsListenerAttached = false;
+let notificationsListenerAttached = false;
+let userRecordListener = null;
+
+async function refreshAdminStatus() {
+    const user = auth.currentUser;
+    if (!user) {
+        currentUserIsAdmin = false;
+        currentUserCanGrant = false;
+        return false;
+    }
+
+    const emailIsSuper = user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    let dbFlags = { isAdmin: false, canGrantAdmin: false };
+    try {
+        const snap = await db.ref('users/' + user.uid).once('value');
+        const val = snap.val() || {};
+        dbFlags.isAdmin = !!val.isAdmin;
+        dbFlags.canGrantAdmin = !!val.canGrantAdmin;
+    } catch (e) {
+        console.warn('refreshAdminStatus: db read failed', e);
+    }
+
+    let claimAdmin = false;
+    let claimGrant = false;
+    try {
+        const idToken = await user.getIdTokenResult(true); // force refresh to pick up claim changes
+        claimAdmin = !!(idToken.claims && idToken.claims.admin);
+        claimGrant = !!(idToken.claims && idToken.claims.canGrantAdmin);
+    } catch (e) {
+        console.warn('refreshAdminStatus: token read failed', e);
+    }
+
+    currentUserIsAdmin = emailIsSuper || claimAdmin || dbFlags.isAdmin;
+    currentUserCanGrant = emailIsSuper || claimGrant || dbFlags.canGrantAdmin;
+    return currentUserIsAdmin;
+}
+
+// --- LOGIN FALLBACK & DEFENSIVE REBIND ---
+function ensureLoginInteractivity() {
+    try {
+        const loginFormEl = document.getElementById('login-form');
+        if (!loginFormEl) return;
+        const emailEl = document.getElementById('email-input');
+        const passwordEl = document.getElementById('password-input');
+        if (emailEl) { emailEl.removeAttribute('disabled'); emailEl.style.pointerEvents = 'auto'; }
+        if (passwordEl) { passwordEl.removeAttribute('disabled'); passwordEl.style.pointerEvents = 'auto'; }
+        // Rebind submit if no listener flag present
+        if (!loginFormEl.__listenerBound) {
+            loginFormEl.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = emailEl.value.trim();
+                const password = passwordEl.value.trim();
+                if (!email || !password) {
+                    authError.textContent = 'Please enter email and password.';
+                    authError.classList.remove('hidden');
+                    return;
+                }
+                if (authMode === 'login') {
+                    auth.signInWithEmailAndPassword(email, password).catch(error => {
+                        authError.textContent = error.message;
+                        authError.classList.remove('hidden');
+                    });
+                } else {
+                    const nameInput = document.getElementById('name-input');
+                    const displayName = nameInput ? nameInput.value.trim() : '';
+                    if (!displayName) {
+                        authError.textContent = 'Please enter your name to create an account.';
+                        authError.classList.remove('hidden');
+                        return;
+                    }
+                    console.log('[DEBUG][signup][ensureLoginInteractivity] createUserWithEmailAndPassword called', { email, ts: Date.now() });
+                    if (window.__signupInFlight) {
+                        console.warn('[DEBUG][signup] signup already in progress, skipping duplicate call', { email, ts: Date.now() });
+                        authError.textContent = 'Signup already in progress. Please wait.';
+                        authError.classList.remove('hidden');
+                        return;
+                    }
+                    window.__signupInFlight = true;
+                    firebase.auth().createUserWithEmailAndPassword(email, password)
+                        .then(userCredential => {
+                            const uid = userCredential.user.uid;
+                            // Mark recent signup to avoid auth.onAuthStateChanged duplicate write
+                            try { sessionStorage.setItem('__recentSignupUid', uid); } catch (_) {}
+                            console.log('[DEBUG][signup] createUser resolved', { uid: userCredential.user.uid, email: userCredential.user.email, ts: Date.now() });
+                            return db.ref('users/' + uid).set({
+                                email,
+                                name: displayName,
+                                approved: false,
+                                role: 'instructor'
+                            }).then(() => {
+                                console.log('[DEBUG][signup] users/<uid> set (ensureLoginInteractivity)', { uid, ts: Date.now() });
+                            });
+                        })
+                        .then(() => {
+                            alert('Account created. Awaiting approval.');
+                            showPendingApproval();
+                        })
+                        .catch(error => {
+                            console.error('[DEBUG][signup] error:', error);
+                            authError.textContent = error.message;
+                            authError.classList.remove('hidden');
+                        })
+                        .finally(() => { window.__signupInFlight = false; });
+                }
+            });
+            loginFormEl.__listenerBound = true;
+        }
+        if (emailEl && !emailEl.value) emailEl.focus();
+    } catch (err) { console.error('[Auth] ensureLoginInteractivity error', err); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // If not authenticated show login & enforce interactivity
+    if (!auth.currentUser) {
+        showLogin();
+        ensureLoginInteractivity();
+    }
+});
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+
+        // Check approval status in Database
+        db.ref('users/' + user.uid).once('value').then(snapshot => {
+            const userData = snapshot.val();
+
+            // If user data doesn't exist (legacy users or direct firebase console creations), assume approved or handle gracefully
+            // For this implementation, we'll enforce the check: if no record, create one as unapproved.
+            if (!userData) {
+                // If we just created this user via the signup flow, skip creating again here.
+                let recentUid = null;
+                try { recentUid = sessionStorage.getItem('__recentSignupUid'); } catch (_) { recentUid = null; }
+                if (recentUid && recentUid === user.uid) {
+                    console.log('[DEBUG][auth.onAuthStateChanged] recent signup detected, skipping duplicate DB write', { uid: user.uid, ts: Date.now() });
+                    showPendingApproval();
+                } else {
+                    // Create default entry (instrumented for duplicate-signup debugging)
+                    console.log('[DEBUG][auth.onAuthStateChanged] creating default user record', { uid: user.uid, email: user.email, ts: Date.now() });
+                    db.ref('users/' + user.uid).set({
+                        email: user.email,
+                        approved: false,
+                        role: 'instructor'
+                    }).then(() => {
+                        console.log('[DEBUG][auth.onAuthStateChanged] users/<uid> set', { uid: user.uid, ts: Date.now() });
+                        showPendingApproval();
+                    }).catch(err => {
+                        console.error('[DEBUG][auth.onAuthStateChanged] error setting users/<uid>:', err);
+                    });
+                }
+            } else if (userData.approved) {
+                // User is approved
+                currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Instructor');
+                showMainContent();
+                loadWeeklyPlans();
+                initChat();
+
+                userApproved = true;
+                // Attach announcements listener and load notification preferences
+                loadAnnouncements();
+                loadNotificationPrefs().then(() => {
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && window.notificationPrefs.enabled) {
+                        try { registerForPush().catch(e => console.warn('registerForPush failed', e)); } catch (_) {}
+                    }
+                }).catch(() => {});
+
+                // Check if Admin via ID token claim (preferred) or fallback to email match
+                try {
+                    user.getIdTokenResult().then(idToken => {
+                        if (idToken && idToken.claims && idToken.claims.admin) {
+                            // Ensure admin sees main content and admin panel even if DB approved flag is missing
+                            currentUserName = userData && userData.name ? userData.name : (user.email ? user.email.split('@')[0] : 'Admin');
+                            showMainContent();
+                            showAdminPanel();
+                            userApproved = true;
+                        } else if (user.email === ADMIN_EMAIL) {
+                            showAdminPanel();
+                        }
+                    }).catch(err => {
+                        console.error('[Auth] getIdTokenResult error while checking admin claim:', err);
+                        if (user.email === ADMIN_EMAIL) showAdminPanel();
+                    });
+                } catch (err) {
+                    console.error('[Auth] error checking admin claim:', err);
+                    if (user.email === ADMIN_EMAIL) showAdminPanel();
+                }
+            } else {
+                // User is NOT approved
+                currentUserName = userData.name || (user.email ? user.email.split('@')[0] : 'Pending');
+                showPendingApproval();
+                userApproved = false;
+                // Still attach announcements so user can see board (read-only behavior handled by UI/roles)
+                loadAnnouncements();
+                loadNotificationPrefs();
+            }
+        }).catch(err => {
+            console.error("Error fetching user data:", err);
+            // Fallback: show pending if error
+            showPendingApproval();
+        });
+
+    } else {
+        // No user is signed in.
+        showLogin();
+        userApproved = false;
+        // Detach listeners if previously attached
+        if (announcementsListenerAttached) {
+            db.ref('announcements').off();
+            announcementsListenerAttached = false;
+        }
+        // Notifications listener removed
+        if (notificationsListenerAttached) {
+            messaging.onMessage(null);
+            notificationsListenerAttached = false;
+        }
+    }
+});
+
+function showMainContent() {
+    if (authContainer) authContainer.classList.add('hidden');
+    if (pendingApproval) pendingApproval.classList.add('hidden');
+    if (mainContent) mainContent.classList.remove('hidden');
+    if (logoutBtn) logoutBtn.classList.remove('hidden');
+    if (adminPanel) adminPanel.classList.add('hidden'); // Hide admin panel if not admin
+    // Apply saved arrangement once content is visible
+    try { if (typeof applySavedArrangement === 'function') applySavedArrangement(); } catch (_) { }
+}
+
+function showPendingApproval() {
+    if (authContainer) authContainer.classList.add('hidden');
+    if (mainContent) mainContent.classList.add('hidden');
+    if (pendingApproval) pendingApproval.classList.remove('hidden');
+    if (logoutBtn) logoutBtn.classList.add('hidden'); // Hide main logout, use pending logout
+    if (adminPanel) adminPanel.classList.add('hidden');
+}
+
+function showLogin() {
+    if (authContainer) authContainer.classList.remove('hidden');
+    if (mainContent) mainContent.classList.add('hidden');
+    if (pendingApproval) pendingApproval.classList.add('hidden');
+    if (logoutBtn) logoutBtn.classList.add('hidden');
+    if (adminPanel) adminPanel.classList.add('hidden');
+}
+
+function showAdminPanel() {
+    if (!adminPanel) return;
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            adminPanel.classList.add('hidden');
+            return;
+        }
+        adminPanel.classList.remove('hidden');
+        loadPendingUsers();
+    });
+}
+
+function loadPendingUsers() {
+    const list = document.getElementById('pending-users-list');
+    if (!list) return;
+    list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center">Loading...</td></tr>';
+    const current = auth.currentUser;
+    if (!current) {
+        list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin only</td></tr>';
+        return;
+    }
+
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Admin only</td></tr>';
+            return;
+        }
+
+        db.ref('users').once('value').then(snapshot => {
+            list.innerHTML = '';
+            const users = snapshot.val();
+            if (users) {
+                Object.keys(users).forEach(uid => {
+                    const u = users[uid];
+                    // Do not display admin user to prevent accidental revoke/delete
+                    if (u.email === ADMIN_EMAIL) return;
+                    // Do not show the currently signed-in admin in the table
+                    if (uid === current.uid) return;
+                    const approved = !!u.approved;
+                    // Treat older records with canGrantAdmin/admin flag as admin for UI purposes
+                    const isAdminRow = !!(u.isAdmin || u.canGrantAdmin || u.admin === true);
+                    const tr = document.createElement('tr');
+                    tr.className = "border-t";
+                    const statusClasses = approved ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
+                    let actionCell = '';
+                    if (!approved) {
+                        actionCell += `<button onclick=\"approveUser('${uid}')\" class=\"bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm mr-2\">Approve</button>`;
+                    } else {
+                        actionCell += `<button onclick=\"revokeUser('${uid}')\" class=\"bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm mr-2\">Revoke</button>`;
+                    }
+                    if (!isAdminRow) {
+                        actionCell += `<button onclick=\"makeAdmin('${uid}')\" class=\"bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mr-2\">Make Admin</button>`;
+                    } else {
+                        actionCell += `<button onclick=\"revokeAdmin('${uid}')\" class=\"bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm mr-2\">Revoke Admin</button>`;
+                    }
+                    actionCell += `<button onclick=\"deleteUserRecord('${uid}')\" class=\"bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm\">Delete</button>`;
+                    tr.innerHTML = `
+                        <td class="px-4 py-2">${u.email}</td>
+                        <td class="px-4 py-2 ${statusClasses}">${approved ? 'Approved' : 'Pending'}</td>
+                        <td class="px-4 py-2">${actionCell}</td>
+                    `;
+                    list.appendChild(tr);
+                });
+            } else {
+                list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">No users found.</td></tr>';
+            }
+        }).catch(err => {
+            console.error('Error loading users:', err);
+            list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error loading users.</td></tr>';
+        });
+    }).catch(err => {
+        console.error('Error checking admin access:', err);
+        list.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error verifying admin access.</td></tr>';
+    });
+}
+
+// Global function for onclick
+window.approveUser = function (uid) {
+    // Check token claims first to avoid permission_denied from server rules
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin to approve users.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
+        }
+        if (!confirm('Are you sure you want to approve this user?')) return;
+        db.ref('users/' + uid).once('value').then(snapshot => {
+            const userData = snapshot.val();
+            return db.ref('users/' + uid).update({ approved: true }).then(() => {
+                    if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' && userData && userData.email) {
+                        sendAdminNotification('approval_notification', {
+                            email: userData.email,
+                            userName: userData.name || userData.email.split('@')[0],
+                            instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/',
+                            // Send admin's display name (avoid exposing UID)
+                            createdByName: current ? (current.displayName || (current.email ? current.email.split('@')[0] : 'Admin')) : null,
+                            action: 'approved'
+                        }).catch(e => console.error('sendAdminNotification error', e));
+                    }
+                alert('User approved! Notification email sent.');
+                loadPendingUsers();
+            });
+        }).catch(err => {
+            alert('Error approving user: ' + err.message);
+        });
+    });
+};
+
+// Revoke user access (sets approved to false)
+window.revokeUser = function (uid) {
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin to revoke users.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
+        }
+        if (!confirm('Revoke this user\'s access? They will see Pending until re-approved.')) return;
+        // Read user record so we can email the affected user after revocation
+        db.ref('users/' + uid).once('value').then(snapshot => {
+            const userData = snapshot.val() || {};
+            return db.ref('users/' + uid).update({ approved: false }).then(() => {
+                    if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' && userData && userData.email) {
+                    sendAdminNotification('approval_notification', {
+                        email: userData.email,
+                        userName: userData.name || userData.email.split('@')[0],
+                        createdByName: current ? (current.displayName || (current.email ? current.email.split('@')[0] : 'Admin')) : null,
+                        action: 'revoked'
+                    }).catch(e => console.error('sendAdminNotification error', e));
+                }
+                alert('User access revoked.');
+                loadPendingUsers();
+            });
+        }).catch(err => alert('Error revoking user: ' + err.message));
+    });
+};
+
+// Delete user record from Realtime Database (cannot delete Auth user here)
+window.deleteUserRecord = function (uid) {
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin to delete user records.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
+        }
+        if (!confirm('Delete this user\'s database record? If they sign in again they will be recreated as Pending.')) return;
+        db.ref('users/' + uid).remove().then(() => {
+            alert('User record deleted. They can still authenticate unless removed via Firebase Console.');
+            loadPendingUsers();
+        }).catch(err => alert('Error deleting user record: ' + err.message));
+    });
+};
+
+// Make user admin (sets database flag and shows instructions for custom claim)
+window.makeAdmin = function (uid) {
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin.');
+    refreshAdminStatus().then(isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
+        }
+
+        // Create a custom modal for admin permissions
+        const modalHTML = `
+            <div id="admin-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 24px; border-radius: 8px; max-width: 500px; width: 90%;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Make User Admin</h3>
+                    <p style="margin-bottom: 16px; color: #4b5563;">Grant admin privileges to this user.</p>
+                    <label style="display: flex; align-items: center; margin-bottom: 16px; cursor: pointer;">
+                        <input type="checkbox" id="can-grant-admin-checkbox" style="margin-right: 8px; width: 18px; height: 18px; cursor: pointer;">
+                        <span style="font-size: 14px;">Allow this admin to grant admin privileges to others</span>
+                    </label>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px;">Note: Custom claims must still be set server-side via Firebase Admin SDK.</p>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button id="admin-modal-cancel" style="padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 4px; background: white; cursor: pointer;">Cancel</button>
+                        <button id="admin-modal-confirm" style="padding: 8px 16px; border: none; border-radius: 4px; background: #3b82f6; color: white; cursor: pointer;">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const modal = document.getElementById('admin-modal');
+        const checkbox = document.getElementById('can-grant-admin-checkbox');
+        const cancelBtn = document.getElementById('admin-modal-cancel');
+        const confirmBtn = document.getElementById('admin-modal-confirm');
+
+        cancelBtn.onclick = () => modal.remove();
+        confirmBtn.onclick = async () => {
+            const canGrantAdmin = checkbox.checked;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Processing...';
+
+            try {
+                // Ensure caller is allowed to grant
+                await refreshAdminStatus();
+                if (!currentUserCanGrant) {
+                    throw new Error('You are not allowed to grant admin rights.');
+                }
+                // Get the current user's ID token (force refresh to include latest claims)
+                const token = await current.getIdToken(true);
+
+                // Call Cloudflare Pages Function
+                const response = await fetch('/admin-claims', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'grant',
+                        targetUid: uid,
+                        canGrantAdmin: canGrantAdmin,
+                        adminToken: token
+                    })
+                });
+
+                const result = await response.json();
+                modal.remove();
+
+                if (response.ok) {
+                    // Mirror the server update in Realtime DB so the UI updates immediately
+                    try {
+                        await db.ref('users/' + uid).update({ isAdmin: true, canGrantAdmin: canGrantAdmin === true });
+                    } catch (e) {
+                        console.warn('Local DB admin flag update failed (continuing):', e);
+                    }
+                    alert('Admin privileges granted successfully!\n\nThe user now has full admin access. They may need to sign out and back in for changes to take effect.');
+                    loadPendingUsers();
+                } else {
+                    alert('Failed to grant admin privileges: ' + (result.error || 'Unknown error') + (result.caller ? `\n\nCaller flags: ${JSON.stringify(result.caller.sources || result.caller)}` : ''));
+                }
+            } catch (err) {
+                modal.remove();
+                console.error('Error granting admin:', err);
+                alert('Failed to grant admin privileges: ' + err.message);
+            }
+        };
+    });
+};
+
+// Revoke admin privileges
+window.revokeAdmin = function (uid) {
+    const current = auth.currentUser;
+    if (!current) return alert('You must be signed in as an admin.');
+    refreshAdminStatus().then(async isAdmin => {
+        if (!isAdmin) {
+            return alert('Your account does not have admin access.');
+        }
+        if (!confirm('Revoke admin privileges for this user? This will remove both database flags and custom claims.')) return;
+
+        try {
+            // Get the current user's ID token (force refresh to include latest claims)
+            const token = await current.getIdToken(true);
+
+            // Call Cloudflare Pages Function
+            const response = await fetch('/admin-claims', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'revoke',
+                    targetUid: uid,
+                    adminToken: token
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Mirror server update for immediate UI feedback
+                try {
+                    await db.ref('users/' + uid).update({ isAdmin: false, canGrantAdmin: false });
+                } catch (e) {
+                    console.warn('Local DB admin revoke update failed (continuing):', e);
+                }
+                alert('Admin privileges revoked successfully!\n\nThe user no longer has admin access. They may need to sign out and back in for changes to take effect.');
+                loadPendingUsers();
+            } else {
+                alert('Failed to revoke admin privileges: ' + (result.error || 'Unknown error') + (result.caller ? `\n\nCaller flags: ${JSON.stringify(result.caller.sources || result.caller)}` : ''));
+            }
+        } catch (err) {
+            console.error('Error revoking admin:', err);
+            alert('Failed to revoke admin privileges: ' + err.message);
+        }
+    });
+};
+
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (!email || !password) {
+            authError.textContent = 'Please enter email and password.';
+            authError.classList.remove('hidden');
+            return;
+        }
+        if (authMode === 'login') {
+            auth.signInWithEmailAndPassword(email, password).catch(error => {
+                authError.textContent = error.message;
+                authError.classList.remove('hidden');
+            });
+        } else { // signup
+            const nameInput = document.getElementById('name-input');
+            const displayName = nameInput ? nameInput.value.trim() : '';
+            if (!displayName) {
+                authError.textContent = 'Please enter your name to create an account.';
+                authError.classList.remove('hidden');
+                return;
+            }
+            console.log('[DEBUG][signup][loginForm] createUserWithEmailAndPassword called', { email, ts: Date.now() });
+            if (window.__signupInFlight) {
+                console.warn('[DEBUG][signup] signup already in progress (loginForm), skipping duplicate call', { email, ts: Date.now() });
+                authError.textContent = 'Signup already in progress. Please wait.';
+                authError.classList.remove('hidden');
+                return;
+            }
+            window.__signupInFlight = true;
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
+                    console.log('[DEBUG][signup] createUser resolved (loginForm)', { uid: user.uid, email: user.email, ts: Date.now() });
+                    return db.ref('users/' + user.uid).set({
+                        email: user.email,
+                        name: displayName,
+                        approved: false,
+                        role: 'instructor'
+                    }).then(() => {
+                        console.log('[DEBUG][signup] users/<uid> set (loginForm)', { uid: user.uid, ts: Date.now() });
+                        if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                            sendAdminNotification('signup_notification', {
+                                email: user.email,
+                                adminEmail: ADMIN_EMAIL,
+                                instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/',
+                                createdBy: user.uid
+                            }).catch(() => { });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('[DEBUG][signup] error (loginForm):', error);
+                    authError.textContent = error.message;
+                    authError.classList.remove('hidden');
+                })
+                .finally(() => { window.__signupInFlight = false; });
+        }
+    });
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            showLogin();
+        }).catch(err => {
+            console.error('Logout error:', err);
+            showLogin();
+        });
+    });
+}
+
+if (pendingLogoutBtn) {
+    pendingLogoutBtn.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            showLogin();
+        }).catch(err => {
+            console.error('Logout error:', err);
+            showLogin();
+        });
+    });
+}
+
+// Google Sign-In handler
+const googleSignInBtn = document.getElementById('google-signin-btn');
+if (googleSignInBtn) {
+    googleSignInBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!window.firebase || !firebase.auth) {
+            alert('Auth library not loaded yet. Try again in a moment.');
+            return;
+        }
+        if (window.__signupInFlight) {
+            console.warn('[DEBUG][google-signin] signup already in progress');
+            return;
+        }
+        window.__signupInFlight = true;
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider).then(result => {
+            const user = result.user;
+            if (!user) {
+                window.__signupInFlight = false;
+                alert('Google sign-in did not return a user. Please try again.');
+                return;
+            }
+            try { sessionStorage.setItem('__recentSignupUid', user.uid); } catch (_) {}
+            db.ref('users/' + user.uid).once('value').then(snap => {
+                const val = snap.val();
+                if (!val) {
+                    const nameInputEl = document.getElementById('name-input');
+                    let preferredName = user.displayName || (user.email ? user.email.split('@')[0] : 'Instructor');
+                    if (authMode === 'signup' && nameInputEl && nameInputEl.value && nameInputEl.value.trim()) {
+                        preferredName = nameInputEl.value.trim();
+                    }
+                    db.ref('users/' + user.uid).set({
+                        email: user.email,
+                        name: preferredName,
+                        approved: false,
+                        role: 'instructor'
+                    }).then(() => {
+                        console.log('[DEBUG][google-signin] user record created');
+                        if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                            sendAdminNotification('signup_notification', {
+                                email: user.email,
+                                adminEmail: ADMIN_EMAIL,
+                                instructorsUrl: 'https://rathmullan-sailing-notes.pages.dev/'
+                            }).catch(() => {});
+                        }
+                        showPendingApproval();
+                        window.__signupInFlight = false;
+                    }).catch(err => {
+                        console.error('[DEBUG][google-signin] error creating user record:', err);
+                        window.__signupInFlight = false;
+                    });
+                } else {
+                    if (val.approved) {
+                        showMainContent();
+                    } else {
+                        showPendingApproval();
+                    }
+                    window.__signupInFlight = false;
+                }
+            }).catch(err => {
+                console.error('[DEBUG][google-signin] error reading user record:', err);
+                window.__signupInFlight = false;
+            });
+        }).catch(err => {
+            console.error('[DEBUG][google-signin] signInWithPopup error:', err);
+            alert('Google sign-in failed: ' + (err && err.message ? err.message : 'Unknown error'));
+            window.__signupInFlight = false;
+        });
+    });
+}
+
+// --- Weekly Planning Logic ---
+const weeklyLevels = [
+    "taste-of-sailing",
+    "start-sailing",
+    "basic-skills",
+    "improving-skills"
+];
+const days = ["mon", "tue", "wed", "thu", "fri"];
+const slots = ["am", "pm"];
+
+function weeklyPlanKey(level, day, slot) {
+    return `weeklyPlan/${level}/${day}/${slot}`;
+}
+
+function addActivity(level, day, slot, activity) {
+    const ref = db.ref(weeklyPlanKey(level, day, slot));
+    ref.once('value').then(snap => {
+        let arr = snap.val() || [];
+        arr.push({ id: uuidv4(), text: activity });
+        ref.set(arr).then(() => {
+            updateWeeklySlot(level, day, slot, arr);
+        });
+    });
+}
+
+function updateWeeklySlot(level, day, slot, activities) {
+    const cell = document.querySelector(`.weekly-slot[data-level="${level}"][data-day="${day}"][data-slot="${slot}"]`);
+    if (!cell) return;
+    cell.innerHTML = '';
+    activities.forEach(act => {
+        const div = document.createElement('div');
+        div.className = "weekly-activity bg-blue-100 rounded px-2 py-1 mb-1 shadow cursor-pointer";
+        div.textContent = act.text;
+        div.title = "Click to edit/delete. Drag to move.";
+        div.setAttribute('data-id', act.id);
+        div.setAttribute('draggable', 'true');
+        div.oncontextmenu = function (e) {
+            e.preventDefault();
+            removeActivity(level, day, slot, act.id);
+        };
+        cell.appendChild(div);
+    });
+}
+
+function removeActivity(level, day, slot, actId) {
+    const ref = db.ref(weeklyPlanKey(level, day, slot));
+    ref.once('value').then(snap => {
+        let arr = snap.val() || [];
+        arr = arr.filter(act => act.id !== actId);
+        ref.set(arr).then(() => {
+            updateWeeklySlot(level, day, slot, arr);
+        });
+    });
+}
+
+function editActivity(level, day, slot, actId, newText) {
+    const ref = db.ref(weeklyPlanKey(level, day, slot));
+    ref.once('value').then(snap => {
+        let arr = snap.val() || [];
+        const idx = arr.findIndex(act => act.id === actId);
+        if (idx === -1) return;
+        arr[idx].text = newText;
+        ref.set(arr).then(() => {
+            updateWeeklySlot(level, day, slot, arr);
+        });
+    });
+}
+
+function moveWeeklyActivity(fromLevel, fromDay, fromSlot, toLevel, toDay, toSlot, actId) {
+    const fromRef = db.ref(weeklyPlanKey(fromLevel, fromDay, fromSlot));
+    const toRef = db.ref(weeklyPlanKey(toLevel, toDay, toSlot));
+    fromRef.once('value').then(snap => {
+        let fromArr = snap.val() || [];
+        const idx = fromArr.findIndex(act => act.id === actId);
+        if (idx === -1) return;
+        const act = fromArr[idx];
+        fromArr.splice(idx, 1);
+        fromRef.set(fromArr).then(() => {
+            toRef.once('value').then(snap2 => {
+                let toArr = snap2.val() || [];
+                toArr.push(act);
+                toRef.set(toArr).then(() => {
+                    updateWeeklySlot(fromLevel, fromDay, fromSlot, fromArr);
+                    updateWeeklySlot(toLevel, toDay, toSlot, toArr);
+                });
+            });
+        });
+    });
+}
+
+function loadWeeklyPlans() {
+    weeklyLevels.forEach(level => {
+        days.forEach(day => {
+            slots.forEach(slot => {
+                const ref = db.ref(weeklyPlanKey(level, day, slot));
+                ref.once('value').then(snap => {
+                    updateWeeklySlot(level, day, slot, snap.val() || []);
+                });
+            });
+        });
+    });
+}
+
+// --- Map Draggables Logic ---
+// Expose functions globally for inline scripts
+window.saveDraggablePositionToFirebase = function (id, left, top) {
+    if (window.db) {
+        window.db.ref('mapPositions/' + id).set({ left, top }).then(() => {
+
+        }).catch(err => {
+            console.error('❌ Failed to save position for:', id, err);
+        });
+    }
+}
+;
+
+window.loadDraggablePositionsFromFirebase = function (callback) {
+    if (window.db) {
+        window.db.ref('mapPositions').once('value').then(snapshot => {
+            const positions = snapshot.val() || {};
+
+            callback(positions);
+        }).catch(err => {
+            console.error('❌ Failed to load positions:', err);
+            callback({});
+        });
+    } else {
+        callback({});
+    }
+};
+
+// Wait for DOM to be ready before setting up map draggables
+document.addEventListener('DOMContentLoaded', () => {
+    const map = document.querySelector('#interactive-map .relative');
+    const mapDraggables = Array.from(document.querySelectorAll('#interactive-map .draggable'));
+
+    if (map && mapDraggables.length > 0) {
+
+        // Restore positions from Firebase
+        window.addEventListener('load', () => {
+
+            // Wait for map to have dimensions before restoring
+            const restorePositions = () => {
+
+
+                if (map.offsetWidth === 0 || map.offsetHeight === 0) {
+
+                    setTimeout(restorePositions, 100);
+                    return;
+                }
+
+                window.loadDraggablePositionsFromFirebase(positions => {
+                    mapDraggables.forEach(item => {
+                        const pos = positions[item.id];
+                        if (pos && pos.left !== undefined && pos.top !== undefined) {
+                            item.style.position = 'absolute';
+                            item.style.left = (pos.left * map.offsetWidth) + 'px';
+                            item.style.top = (pos.top * map.offsetHeight) + 'px';
+                        }
+                    });
+                });
+            };
+
+            restorePositions();
+        });
+
+        // Re-calculate positions on window resize for responsive behavior
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                window.loadDraggablePositionsFromFirebase(positions => {
+                    mapDraggables.forEach(item => {
+                        const pos = positions[item.id];
+                        if (pos && pos.left !== undefined && pos.top !== undefined) {
+                            item.style.left = (pos.left * map.offsetWidth) + 'px';
+                            item.style.top = (pos.top * map.offsetHeight) + 'px';
+                        }
+                    });
+                });
+            }, 250);
+        });
+
+        // Drag Events (Desktop)
+        mapDraggables.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', e.target.id);
+            });
+        });
+
+        map.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        map.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text/plain');
+            const draggable = document.getElementById(id);
+            if (!draggable) return;
+
+            const rect = map.getBoundingClientRect();
+            const leftPx = e.clientX - rect.left;
+            const topPx = e.clientY - rect.top;
+
+            const leftPercent = leftPx / map.offsetWidth;
+            const topPercent = topPx / map.offsetHeight;
+
+            draggable.style.position = 'absolute';
+            draggable.style.left = leftPx + 'px';
+            draggable.style.top = topPx + 'px';
+
+
+            window.saveDraggablePositionToFirebase(id, leftPercent, topPercent);
+        });
+    }
+});
+
+// --- Section Navigation UX (Quick Nav + Scrollspy + Back-to-top) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.getElementById('section-nav');
+    const backToTop = document.getElementById('back-to-top');
+    if (!nav) return;
+
+    const linkEls = Array.from(nav.querySelectorAll('a[data-target]'));
+    const idToLink = new Map(linkEls.map(a => [a.getAttribute('data-target'), a]));
+    const sectionIds = linkEls.map(a => a.getAttribute('data-target'));
+    const sections = sectionIds
+        .map(id => document.getElementById(id))
+        .filter(Boolean);
+
+    // Smooth scroll on click
+    linkEls.forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            const id = a.getAttribute('data-target');
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    // Active state helper
+    function setActive(id) {
+        linkEls.forEach(a => {
+            a.classList.remove('bg-blue-600', 'text-white');
+            a.classList.add('bg-gray-100', 'text-gray-800');
+        });
+        const active = idToLink.get(id);
+        if (active) {
+            active.classList.remove('bg-gray-100', 'text-gray-800');
+            active.classList.add('bg-blue-600', 'text-white');
+        }
+    }
+
+    // Scrollspy using IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                setActive(entry.target.id);
+            }
+        });
+    }, {
+        root: null,
+        // Favor the upper-middle viewport to decide active section
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: 0.1
+    });
+
+    sections.forEach(sec => observer.observe(sec));
+
+    // Back-to-top show/hide
+    if (backToTop) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) backToTop.classList.remove('hidden');
+            else backToTop.classList.add('hidden');
+        }, { passive: true });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+});
+
+// --- Student Management ---
+function studentKey(level) {
+    return 'students/' + level;
+}
+
+function addStudent(e, level) {
+    e.preventDefault();
+    const input = document.getElementById('input-student-' + level);
+    const name = input ? input.value.trim() : '';
+    if (!name) return false;
+    const ref = db.ref(studentKey(level));
+    ref.once('value').then(snap => {
+        let arr = snap.val() || [];
+        const student = { id: uuidv4(), name };
+        arr.push(student);
+        ref.set(arr).then(() => {
+            if (input) input.value = '';
+            updateStudentTable(level, arr);
+        }).catch(err => {
+            console.error('Error adding student to Firebase:', err);
+        });
+    });
+    return false;
+}
+
+function updateStudentTable(level, students) {
+    const tableBody = document.getElementById('students-' + level);
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+    students.forEach(student => {
+        const row = document.createElement('tr');
+        const progressBtn = getProgressButton(level, student.id, student.name);
+        row.innerHTML = `
+            <td class="p-2 border-b text-left">${student.name}</td>
+            <td class="p-2 border-b text-center space-x-2">
+                ${progressBtn}
+                <button class="text-red-500 hover:underline text-sm" onclick="removeStudent('${level}', '${student.id}')">Remove</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    const countSpan = document.querySelector(`#count-${level} .count-num`);
+    if (countSpan) countSpan.textContent = students.length;
+}
+
+function getProgressButton(currentLevel, studentId, studentName) {
+    // Ordered list of levels to compute previous/next
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
+    const idx = levels.indexOf(currentLevel);
+    if (idx === -1) return '';
+
+    const prevLevel = idx > 0 ? levels[idx - 1] : null;
+    const nextLevel = idx < levels.length - 1 ? levels[idx + 1] : null;
+
+    function prettyName(levelKey) {
+        return levelKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    const parts = [];
+    if (prevLevel) {
+        const prevName = prettyName(prevLevel);
+        parts.push(`<button class="text-yellow-600 hover:text-yellow-800 text-sm font-medium mr-2" onclick="progressStudent('${currentLevel}', '${prevLevel}', '${studentId}', '${studentName.replace(/'/g, "\\'")}')">← ${prevName}</button>`);
+    }
+    if (nextLevel) {
+        const nextName = prettyName(nextLevel);
+        parts.push(`<button class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="progressStudent('${currentLevel}', '${nextLevel}', '${studentId}', '${studentName.replace(/'/g, "\\'")}')">→ ${nextName}</button>`);
+    }
+
+    return parts.join('');
+}
+
+function progressStudent(fromLevel, toLevel, studentId, studentName) {
+    if (!confirm(`Move ${studentName} from ${fromLevel} to ${toLevel}?`)) return;
+
+    // Remove from current level
+    const fromRef = db.ref(studentKey(fromLevel));
+    fromRef.once('value').then(snap => {
+        let fromArr = snap.val() || [];
+        const student = fromArr.find(s => s.id === studentId);
+        if (!student) {
+            alert('Student not found in current level');
+            return;
+        }
+
+        fromArr = fromArr.filter(s => s.id !== studentId);
+
+        // Add to next level
+        const toRef = db.ref(studentKey(toLevel));
+        return toRef.once('value').then(toSnap => {
+            let toArr = toSnap.val() || [];
+            toArr.push(student);
+
+            return Promise.all([
+                fromRef.set(fromArr),
+                toRef.set(toArr)
+            ]);
+        });
+    }).then(() => {
+        // Refresh both tables
+        db.ref(studentKey(fromLevel)).once('value').then(snap => {
+            updateStudentTable(fromLevel, snap.val() || []);
+        });
+        db.ref(studentKey(toLevel)).once('value').then(snap => {
+            updateStudentTable(toLevel, snap.val() || []);
+        });
+        alert(`${studentName} moved to ${toLevel}!`);
+    }).catch(err => {
+        console.error('Error progressing student:', err);
+        alert('Error moving student: ' + err.message);
+    });
+}
+
+window.progressStudent = progressStudent;
+
+function toggleResourcesSection() {
+    const content = document.getElementById('resources-content');
+    const icon = document.getElementById('resources-toggle-icon');
+    if (content.style.display === 'none') {
+        content.style.display = 'grid';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+    }
+}
+
+window.toggleResourcesSection = toggleResourcesSection;
+
+function removeStudent(level, studentId) {
+    const ref = db.ref(studentKey(level));
+    ref.once('value').then(snap => {
+        let arr = snap.val() || [];
+        arr = arr.filter(student => student.id !== studentId);
+        ref.set(arr).then(() => {
+            updateStudentTable(level, arr);
+        }).catch(err => {
+            console.error('Error removing student from Firebase:', err);
+        });
+    });
+}
+
+window.addStudent = addStudent;
+window.removeStudent = removeStudent;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
+    levels.forEach(level => {
+        db.ref(studentKey(level)).once('value').then(snap => {
+            updateStudentTable(level, snap.val() || []);
+        });
+    });
+});
+
+// --- Instructor/Boat Arrangement ---
+function saveArrangementToFirebase(id, zoneId) {
+    const draggable = document.getElementById(id);
+    const name = draggable ? draggable.textContent.trim() : null;
+    db.ref('arrangement/' + id).set({ zoneId, name });
+}
+
+function loadArrangementFromFirebase(callback) {
+    db.ref('arrangement').once('value').then(snapshot => {
+        callback(snapshot.val() || {});
+    });
+}
+
+function clearArrangement() {
+    db.ref('arrangement').remove().then(() => {
+        const availableZone = document.getElementById('available-zone');
+        if (availableZone) {
+            document.querySelectorAll('#instructors-table .draggable:not(.boat)').forEach(item => {
+                const inner = availableZone.querySelector('.flex.flex-wrap') || availableZone;
+                inner.appendChild(item);
+            });
+        }
+    }).catch(err => console.error('Error clearing arrangement from Firebase:', err));
+}
+// --- Arrangement Reset Helpers (restored after corruption) ---
+const DEFAULT_BOAT_ORDER = [
+    'boat-feva-1', 'boat-feva-2', 'boat-feva-3', 'boat-feva-4', 'boat-feva-5',
+    'boat-topaz-1', 'boat-topaz-2', 'boat-topaz-3', 'boat-topaz-4', 'boat-topaz-5',
+    'boat-vago-1', 'boat-bahia-1', 'boat-bahia-2'
+];
+const DEFAULT_INSTRUCTOR_ORDER = [
+    'instructor-7', 'instructor-8',
+    'instructor-1', 'instructor-2', 'instructor-3', 'instructor-4', 'instructor-5', 'instructor-6',
+    'assistant-1', 'assistant-2', 'assistant-3', 'assistant-4', 'assistant-5', 'assistant-6', 'assistant-7', 'assistant-8'
+];
+function reorderContainerByIds(container, ids) {
+    if (!container) return;
+    const inner = container.querySelector('.flex.flex-wrap') || container;
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) inner.appendChild(el);
+    });
+}
+function clearInstructors() {
+    // Remove instructor placements from Firebase then visually reset.
+    db.ref('arrangement').once('value').then(snap => {
+        const arrangement = snap.val() || {};
+        const updates = {};
+        Object.keys(arrangement).forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !el.classList.contains('boat')) {
+                updates['arrangement/' + id] = null;
+            }
+        });
+        if (Object.keys(updates).length) return db.ref().update(updates);
+        return null;
+    }).catch(err => console.error('Error clearing instructors from Firebase:', err))
+        .finally(() => {
+            const availableZone = document.getElementById('available-zone');
+            if (availableZone) {
+                const inner = availableZone.querySelector('.flex.flex-wrap') || availableZone;
+                document.querySelectorAll('#instructors-table .draggable:not(.boat)').forEach(item => {
+                    item.style.left = ''; item.style.top = ''; item.style.position = '';
+                    inner.appendChild(item);
+                });
+                reorderContainerByIds(availableZone, DEFAULT_INSTRUCTOR_ORDER);
+            }
+        });
+}
+window.clearInstructors = clearInstructors;
+function clearBoats() {
+    db.ref('arrangement').once('value').then(snap => {
+        const arrangement = snap.val() || {};
+        const updates = {};
+        Object.keys(arrangement).forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.classList.contains('boat')) {
+                updates['arrangement/' + id] = null;
+            }
+        });
+        if (Object.keys(updates).length) return db.ref().update(updates);
+        return null;
+    }).catch(err => console.error('Error clearing boats from Firebase:', err))
+        .finally(() => {
+            const zone = document.getElementById('available-boats-zone');
+            if (zone) {
+                const inner = zone.querySelector('.flex.flex-wrap') || zone;
+                DEFAULT_BOAT_ORDER.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.left = ''; el.style.top = ''; el.style.position = '';
+                        inner.appendChild(el);
+                    }
+                });
+            }
+        });
+}
+window.clearBoats = clearBoats;
+function clearAll() {
+    clearBoats();
+    clearInstructors();
+    clearAllStudentsAndNotes();
+}
+window.clearAll = clearAll;
+function clearAllStudentsAndNotes() {
+    const confirmMsg = 'Clear ALL students and ALL student notes for every level? This cannot be undone.';
+    if (!confirm(confirmMsg)) return;
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
+    const updates = {};
+    levels.forEach(level => {
+        updates['students/' + level] = null;
+        updates['studentNotes/' + level] = null;
+    });
+    db.ref().update(updates).then(() => {
+        const studentSelect = document.getElementById('notes-student-select');
+        if (studentSelect) { studentSelect.innerHTML = '<option value="">Select student...</option>'; studentSelect.disabled = true; }
+        const levelSelect = document.getElementById('notes-level-select');
+        if (levelSelect) levelSelect.value = '';
+        const display = document.getElementById('student-notes-display');
+        if (display) display.classList.add('hidden');
+        const historyEl = document.getElementById('notes-history');
+        if (historyEl) historyEl.innerHTML = '';
+        alert('All students and notes have been cleared.');
+    }).catch(err => alert('Failed to clear: ' + err.message));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dropzones = document.querySelectorAll('.dropzone');
+    dropzones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            zone.classList.add('ring', 'ring-blue-400', 'ring-4');
+        });
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+        });
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text/plain');
+            const draggable = document.getElementById(id);
+            if (draggable) {
+                const container = zone.querySelector('.flex.flex-wrap') || zone;
+                container.appendChild(draggable);
+                zone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+                saveArrangementToFirebase(id, zone.id);
+            }
+        });
+    });
+    const draggables = document.querySelectorAll('.draggable');
+    draggables.forEach(item => {
+        item.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.dataTransfer.effectAllowed = 'move';
+        });
+    });
+    function placeInZone(dropzone, el) {
+        const container = dropzone.querySelector('.flex.flex-wrap') || dropzone;
+        container.appendChild(el);
+    }
+    loadArrangementFromFirebase(arrangement => {
+        Object.entries(arrangement).forEach(([id, data]) => {
+            const draggable = document.getElementById(id);
+            const dropzone = data && data.zoneId ? document.getElementById(data.zoneId) : null;
+            if (draggable && dropzone) placeInZone(dropzone, draggable);
+        });
+    });
+});
+
+// Touch support for arrangement draggables
+document.addEventListener('DOMContentLoaded', () => {
+    const draggables = document.querySelectorAll('#instructors-table .draggable');
+    let currentTouchZone = null;
+    draggables.forEach(item => {
+        let offsetX, offsetY, moving = false, dragStarted = false;
+        let startX, startY;
+        item.addEventListener('touchstart', function (e) {
+            const touch = e.touches[0];
+            offsetX = touch.clientX - item.getBoundingClientRect().left;
+            offsetY = touch.clientY - item.getBoundingClientRect().top;
+            startX = touch.clientX; startY = touch.clientY;
+            moving = true; dragStarted = false;
+            item._origPosition = item.style.position;
+            item._origLeft = item.style.left;
+            item._origTop = item.style.top;
+            item._origZ = item.style.zIndex;
+            document.body.style.userSelect = 'none';
+            document.body.style.overflow = 'hidden';
+        });
+        item.addEventListener('touchmove', function (e) {
+            if (!moving) return;
+            const touch = e.touches[0];
+            if (!dragStarted && (Math.abs(touch.clientX - startX) > 5 || Math.abs(touch.clientY - startY) > 5)) {
+                dragStarted = true;
+                item.style.position = 'fixed';
+                item.style.zIndex = 1000;
+                item.classList.add('dragging');
+            }
+            if (dragStarted) {
+                item.style.left = `${touch.clientX - offsetX}px`;
+                item.style.top = `${touch.clientY - offsetY}px`;
+            }
+            const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+            let foundZone = null; let el = elem;
+            while (el) {
+                if (el.classList && el.classList.contains('dropzone')) { foundZone = el; break; }
+                el = el.parentElement;
+            }
+            if (currentTouchZone && currentTouchZone !== foundZone) currentTouchZone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+            currentTouchZone = foundZone;
+            if (foundZone) foundZone.classList.add('ring', 'ring-blue-400', 'ring-4');
+            e.preventDefault();
+        });
+        item.addEventListener('touchend', function (e) {
+            moving = false;
+            document.body.style.userSelect = '';
+            document.body.style.overflow = '';
+            item.classList.remove('dragging');
+            if (currentTouchZone) currentTouchZone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+            if (dragStarted) {
+                item.style.position = item._origPosition || '';
+                item.style.left = item._origLeft || '';
+                item.style.top = item._origTop || '';
+                item.style.zIndex = item._origZ || '';
+            }
+            const touch = e.changedTouches[0];
+            let dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            let zoneEl = dropTarget;
+            while (zoneEl && !(zoneEl.classList && zoneEl.classList.contains('dropzone'))) {
+                zoneEl = zoneEl.parentElement;
+            }
+            if (zoneEl && zoneEl.classList && zoneEl.classList.contains('dropzone')) {
+                const container = zoneEl.querySelector('.flex.flex-wrap') || zoneEl;
+                container.appendChild(item);
+                item.style.position = '';
+                item.style.left = '';
+                item.style.top = '';
+                saveArrangementToFirebase(item.id, zoneEl.id);
+            } else {
+                item.style.position = '';
+                item.style.left = '';
+                item.style.top = '';
+            }
+            currentTouchZone = null;
+        });
+    });
+});
+
+// Ensure saved arrangement is applied after login shows content
+function applySavedArrangement() {
+    loadArrangementFromFirebase(arrangement => {
+        Object.entries(arrangement).forEach(([id, data]) => {
+            const draggable = document.getElementById(id);
+            const dropzone = data && data.zoneId ? document.getElementById(data.zoneId) : null;
+            if (draggable && dropzone) {
+                const container = dropzone.querySelector('.flex.flex-wrap') || dropzone;
+                container.appendChild(draggable);
+            }
+        });
+    });
+}
+
+// --- Level Info Modal ---
+const levelMap = {
+    "cara-na-mara": "Cara na Mara",
+    "taste-of-sailing": "Taste of Sailing",
+    "start-sailing": "Start Sailing",
+    "basic-skills": "Basic Skills",
+    "improving-skills": "Improving Skills"
+};
+const draggableToLevel = {
+    "cara-na-mara": "cara-na-mara",
+    "taste-of-sailing": "taste-of-sailing",
+    "start-sailing": "start-sailing",
+    "basic-skills": "basic-skills",
+    "improving-skills": "improving-skills"
+};
+
+function showLevelInfoModal(levelKey) {
+    const modal = document.getElementById('level-info-modal');
+    if (!modal) return;
+    const title = document.getElementById('level-info-title');
+    const instructorsList = document.getElementById('level-info-instructors');
+    const studentsList = document.getElementById('level-info-students');
+    const boatsList = document.getElementById('level-info-boats');
+    if (!title || !instructorsList || !studentsList || !boatsList) return;
+    title.textContent = levelMap[levelKey] || levelKey;
+    instructorsList.innerHTML = '<li class="text-gray-400 italic">Loading...</li>';
+    studentsList.innerHTML = '<li class="text-gray-400 italic">Loading...</li>';
+    boatsList.innerHTML = '<li class="text-gray-400 italic">Loading...</li>';
+    Promise.all([
+        db.ref('arrangement').once('value'),
+        db.ref('students/' + levelKey).once('value')
+    ]).then(([arrSnap, stuSnap]) => {
+        const arrangement = arrSnap.val() || {};
+        const students = stuSnap.val() || {};
+        const zoneId = levelKey + '-zone';
+        const instructorNames = []; const boatNames = [];
+        Object.entries(arrangement).forEach(([dragId, val]) => {
+            if (val.zoneId === zoneId && val.name) {
+                const el = document.getElementById(dragId);
+                if (el && el.classList.contains('boat')) boatNames.push(val.name); else instructorNames.push(val.name);
+            }
+        });
+        instructorsList.innerHTML = instructorNames.length ? instructorNames.map(n => `<li>${n}</li>`).join('') : '<li class="text-gray-400 italic">None assigned</li>';
+        boatsList.innerHTML = boatNames.length ? boatNames.map(n => `<li>${n}</li>`).join('') : '<li class="text-gray-400 italic">None</li>';
+        studentsList.innerHTML = students.length ? students.map(s => `<li>${s.name}</li>`).join('') : '<li class="text-gray-400 italic">None</li>';
+    });
+    modal.style.display = 'flex';
+}
+
+window.showLevelInfoModal = showLevelInfoModal;
+
+document.addEventListener('DOMContentLoaded', () => {
+    ["cara-na-mara", "taste-of-sailing", "start-sailing", "basic-skills", "improving-skills"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('dblclick', e => {
+                e.stopPropagation();
+                showLevelInfoModal(draggableToLevel[id]);
+            });
+        }
+    });
+    const closeBtn = document.getElementById('close-level-info-modal');
+    if (closeBtn) closeBtn.onclick = () => { const m = document.getElementById('level-info-modal'); if (m) m.style.display = 'none'; };
+    const modal = document.getElementById('level-info-modal');
+    if (modal) modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+});
+
+// --- Repairs Log ---
+function saveRepairLog(detail) {
+    const ref = db.ref('repairsLog').push();
+    const entry = { detail, timestamp: Date.now(), fixed: false, fixedAt: null, fixedBy: null };
+    return ref.set(entry);
+}
+function loadRepairLogs(callback) {
+    db.ref('repairsLog').orderByChild('timestamp').limitToLast(200).once('value').then(snap => {
+        const logs = []; snap.forEach(child => { logs.push({ id: child.key, ...child.val() }); });
+        logs.sort((a, b) => b.timestamp - a.timestamp);
+        callback(logs);
+    });
+}
+function markRepairFixed(id) {
+    const user = auth.currentUser;
+    const updates = { fixed: true, fixedAt: Date.now(), fixedBy: user ? (currentUserName || user.email.split('@')[0]) : 'unknown' };
+    return db.ref('repairsLog/' + id).update(updates).then(() => loadRepairLogs(renderRepairLogs));
+}
+function markRepairUnfixed(id) {
+    const updates = { fixed: false, fixedAt: null, fixedBy: null };
+    return db.ref('repairsLog/' + id).update(updates).then(() => loadRepairLogs(renderRepairLogs));
+}
+function renderRepairLogs(logs) {
+    const ul = document.getElementById('repairs-log-list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    if (!logs.length) { ul.innerHTML = '<li class="py-2 text-gray-400 italic">No repairs logged yet.</li>'; return; }
+    logs.forEach(log => {
+        const dateStr = new Date(log.timestamp).toLocaleString();
+        const isFixed = !!log.fixed;
+        const fixedAtStr = log.fixedAt ? new Date(log.fixedAt).toLocaleString() : '';
+        const badge = isFixed ? `<span class="text-xs font-semibold text-green-800 bg-green-100 px-2 py-0.5 rounded">Fixed</span>` : `<span class="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded">Unfixed</span>`;
+        const actionBtn = isFixed
+            ? `<button onclick="markRepairUnfixed('${log.id}')" class="ml-2 text-sm px-2 py-0.5 rounded bg-yellow-200 text-yellow-800 hover:bg-yellow-300">Reopen</button>`
+            : `<button onclick="markRepairFixed('${log.id}')" class="ml-2 text-sm px-2 py-0.5 rounded bg-green-600 text-white hover:bg-green-700">Mark Fixed</button>`;
+
+        const meta = isFixed ? ` <span class="text-xs text-gray-600">(fixed: ${fixedAtStr})</span>` : '';
+        const liClass = isFixed ? 'py-2 border-l-4 border-green-400 pl-3 bg-green-50 rounded mb-2' : 'py-2 border-l-4 border-red-400 pl-3 bg-red-50 rounded mb-2';
+
+        ul.innerHTML += `<li class="${liClass}"><div class="flex items-center justify-between"><div><span class="font-semibold text-blue-800">${dateStr}:</span> <span class="text-gray-800">${escapeHtml(log.detail)}</span>${meta}</div><div class="ml-4">${badge}${actionBtn}</div></div></li>`;
+    });
+}
+document.addEventListener('DOMContentLoaded', () => {
+    loadRepairLogs(renderRepairLogs);
+    const form = document.getElementById('repairs-log-form');
+    if (form) {
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const input = document.getElementById('repair-detail');
+            const detail = input ? input.value.trim() : '';
+            if (!detail) return;
+            saveRepairLog(detail).then(() => {
+                if (input) input.value = '';
+                loadRepairLogs(renderRepairLogs);
+            });
+        });
+    }
+});
+
+// Expose repair mark/unmark helpers globally for inline onclick handlers
+window.markRepairFixed = markRepairFixed;
+window.markRepairUnfixed = markRepairUnfixed;
+
+// --- UUID Generator ---
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = (Math.random() * 16) | 0,
+            v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
+
+// --- UI Helpers ---
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+}
+
+// Jump to Select
+const jumpSelect = document.getElementById('jump-to-select');
+if (jumpSelect) {
+    jumpSelect.addEventListener('change', function (e) {
+        const val = e.target.value;
+        if (val) {
+            const el = document.querySelector(val);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            e.target.value = '';
+        }
+    });
+}
+
+// Helper function to convert degrees to cardinal direction
+function getCardinalDirection(degrees) {
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const index = Math.round(((degrees % 360) / 45)) % 8;
+    return directions[index];
+}
+
+// Helper function to get Beaufort description from knots
+function getBeaufortDescription(knots) {
+    if (knots < 1) return 'Calm';
+    if (knots < 4) return 'Light Air';
+    if (knots < 7) return 'Light Breeze';
+    if (knots < 11) return 'Gentle Breeze';
+    if (knots < 17) return 'Moderate Breeze';
+    if (knots < 22) return 'Fresh Breeze';
+    if (knots < 28) return 'Strong Breeze';
+    if (knots < 34) return 'Near Gale';
+    if (knots < 41) return 'Gale';
+    if (knots < 48) return 'Strong Gale';
+    if (knots < 56) return 'Storm';
+    if (knots < 64) return 'Violent Storm';
+    return 'Hurricane';
+}
+
+// --- Open-Meteo Weather Fetching ---
+async function fetchWeather() {
+    // Default coordinates for Rathmullan, Co. Donegal, Ireland
+    // You can override these by adding an element with id="weather-coords" and data-lat / data-lon attributes.
+    const DEFAULT_LAT = 55.09;
+    const DEFAULT_LON = -7.54;
+    let lat = DEFAULT_LAT;
+    let lon = DEFAULT_LON;
+    try {
+        const coordEl = document.getElementById('weather-coords');
+        if (coordEl) {
+            const dlat = coordEl.getAttribute('data-lat');
+            const dlon = coordEl.getAttribute('data-lon');
+            if (dlat && dlon) {
+                const parsedLat = parseFloat(dlat);
+                const parsedLon = parseFloat(dlon);
+                if (!Number.isNaN(parsedLat) && !Number.isNaN(parsedLon)) {
+                    lat = parsedLat;
+                    lon = parsedLon;
+                }
+            }
+        }
+    } catch (e) {
+        // fallback to defaults
+    }
+
+    // Use Ireland timezone explicitly so times match local expectations
+    const TZ = 'Europe/Dublin';
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_gusts_10m&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&past_days=1`;
+    console.info('Fetching Open-Meteo for Rathmullan at', { lat, lon, TZ, apiUrl });
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // --- Populate Current Weather ---
+        const tempEl = document.getElementById('weather-temp');
+        const windEl = document.getElementById('weather-wind');
+        const humidityEl = document.getElementById('weather-humidity');
+        const pressureEl = document.getElementById('weather-pressure');
+
+        if (data.current) {
+            if (tempEl) tempEl.innerHTML = `${Math.round(data.current.temperature_2m)}°`;
+            if (humidityEl) humidityEl.textContent = `${data.current.relative_humidity_2m}%`;
+            if (pressureEl) pressureEl.textContent = `${Math.round(data.current.pressure_msl)}`;
+
+            // Convert wind speed from m/s to knots and update wind display
+            if (data.current.wind_speed_10m !== undefined) {
+                const windSpeedKnots = Math.round(data.current.wind_speed_10m * 1.94384 * 10) / 10;
+                const windGustKnots = data.current.wind_gusts_10m ? Math.round(data.current.wind_gusts_10m * 1.94384 * 10) / 10 : windSpeedKnots;
+                const windDirection = data.current.wind_direction_10m || 0;
+
+                if (windEl) windEl.textContent = windSpeedKnots;
+
+                // Update wind arrow rotation
+                const arrow = document.getElementById('wind-arrow');
+                if (arrow) {
+                    arrow.setAttribute('transform', `rotate(${windDirection + 180} 50 50)`);
+                }
+
+                // Update wind direction text
+                const dirLetter = document.getElementById('wind-direction-letter');
+                const dirDegrees = document.getElementById('wind-direction-degrees');
+                if (dirLetter) dirLetter.textContent = getCardinalDirection(windDirection);
+                if (dirDegrees) dirDegrees.textContent = `${Math.round(windDirection)}°`;
+
+                // Update gust speed
+                const gustEl = document.getElementById('wind-gust');
+                if (gustEl) gustEl.textContent = `${windGustKnots} kts`;
+
+                // Update beaufort description
+                const beaufortEl = document.getElementById('wind-beaufort');
+                if (beaufortEl) beaufortEl.textContent = getBeaufortDescription(windSpeedKnots);
+            }
+        }
+
+        // --- Render Wind Chart ---
+        if (data.hourly && data.hourly.time && data.hourly.wind_speed_10m && data.hourly.wind_gusts_10m) {
+            const windCanvas = document.getElementById('wind-graph');
+            // Wait for Chart.js and plugins to load
+            if (windCanvas && window.Chart && window.ChartLoaded) {
+                // Register plugins if not already registered
+                if (window.chartjsPluginZoom && !Chart.registry.plugins.get('zoom')) {
+                    Chart.register(window.chartjsPluginZoom);
+                }
+                if (window.chartjsPluginAnnotation && !Chart.registry.plugins.get('annotation')) {
+                    Chart.register(window.chartjsPluginAnnotation);
+                }
+
+                // Build time-based data points (every 3rd hour) so we can use a time x-axis
+                const hourlyData = data.hourly;
+                const windData = [];
+                const gustData = [];
+
+                hourlyData.time.forEach((t, i) => {
+                    if (i % 3 === 0) {
+                        const speed = Math.round((hourlyData.wind_speed_10m[i] * 1.94384) * 10) / 10;
+                        const gust = Math.round((hourlyData.wind_gusts_10m[i] * 1.94384) * 10) / 10;
+                        windData.push({ x: t, y: speed });
+                        gustData.push({ x: t, y: gust });
+                    }
+                });
+
+                // Calculate chart x-axis limits from the actual data range (with a small padding)
+                const now = new Date();
+                const nowMs = now.getTime();
+                const HOUR_MS = 60 * 60 * 1000;
+                const xTimes = windData.map(d => new Date(d.x).getTime()).filter(t => !Number.isNaN(t));
+                let dataMin = new Date(nowMs - 48 * HOUR_MS);
+                let dataMax = new Date(nowMs + 48 * HOUR_MS);
+                if (xTimes.length) {
+                    dataMin = new Date(Math.min(...xTimes));
+                    dataMax = new Date(Math.max(...xTimes));
+                }
+                const PADDING_MS = 30 * 60 * 1000; // 30 minutes padding on each side
+                const minLimit = new Date(dataMin.getTime() - PADDING_MS);
+                const maxLimit = new Date(dataMax.getTime() + PADDING_MS);
+
+                const windChart = new Chart(windCanvas, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Wind Speed (knots)',
+                                data: windData,
+                                borderColor: 'rgb(59, 130, 246)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: 'Wind Gusts (knots)',
+                                data: gustData,
+                                borderColor: 'rgb(239, 68, 68)',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                pointRadius: 0,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            // Zoom & pan (chartjs-plugin-zoom)
+                            zoom: {
+                                pan: {
+                                    // Disable user panning; only allow built-in controls
+                                    enabled: false,
+                                    mode: 'x',
+                                },
+                                zoom: {
+                                    // Disable wheel/pinch zoom so scrolling doesn't change the view
+                                    wheel: {
+                                        enabled: false,
+                                        speed: 0.1,
+                                    },
+                                    pinch: {
+                                        enabled: false,
+                                    },
+                                    mode: 'x',
+                                },
+                                limits: {
+                                    x: {
+                                        min: minLimit.getTime(),
+                                        max: maxLimit.getTime(),
+                                    }
+                                }
+                            },
+                            // Now line annotation (chartjs-plugin-annotation)
+                            annotation: {
+                                annotations: {
+                                    nowLine: {
+                                        type: 'line',
+                                        xMin: now,
+                                        xMax: now,
+                                        borderColor: 'rgba(16, 185, 129, 0.9)',
+                                        borderWidth: 2,
+                                        borderDash: [6, 6],
+                                        label: {
+                                            content: 'Now',
+                                            enabled: true,
+                                            position: 'start',
+                                            backgroundColor: 'rgba(16, 185, 129, 0.9)',
+                                            color: '#fff',
+                                            font: {
+                                                size: 10,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Knots'
+                                }
+                            },
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'hour',
+                                    tooltipFormat: 'HH:mm',
+                                    displayFormats: {
+                                        hour: 'HH:mm'
+                                    }
+                                },
+                                adapters: {
+                                    date: {
+                                        zone: 'UTC'
+                                    }
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 8,
+                                },
+                                min: minLimit,
+                                max: maxLimit,
+                            }
+                        }
+                    }
+                });
+
+                // Store chart instance globally for controls
+                window.windChartInstance = windChart;
+                window.windChartNowTime = now.getTime();
+                window.windChartMinLimit = minLimit.getTime();
+                window.windChartMaxLimit = maxLimit.getTime();
+            }
+        }
+
+    } catch (error) {
+        console.error("Could not fetch or process weather data:", error);
+        const weatherDisplay = document.getElementById('weather-display');
+        if (weatherDisplay) {
+           const errorHolder = document.createElement('div');
+           errorHolder.innerHTML = `<p class="col-span-full text-center text-red-500 p-4">Could not load live weather data.</p>`;
+           weatherDisplay.prepend(errorHolder);
+        }
+    }
+
+    // Render tide chart when data becomes available (with retry)
+    let tideRetries = 0;
+    const maxTideRetries = 10;
+    function tryRenderTideChart() {
+        if (window.tideData) {
+            window.renderTideChart();
+        } else if (tideRetries < maxTideRetries) {
+            tideRetries++;
+            setTimeout(tryRenderTideChart, 500);
+        }
+    }
+    tryRenderTideChart();
+}
+
+// Render tide chart using data from tides.js (exposed globally)
+window.renderTideChart = function() {
+    // Prevent multiple simultaneous renders
+    if (window.tideChartRendering) {
+        return;
+    }
+    window.tideChartRendering = true;
+
+    const data = window.tideData;
+    if (!data) {
+        window.tideChartRendering = false;
+        return;
+    }
+
+    try {
+        // Get tide events from the data
+        const tideEvents = [];
+
+        // Collect events from next array
+        if (Array.isArray(data.next)) {
+            tideEvents.push(...data.next.slice(0, 8));
+        }
+
+        // Also check next_seven_days for more events
+        if (data.next_seven_days) {
+            Object.keys(data.next_seven_days).forEach(dayKey => {
+                const dayData = data.next_seven_days[dayKey];
+                const events = dayData.tidal_events || dayData.tides || dayData.tide_events || dayData.events || [];
+                tideEvents.push(...events);
+            });
+        }
+
+        if (tideEvents.length < 2) {
+            return;
+        }
+
+        // Sort by timestamp
+        tideEvents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const tideData = [];
+        const now = new Date();
+        const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000); // -24 hours
+        const endTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // +24 hours
+
+        // Generate points every 15 minutes between tide events
+        for (let i = 0; i < tideEvents.length - 1; i++) {
+            const lastEvent = tideEvents[i];
+            const nextEvent = tideEvents[i + 1];
+            const lastTs = new Date(lastEvent.timestamp).getTime();
+            const nextTs = new Date(nextEvent.timestamp).getTime();
+            const duration = nextTs - lastTs;
+            const steps = Math.ceil(duration / (15 * 60 * 1000)); // 15 min intervals
+
+            for (let j = 0; j <= steps; j++) {
+                const t = lastTs + (duration * j / steps);
+                if (t < startTime.getTime() || t > endTime.getTime()) continue;
+
+                const f = j / steps; // Fraction through this tide cycle
+                const height = calculateRuleOfTwelfthsHeight(lastEvent.height_cm, nextEvent.height_cm, f);
+                tideData.push({ x: new Date(t), y: height / 100 }); // Convert cm to meters
+            }
+        }
+
+        // Render the tide chart
+        const tideCanvas = document.getElementById('tide-graph');
+        if (tideCanvas && window.Chart && window.ChartLoaded && tideData.length > 0) {
+            // Destroy existing chart if it exists
+            if (window.tideChartInstance) {
+                window.tideChartInstance.destroy();
+            }
+
+            // Compute x-axis limits from actual data range so the chart only shows regions with data
+            const xTimes = tideData.map(d => new Date(d.x).getTime()).filter(t => !Number.isNaN(t));
+            // Fallback to +/-24h if no valid points
+            let dataMin = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            let dataMax = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            if (xTimes.length) {
+                dataMin = new Date(Math.min(...xTimes));
+                dataMax = new Date(Math.max(...xTimes));
+            }
+            const PADDING_MS = 30 * 60 * 1000; // 30 minutes padding
+            const minLimit = new Date(dataMin.getTime() - PADDING_MS);
+            const maxLimit = new Date(dataMax.getTime() + PADDING_MS);
+
+            window.tideChartInstance = new Chart(tideCanvas, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Tide Height (m)',
+                        data: tideData,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                nowLine: {
+                                    type: 'line',
+                                    xMin: now,
+                                    xMax: now,
+                                    borderColor: 'rgba(16, 185, 129, 0
+
+
