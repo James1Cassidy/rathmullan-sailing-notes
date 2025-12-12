@@ -615,25 +615,25 @@ function getDrillSuggestions(windKnots) {
             const levelName = levelNames[levelKey] || levelKey;
             const limits = LEVEL_CONDITIONS[levelKey];
 
-            const systemPrompt = `You are an expert sailing instructor at Rathmullan Sailing School. Generate practical, age-appropriate sailing drills and activities based on current conditions and student level.
-
-    Rules:
-    - Provide 3-4 specific, actionable drills
-    - Each drill should be concise (one short sentence)
-    - Consider safety first - if conditions are marginal, include safety-focused drills
-    - Drills should be appropriate for the skill level
-    - If specific skills are being taught, prioritize drills for those skills
-    - Format as a simple array of strings`;
-
-            const skillsList = selectedSkills.length > 0
-                ? `\n\nToday's focus skills:\n${selectedSkills.map(s => `- ${s.skillName}`).join('\n')}`
+            const focusSkills = Array.isArray(selectedSkills) ? selectedSkills.filter(s => s && s.skillName) : [];
+            const skillsList = focusSkills.length > 0
+                ? `\n\nFocus skills (must be covered and named in drills):\n${focusSkills.map(s => `- ${s.skillName}`).join('\n')}`
                 : '';
 
-            const userQuery = `Level: ${levelName}
-    Wind: ${windKnots.toFixed(1)} knots (gusting ${gustKnots.toFixed(1)} knots)
-    Level limits: ${limits.maxWind} kts wind / ${limits.maxGust} kts gust${skillsList}
+            const systemPrompt = `You are an expert sailing instructor at Rathmullan Sailing School. Generate concise, practical sailing drills tailored to level, wind, and the focus skills provided.
 
-    Generate 3-4 practical sailing drills for this session. Return ONLY a JSON array of strings, like: ["drill 1", "drill 2", "drill 3"]`;
+Rules:
+- Provide 3-4 specific drills, each <=18 words
+- At least one drill must directly train EACH focus skill and mention that skill by name
+- Safety first: if near limits, include a safety/controlled option
+- Match difficulty to the level
+- Output ONLY a JSON array of strings, no prose`;
+
+            const userQuery = `Level: ${levelName}
+Wind: ${windKnots.toFixed(1)} knots (gusting ${gustKnots.toFixed(1)} knots)
+Level limits: ${limits.maxWind} kts wind / ${limits.maxGust} kts gust${skillsList}
+
+Return a JSON array like ["drill 1", "drill 2", "drill 3"]. Ensure each focus skill appears in a drill.`;
 
             const response = await callGemini(systemPrompt, userQuery);
             const drills = extractJson(response);
