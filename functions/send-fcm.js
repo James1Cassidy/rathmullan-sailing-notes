@@ -14,14 +14,14 @@ export async function onRequestPost(context) {
     // Service worker will handle showing the notification
     const payload = {
       registration_ids: tokens,
+      priority: 'high',
       data: {
         type: 'urgent-announcement',
         title: title || 'Notification',
         body: msgBody || '',
         url: url,
         icon: '/images/logo.png',
-        badge: '/images/logo.png',
-        requireInteraction: 'true'
+        badge: '/images/logo.png'
       }
     };
     const res = await fetch('https://fcm.googleapis.com/fcm/send', {

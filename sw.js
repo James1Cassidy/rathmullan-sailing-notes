@@ -186,9 +186,12 @@ self.addEventListener('push', (event) => {
             body: notificationData.body,
             icon: notificationData.icon,
             badge: notificationData.badge,
-            requireInteraction: notificationData.requireInteraction,
+            requireInteraction: false,
             data: notificationData.data,
             tag: notificationData.tag,
+            vibrate: [200, 100, 200],
+            silent: false,
+            renotify: true,
             actions: [
                 { action: 'open', title: 'Open' },
                 { action: 'close', title: 'Close' }

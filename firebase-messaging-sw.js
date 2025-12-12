@@ -18,13 +18,33 @@ const messaging = firebase.messaging();
 // Firebase v8 requires setBackgroundMessageHandler
 messaging.setBackgroundMessageHandler(function(payload) {
   console.info('[FCM SW] Background message received', payload);
-  const title = (payload.notification && payload.notification.title) || 'Update';
-  const body = (payload.notification && payload.notification.body) || '';
+
+  // Handle data-only messages (for background delivery)
+  let title = 'Sailing School';
+  let body = 'New message';
+  let data = { url: '/instructors.html' };
+
+  if (payload.data) {
+    title = payload.data.title || title;
+    body = payload.data.body || body;
+    data = payload.data;
+  } else if (payload.notification) {
+    title = payload.notification.title || title;
+    body = payload.notification.body || body;
+  }
+
   const options = {
     body,
     icon: '/images/logo.png',
     badge: '/images/logo.png',
-    data: { url: '/instructors.html' }
+    data: data,
+    requireInteraction: false,
+    vibrate: [200, 100, 200],
+    silent: false,
+    renotify: true,
+    tag: (payload.data && payload.data.type) || 'default'
   };
+
+  console.info('[FCM SW] Showing notification:', title, options);
   return self.registration.showNotification(title, options);
 });
