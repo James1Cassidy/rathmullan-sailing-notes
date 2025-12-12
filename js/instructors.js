@@ -1305,11 +1305,12 @@ function validateLevelRatios(level) {
     let assistantCount = 0;
 
     usersInZone.forEach(user => {
-        const userName = user.textContent.trim();
-        // Instructors and Senior Instructors have numbers 1-8, Assistants have numbers 1-8 with 'assistant' prefix in id
-        if (user.id.startsWith('instructor-') || user.id.startsWith('senior-')) {
+        // Check by CSS classes: instructors are bg-blue-600 or bg-purple-600, assistants are bg-green-500
+        if (user.classList.contains('bg-blue-600') || user.classList.contains('bg-purple-600')) {
+            // bg-blue-600 = instructor, bg-purple-600 = senior instructor
             instructorCount++;
-        } else if (user.id.startsWith('assistant-')) {
+        } else if (user.classList.contains('bg-green-500')) {
+            // bg-green-500 = assistant
             assistantCount++;
         }
     });
