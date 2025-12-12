@@ -1248,14 +1248,13 @@ function loadBoatsFromFirebase() {
             if (boatData && boatData.name) {
                 const div = document.createElement('div');
                 const boatType = boatData.type || 'unknown';
-                const typeLabel = boatType === 'single' ? '⛵' : boatType === 'double' ? '⛵⛵' : boatType === 'multi' ? '⛵⛵⛵' : '?';
                 div.className = `relative group draggable boat ${boatData.color || 'bg-yellow-500'} text-white px-3 py-1 rounded-md cursor-pointer`;
                 div.id = boatId;
                 div.draggable = true;
                 div.dataset.type = boatType;
                 div.title = `${boatData.name} (${boatType} handed)`;
                 div.innerHTML = `
-                    <span>${boatData.name} ${typeLabel}</span>
+                    <span>${boatData.name}</span>
                     <button onclick="deleteBoat('${boatId}')" class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 bg-red-700 text-white text-xs px-1.5 py-0.5 rounded-bl transition-opacity" title="Delete boat">✕</button>
                 `;
                 flexWrap.appendChild(div);
