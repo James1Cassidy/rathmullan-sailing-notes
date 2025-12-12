@@ -1409,13 +1409,35 @@ function applyNotificationPrefsToUI() {
     urgentEl.checked = !!window.notificationPrefs.urgent;
     weatherEl.checked = !!window.notificationPrefs.weather;
     ownEl.checked = !!window.notificationPrefs.own;
+
+    // Also control the visibility/state of the Enable Notifications button
+    const btn = document.getElementById('enable-notifications-btn');
+    if (btn && typeof Notification !== 'undefined') {
+        if (Notification.permission === 'granted') {
+            if (window.notificationPrefs.enabled) btn.classList.add('hidden');
+            else {
+                btn.disabled = false;
+                btn.textContent = 'Enable Notifications';
+                btn.classList.remove('hidden');
+            }
+        } else if (Notification.permission === 'denied') {
+            btn.textContent = 'Notifications blocked';
+            btn.disabled = true;
+            btn.classList.remove('hidden');
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Enable Notifications';
+            btn.classList.remove('hidden');
+        }
+    }
 }
 
 function initNotificationPreferencesUI() {
     const toggleBtn = document.getElementById('toggle-prefs-btn');
     const panel = document.getElementById('notification-preferences');
     const saveBtn = document.getElementById('save-prefs-btn');
-    const disableAllBtn = document.getElementById('disable-all-prefs-btn');
+    const disableAllBtn = document.getElementById('disable-all-notifs-btn');
+    const testBtn = document.getElementById('test-notification-btn');
     const enabledEl = document.getElementById('pref-enabled');
     const flashEl = document.getElementById('prefs-flash');
     if (!toggleBtn || !panel) return;
@@ -1457,6 +1479,47 @@ function initNotificationPreferencesUI() {
         flash('All notifications disabled');
         const enableBtn = document.getElementById('enable-notifications-btn');
         if (enableBtn && Notification.permission === 'granted') enableBtn.classList.remove('hidden');
+    });
+
+    // Test Notification
+    testBtn?.addEventListener('click', async () => {
+        if (typeof Notification === 'undefined') {
+            showToast('Notifications not supported in this browser', 'warning', 4000);
+            return;
+        }
+        if (Notification.permission === 'default') {
+            try {
+                const perm = await Notification.requestPermission();
+                if (perm !== 'granted') {
+                    showToast('Permission denied. Cannot show notifications.', 'error', 4000);
+                    return;
+                }
+            } catch (e) {
+                showToast('Unable to request notification permission', 'error', 4000);
+                return;
+            }
+        }
+
+        try {
+            const reg = await navigator.serviceWorker.getRegistration();
+            const opts = {
+                body: 'This is a test notification. You will receive urgent announcements here.',
+                icon: '/images/logo.png',
+                badge: '/images/logo.png',
+                tag: 'test-notification',
+                requireInteraction: false
+            };
+            if (reg && reg.showNotification) {
+                await reg.showNotification('Test Notification', opts);
+                showToast('Test notification sent (via Service Worker)', 'success', 3000);
+            } else {
+                await showNotification('Test Notification', opts);
+                showToast('Test notification sent', 'success', 3000);
+            }
+        } catch (e) {
+            console.error('[TestNotification] Failed', e);
+            showToast('Failed to show test notification', 'error', 4000);
+        }
     });
 }
 
@@ -4875,11 +4938,6 @@ function postAnnouncement() {
         if (input) input.value = '';
         if (pinnedCheckbox) pinnedCheckbox.checked = false;
         if (urgentCheckbox) urgentCheckbox.checked = false;
-        if (urgent && window.notificationPrefs.enabled && window.notificationPrefs.urgent) {
-            if (window.notificationPrefs.own) {
-                showNotification('Urgent Announcement', { body: text.slice(0,120) + (text.length>120?'...':'') });
-            }
-        }
         loadAnnouncements();
     }).catch(err => alert('Error posting announcement: ' + err.message));
 }
@@ -4933,15 +4991,7 @@ function loadAnnouncements() {
                 <p class="text-gray-800">${escapeHtml(ann.text)}</p>
             `;
             list.appendChild(div);
-            // Local notification for recent urgent announcements (no duplicates)
-            if (ann.urgent && window.notificationPrefs.enabled && window.notificationPrefs.urgent && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                const recent = Date.now() - ann.timestamp < 5 * 60 * 1000;
-                const authorIsSelf = (user && ann.authorId === user.uid);
-                if (recent && !window.__urgentNotifiedIds.has(ann.id) && (window.notificationPrefs.own || !authorIsSelf)) {
-                    showNotification('Urgent Announcement', { body: ann.text.slice(0,120) + (ann.text.length>120?'...':'') });
-                    window.__urgentNotifiedIds.add(ann.id);
-                }
-            }
+            // Avoid local notifications here to prevent duplicates; rely on push via service worker.
         });
     });
     announcementsListenerAttached = true;
