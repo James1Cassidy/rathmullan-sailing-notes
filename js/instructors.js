@@ -16,6 +16,58 @@ if (!firebase.apps.length) {
 } else {
     firebase.app(); // reuse existing app
 }
+function evaluateLevelConditions(levelKey) {
+    if (!window.currentWind) return null;
+    const limits = LEVEL_CONDITIONS[levelKey];
+    if (!limits) return null;
+    const wind = window.currentWind.speed || 0;
+    const gust = window.currentWind.gust || wind;
+    let status = 'go';
+    if (wind > limits.maxWind || gust > limits.maxGust) {
+        status = 'no-go';
+    } else if (wind > limits.maxWind * 0.85 || gust > limits.maxGust * 0.85) {
+        status = 'caution';
+    }
+    return { status, wind, gust, limits };
+}
+
+function renderWeatherGuidance() {
+    const level = (document.getElementById('session-level-select') || {}).value;
+    const container = document.getElementById('weather-guidance');
+    if (!container) return;
+    if (!level) {
+        container.innerHTML = '<p class="text-gray-600 text-sm">Select a level to see go/no-go and suggested drills.</p>';
+        return;
+    }
+
+    const evaluation = evaluateLevelConditions(level);
+    if (!evaluation) {
+        container.innerHTML = '<p class="text-gray-600 text-sm">Waiting for live wind data...</p>';
+        return;
+    }
+
+    const { status, wind, gust, limits } = evaluation;
+    const badgeColors = {
+        'go': 'bg-green-100 text-green-800 border-green-300',
+        'caution': 'bg-yellow-100 text-yellow-900 border-yellow-300',
+        'no-go': 'bg-red-100 text-red-800 border-red-300'
+    };
+    const badgeText = status === 'go' ? 'GO' : status === 'caution' ? 'CAUTION' : 'NO-GO';
+
+    const drills = getDrillSuggestions(wind).map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
+
+    container.innerHTML = `
+        <div class="flex items-center gap-3 mb-2">
+            <div class="px-3 py-1 rounded border ${badgeColors[status]} text-sm font-semibold">${badgeText}</div>
+            <div class="text-sm text-gray-700">Wind ${wind.toFixed(1)} kts · Gust ${gust.toFixed(1)} kts</div>
+        </div>
+        <div class="text-xs text-gray-600 mb-3">Limits for this level: ${limits.maxWind} kts (wind) / ${limits.maxGust} kts (gust)</div>
+        <div>
+            <div class="text-sm font-semibold text-purple-700 mb-1">Suggested drills</div>
+            <ul>${drills}</ul>
+        </div>
+    `;
+}
 const db = firebase.database();
 window.db = db; // Expose db globally for inline scripts
 window.firebase = firebase; // Ensure firebase is globally accessible
@@ -478,6 +530,46 @@ const TEACHING_RATIOS = {
         'multi': { standard: { ratio: '1:3', maxBoats: 1 }, withAssistant: { ratio: '1:6', maxBoats: 2 } }
     }
 };
+
+// --- Weather operating limits & drill suggestions ---
+// Wind limits are in knots (steady) and gusts. Senior instructors share instructor limits.
+const LEVEL_CONDITIONS = {
+    'taste-of-sailing': { maxWind: 12, maxGust: 15 },
+    'start-sailing': { maxWind: 15, maxGust: 18 },
+    'basic-skills': { maxWind: 18, maxGust: 22 },
+    'improving-skills': { maxWind: 22, maxGust: 26 },
+    'advanced': { maxWind: 28, maxGust: 32 },
+    'cara-na-mara': { maxWind: 10, maxGust: 12 }
+};
+
+function getDrillSuggestions(windKnots) {
+    if (windKnots <= 8) {
+        return [
+            'Light-air boat trim & telltales',
+            'Acceleration & roll tacks',
+            'Slow-speed control & stopping drills'
+        ];
+    }
+    if (windKnots <= 15) {
+        return [
+            'Figure-8 MOB alongside drill',
+            'Upwind trim: vang/outhaul/cunningham tweaks',
+            'Mark roundings with tight laylines'
+        ];
+    }
+    if (windKnots <= 22) {
+        return [
+            'Reefing under time limit',
+            'Heavy-air tacks/gybes with safe exits',
+            'Heaving-to & depowering practice'
+        ];
+    }
+    return [
+        'Shore-based briefing / simulator',
+        'Knots, rules, and weather plotting',
+        'Rig checks and heavy-weather equipment review'
+    ];
+}
 
 // Assessment states for skills
 const SKILL_ASSESSMENT_STATES = {
@@ -3001,6 +3093,13 @@ async function fetchWeather() {
                 const windGustKnots = data.current.wind_gusts_10m ? Math.round(data.current.wind_gusts_10m * 1.94384 * 10) / 10 : windSpeedKnots;
                 const windDirection = data.current.wind_direction_10m || 0;
 
+                // Store for suggestions/alerts
+                window.currentWind = {
+                    speed: windSpeedKnots,
+                    gust: windGustKnots,
+                    direction
+                };
+
                 if (windEl) windEl.textContent = windSpeedKnots;
 
                 // Update wind arrow rotation
@@ -3022,6 +3121,9 @@ async function fetchWeather() {
                 // Update beaufort description
                 const beaufortEl = document.getElementById('wind-beaufort');
                 if (beaufortEl) beaufortEl.textContent = getBeaufortDescription(windSpeedKnots);
+
+                // Re-render weather guidance if a level is selected
+                renderWeatherGuidance();
             }
         }
 
@@ -5797,6 +5899,9 @@ function loadSessionStudentsList() {
     const level = levelSelect.value;
     const studentsList = document.getElementById('session-students-list');
 
+    // Update weather guidance whenever level changes
+    renderWeatherGuidance();
+
     if (!level || sessionSelectedSkills.length === 0) {
         studentsList.innerHTML = '<p class="text-gray-500 text-sm">Select level and skills to begin</p>';
         return;
@@ -5839,10 +5944,11 @@ function loadSessionStudentsList() {
                                 <th class="border border-gray-200 px-3 py-2 text-left font-semibold text-gray-800 w-48">Skill</th>
             `;
 
-            // Add student headers
+            // Add student headers (double-click to add a note)
             onCourseStudents.forEach((student, idx) => {
                 const studentName = student.name || student;
-                html += `<th class="border border-gray-200 px-2 py-2 text-center font-semibold text-gray-800 min-w-[120px]">${escapeHtml(studentName)}</th>`;
+                const studentId = student.id || `student-${idx}`;
+                html += `<th class="border border-gray-200 px-2 py-2 text-center font-semibold text-gray-800 min-w-[120px] cursor-pointer" ondblclick="addSessionNote('${level}','${studentId}','${escapeHtml(studentName)}')" title="Double-click to add a note">${escapeHtml(studentName)}</th>`;
             });
 
             html += `
@@ -5944,6 +6050,23 @@ function cycleSessionSkillState(button) {
     db.ref(path).set(nextState).catch(err => {
         console.error('Error saving assessment:', err.message);
     });
+}
+
+// Quick note entry from current session (double-click on student header)
+async function addSessionNote(level, studentId, studentName) {
+    const note = prompt(`Add note for ${studentName}:`);
+    if (!note || !note.trim()) return;
+    const path = `studentNotes/${level}/${studentId}/sessionNotes`;
+    try {
+        await db.ref(path).push({
+            note: note.trim(),
+            ts: Date.now()
+        });
+        alert('Note saved');
+    } catch (e) {
+        console.error('Error saving note', e);
+        alert('Could not save note');
+    }
 }
 
 function saveSessionAssessments() {
