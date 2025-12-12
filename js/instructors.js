@@ -1938,6 +1938,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
             window.saveDraggablePositionToFirebase(id, leftPercent, topPercent);
         });
+
+        // Touch Events (Mobile/Tablet)
+        mapDraggables.forEach(item => {
+            let offsetX, offsetY, moving = false;
+
+            item.addEventListener('touchstart', function (e) {
+                const touch = e.touches[0];
+                const itemRect = item.getBoundingClientRect();
+                offsetX = touch.clientX - itemRect.left;
+                offsetY = touch.clientY - itemRect.top;
+                moving = true;
+                item.style.zIndex = 1000;
+            });
+
+            item.addEventListener('touchmove', function (e) {
+                if (!moving) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = map.getBoundingClientRect();
+
+                const leftPx = touch.clientX - rect.left - offsetX;
+                const topPx = touch.clientY - rect.top - offsetY;
+
+                item.style.position = 'absolute';
+                item.style.left = leftPx + 'px';
+                item.style.top = topPx + 'px';
+            });
+
+            item.addEventListener('touchend', function (e) {
+                if (!moving) return;
+                moving = false;
+                item.style.zIndex = '';
+
+                const rect = map.getBoundingClientRect();
+                const leftPx = parseFloat(item.style.left);
+                const topPx = parseFloat(item.style.top);
+
+                const leftPercent = leftPx / map.offsetWidth;
+                const topPercent = topPx / map.offsetHeight;
+
+                window.saveDraggablePositionToFirebase(item.id, leftPercent, topPercent);
+            });
+        });
     }
 });
 
@@ -2482,7 +2525,7 @@ function showLevelInfoModal(levelKey) {
         db.ref('students/' + levelKey).once('value')
     ]).then(([arrSnap, stuSnap]) => {
         const arrangement = arrSnap.val() || {};
-        const students = stuSnap.val() || {};
+        const students = stuSnap.val() || [];
         const zoneId = levelKey + '-zone';
         const instructorNames = []; const boatNames = [];
         Object.entries(arrangement).forEach(([dragId, val]) => {
