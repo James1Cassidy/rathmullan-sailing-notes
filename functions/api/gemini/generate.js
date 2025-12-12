@@ -2,10 +2,11 @@
 // Proxy for Gemini text generation API with fallback to alternative models
 
 // Fallback models to use if Gemini hits rate limits
+// Available models: gamma-3-1b, gamma-3-2b, gamma-3-12b, gamma-3-27b
 const FALLBACK_MODELS = [
   'gamma-3-1b',
   'gamma-3-2b',
-  'gamma-3-4b'
+  'gamma-3-12b'
 ];
 
 async function callGeminiAPI(model, systemPrompt, userQuery, isSearchGrounded, apiKey) {
