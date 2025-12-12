@@ -1427,6 +1427,52 @@ function addBoat() {
 
 window.addBoat = addBoat;
 
+async function addBoatsBulk() {
+    const className = document.getElementById('boat-class-input').value.trim();
+    const countVal = document.getElementById('boat-count-input').value;
+    const type = document.getElementById('boat-type-select').value;
+    const color = document.getElementById('selected-boat-color').value;
+
+    const count = parseInt(countVal, 10);
+
+    if (!className) {
+        alert('Please enter a boat class name');
+        return;
+    }
+
+    if (!type) {
+        alert('Please select a boat type (Single, Double, or Multi-handed)');
+        return;
+    }
+
+    if (!Number.isFinite(count) || count <= 0 || count > 50) {
+        alert('Please enter a quantity between 1 and 50');
+        return;
+    }
+
+    const updates = {};
+    for (let i = 1; i <= count; i++) {
+        const boatId = 'boat-' + Date.now() + '-' + i;
+        const name = `${className}-${i}`;
+        updates[boatId] = { name, color, type };
+    }
+
+    try {
+        await db.ref('boats').update(updates);
+        document.getElementById('boat-class-input').value = '';
+        document.getElementById('boat-count-input').value = '3';
+        document.getElementById('boat-type-select').value = '';
+        document.getElementById('selected-boat-color').value = 'bg-yellow-500';
+        toggleAddBoatForm();
+        loadBoatsFromFirebase();
+    } catch (err) {
+        console.error('Error bulk-adding boats:', err);
+        alert('Error creating boats: ' + err.message);
+    }
+}
+
+window.addBoatsBulk = addBoatsBulk;
+
 function deleteBoat(boatId) {
     if (!confirm('Are you sure you want to delete this boat?')) return;
 
