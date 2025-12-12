@@ -10,15 +10,19 @@ export async function onRequestPost(context) {
     if (!tokens.length) {
       return new Response(JSON.stringify({ error: 'No tokens supplied' }), { status: 400 });
     }
+    // Use data-only payload for background delivery (app closed)
+    // Service worker will handle showing the notification
     const payload = {
       registration_ids: tokens,
-      notification: {
+      data: {
+        type: 'urgent-announcement',
         title: title || 'Notification',
         body: msgBody || '',
-        click_action: url,
-        icon: '/images/logo.png'
-      },
-      data: { url }
+        url: url,
+        icon: '/images/logo.png',
+        badge: '/images/logo.png',
+        requireInteraction: 'true'
+      }
     };
     const res = await fetch('https://fcm.googleapis.com/fcm/send', {
       method: 'POST',

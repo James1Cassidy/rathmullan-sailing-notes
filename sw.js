@@ -142,39 +142,57 @@ self.addEventListener('activate', event => {
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
-    console.log('[SW-Push] Push event received');
-    const options = {
+    console.log('[SW-Push] Push event received', event);
+
+    let notificationData = {
+        title: 'Sailing School',
+        body: 'New message',
         icon: '/images/logo.png',
         badge: '/images/logo.png',
         requireInteraction: true,
-        actions: [
-            { action: 'open', title: 'Open' },
-            { action: 'close', title: 'Close' }
-        ]
+        tag: 'default',
+        data: {}
     };
 
     if (event.data) {
         try {
             const payload = event.data.json();
             console.log('[SW-Push] Payload:', payload);
-            options.title = payload.notification?.title || 'Sailing School';
-            options.body = payload.notification?.body || 'New message';
-            options.data = payload.data || {};
+
+            // Handle data-only messages (background delivery)
+            if (payload.data) {
+                notificationData.title = payload.data.title || notificationData.title;
+                notificationData.body = payload.data.body || notificationData.body;
+                notificationData.icon = payload.data.icon || notificationData.icon;
+                notificationData.badge = payload.data.badge || notificationData.badge;
+                notificationData.tag = payload.data.type || 'default';
+                notificationData.requireInteraction = payload.data.requireInteraction === 'true';
+                notificationData.data = payload.data;
+            }
+            // Fallback to notification payload (foreground)
+            else if (payload.notification) {
+                notificationData.title = payload.notification.title || notificationData.title;
+                notificationData.body = payload.notification.body || notificationData.body;
+                notificationData.data = payload.data || {};
+            }
         } catch (e) {
-            options.title = 'Sailing School';
-            options.body = event.data.text();
+            console.error('[SW-Push] Parse error:', e);
+            notificationData.body = event.data.text();
         }
     }
 
     event.waitUntil(
-        self.registration.showNotification(options.title, {
-            body: options.body,
-            icon: options.icon,
-            badge: options.badge,
-            requireInteraction: options.requireInteraction,
-            data: options.data,
-            actions: options.actions,
-            tag: options.data?.type || 'default'
+        self.registration.showNotification(notificationData.title, {
+            body: notificationData.body,
+            icon: notificationData.icon,
+            badge: notificationData.badge,
+            requireInteraction: notificationData.requireInteraction,
+            data: notificationData.data,
+            tag: notificationData.tag,
+            actions: [
+                { action: 'open', title: 'Open' },
+                { action: 'close', title: 'Close' }
+            ]
         }).catch(err => console.error('[SW-Push] showNotification failed:', err))
     );
 });
