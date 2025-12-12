@@ -2897,9 +2897,31 @@ if (googleSignInBtn) {
         window.__signupInFlight = true;
         const provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(provider)
-            .then(result => {
-                // Mark as recent signup so auth listener creates database record
-                try { sessionStorage.setItem('__recentSignupUid', result.user.uid); } catch (_) {}
+            .then(async (result) => {
+                // Mark as recent signup
+                const uid = result && result.user && result.user.uid;
+                try { if (uid) sessionStorage.setItem('__recentSignupUid', uid); } catch (_) {}
+
+                // Ensure a Database user record exists (first-time Google sign-in)
+                try {
+                    if (uid) {
+                        const userRef = db.ref('users/' + uid);
+                        await userRef.transaction(current => {
+                            if (current === null) {
+                                return {
+                                    email: (result.user && result.user.email) || '',
+                                    name: (result.user && (result.user.displayName || (result.user.email ? result.user.email.split('@')[0] : '')) ) || '',
+                                    approved: false,
+                                    role: 'instructor'
+                                };
+                            }
+                            return current; // do not overwrite existing
+                        });
+                    }
+                } catch (dbErr) {
+                    console.error('[Google Sign-In] Failed to ensure users/<uid> record:', dbErr);
+                }
+
                 window.__signupInFlight = false;
             })
             .catch(err => {
