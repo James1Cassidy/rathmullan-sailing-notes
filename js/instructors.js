@@ -2266,29 +2266,35 @@ window.clearBoats = clearBoats;
 function clearAll() {
     clearBoats();
     clearInstructors();
-    clearAllStudentsAndNotes();
+    clearAllStudentsFromWeek();
 }
 window.clearAll = clearAll;
-function clearAllStudentsAndNotes() {
-    const confirmMsg = 'Clear ALL students and ALL student notes for every level? This cannot be undone.';
+function clearAllStudentsFromWeek() {
+    const confirmMsg = 'Remove all students from "on course this week"? Students and their notes will be preserved.';
     if (!confirm(confirmMsg)) return;
     const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
-    const updates = {};
-    levels.forEach(level => {
-        updates['students/' + level] = null;
-        updates['studentNotes/' + level] = null;
+
+    // Load all students and set onCourseThisWeek to false
+    const promises = levels.map(level => {
+        return db.ref('students/' + level).once('value').then(snap => {
+            const students = snap.val() || [];
+            const updatedStudents = students.map(student => ({
+                ...student,
+                onCourseThisWeek: false
+            }));
+            return db.ref('students/' + level).set(updatedStudents);
+        });
     });
-    db.ref().update(updates).then(() => {
-        const studentSelect = document.getElementById('notes-student-select');
-        if (studentSelect) { studentSelect.innerHTML = '<option value="">Select student...</option>'; studentSelect.disabled = true; }
-        const levelSelect = document.getElementById('notes-level-select');
-        if (levelSelect) levelSelect.value = '';
-        const display = document.getElementById('student-notes-display');
-        if (display) display.classList.add('hidden');
-        const historyEl = document.getElementById('notes-history');
-        if (historyEl) historyEl.innerHTML = '';
-        alert('All students and notes have been cleared.');
-    }).catch(err => alert('Failed to clear: ' + err.message));
+
+    Promise.all(promises).then(() => {
+        // Refresh student tables to reflect changes
+        levels.forEach(level => {
+            db.ref('students/' + level).once('value').then(snap => {
+                updateStudentTable(level, snap.val() || []);
+            });
+        });
+        alert('All students removed from this week\'s course. Students and notes are preserved.');
+    }).catch(err => alert('Failed to clear weekly students: ' + err.message));
 }
 
 document.addEventListener('DOMContentLoaded', () => {

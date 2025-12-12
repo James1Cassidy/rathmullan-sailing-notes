@@ -774,7 +774,7 @@
                         <p class="text-gray-500 text-sm">Drop here</p>
                     </div>
                     <div class="mt-4">
-                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students on Course This Week</h5>
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
                         <table class="w-full text-xs bg-white rounded border border-blue-100">
                             <tbody id="students-cara-na-mara"></tbody>
                         </table>
@@ -790,7 +790,7 @@
                         <p class="text-gray-500 text-sm">Drop here</p>
                     </div>
                     <div class="mt-4">
-                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students on Course This Week</h5>
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
                         <table class="w-full text-xs bg-white rounded border border-blue-100">
                             <tbody id="students-taste-of-sailing"></tbody>
                         </table>
@@ -807,13 +807,13 @@
                     </div>
                     <div class="mt-4">
                         <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
-                        <form class="flex mb-2" onsubmit="return addStudent(event, 'start-sailing')">
-                            <input type="text"
-                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                                placeholder="Add name" id="input-student-start-sailing" autocomplete="off">
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form> on Course This Week</h5
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-start-sailing"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Basic Skills -->
                 <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
@@ -826,13 +826,13 @@
                     </div>
                     <div class="mt-4">
                         <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
-                        <form class="flex mb-2" onsubmit="return addStudent(event, 'basic-skills')">
-                            <input type="text"
-                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                                placeholder="Add name" id="input-student-basic-skills" autocomplete="off">
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form> on Course This Week</h5vel-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                        <table class="w-full text-xs bg-white rounded border border-blue-100">
+                            <tbody id="students-basic-skills"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Improving Skills -->
+                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
                     <span id="count-improving-skills"
                         class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
                         <span class="count-num">0</span></span>
@@ -842,20 +842,20 @@
                     </div>
                     <div class="mt-4">
                         <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
-                        <form class="flex mb-2" onsubmit="return addStudent(event, 'improving-skills')">
-                            <input type="text"
-                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                                placeholder="Add name" id="input-student-improving-skills" autocomplete="off">
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form>
                         <table class="w-full text-xs bg-white rounded border border-blue-100">
                             <tbody id="students-improving-skills"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
- on Course This Week</h5dd-boat-form" class="hidden mb-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+
+            <div class="mt-8 flex flex-col md:flex-row gap-8 justify-center items-stretch">
+                <div class="flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xl font-bold text-blue-700 text-center flex-1">Available Boats</h4>
+                        <button onclick="toggleAddBoatForm()" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm font-medium">+ Add Boat</button>
+                    </div>
+                    <div id="add-boat-form" class="hidden mb-4 p-4 bg-blue-50 rounded-md border border-blue-200">
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Boat Name:</label>
                             <input type="text" id="boat-name-input" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter boat name">
