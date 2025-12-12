@@ -2317,14 +2317,29 @@ function updateStudentTable(level, students) {
     tableBody.innerHTML = '';
     // Filter to only show students on course this week
     const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
-    onCourseStudents.forEach(student => {
+
+    // Display 2 students per row
+    for (let i = 0; i < onCourseStudents.length; i += 2) {
         const row = document.createElement('tr');
-        // Only show student name, no management buttons (managed in Student Management section)
-        row.innerHTML = `
-            <td class="p-2 border-b text-left">${student.name}</td>
-        `;
+        const student1 = onCourseStudents[i];
+        const student2 = onCourseStudents[i + 1];
+
+        if (student2) {
+            // Two students in this row
+            row.innerHTML = `
+                <td class="p-2 border-b text-left">${student1.name}</td>
+                <td class="p-2 border-b text-left">${student2.name}</td>
+            `;
+        } else {
+            // Only one student in this row
+            row.innerHTML = `
+                <td class="p-2 border-b text-left">${student1.name}</td>
+                <td class="p-2 border-b text-left"></td>
+            `;
+        }
         tableBody.appendChild(row);
-    });
+    }
+
     const countSpan = document.querySelector(`#count-${level} .count-num`);
     if (countSpan) countSpan.textContent = onCourseStudents.length;
 
