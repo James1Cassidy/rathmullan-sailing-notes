@@ -1280,17 +1280,18 @@ function validateLevelRatios(level) {
 
     const studentCount = tableBody.querySelectorAll('tr').length;
 
-    // Get boats in arrangement for this level
-    const boatsInLevel = document.querySelectorAll(`[data-level="${level}"][data-boat-id]`);
+    // Get dropzone for this level
+    const dropzone = document.getElementById(level + '-zone');
+    if (!dropzone) return { valid: true, violations: [] };
+
+    // Count boats by type in this dropzone
+    const boatsInZone = dropzone.querySelectorAll('.boat.draggable');
     const boatsByType = { single: 0, double: 0, multi: 0 };
 
-    boatsInLevel.forEach(boat => {
-        const boatId = boat.getAttribute('data-boat-id');
-        // Get boat type from boats data - for now we'll need to check the arrangement data
-        const boatElement = document.querySelector(`[id="boat-${boatId}"]`);
-        if (boatElement && boatElement.dataset.type) {
-            const type = boatElement.dataset.type;
-            if (type in boatsByType) boatsByType[type]++;
+    boatsInZone.forEach(boat => {
+        const type = boat.dataset.type;
+        if (type && type in boatsByType) {
+            boatsByType[type]++;
         }
     });
 
@@ -1298,43 +1299,53 @@ function validateLevelRatios(level) {
     const ratios = TEACHING_RATIOS[level];
     if (!ratios) return { valid: true, violations: [] };
 
-    // Count instructors/senior instructors in level (not assistants)
-    const instructorsInLevel = document.querySelectorAll(`[data-level="${level}"][data-user-id][data-role="instructor"], [data-level="${level}"][data-user-id][data-role="senior-instructor"]`);
-    const instructorCount = instructorsInLevel.length;
+    // Count instructors and assistants in dropzone (not boats)
+    const usersInZone = dropzone.querySelectorAll('.draggable:not(.boat)');
+    let instructorCount = 0;
+    let assistantCount = 0;
+
+    usersInZone.forEach(user => {
+        const userName = user.textContent.trim();
+        // Instructors and Senior Instructors have numbers 1-8, Assistants have numbers 1-8 with 'assistant' prefix in id
+        if (user.id.startsWith('instructor-') || user.id.startsWith('senior-')) {
+            instructorCount++;
+        } else if (user.id.startsWith('assistant-')) {
+            assistantCount++;
+        }
+    });
 
     // If no instructors, no point checking
+    if (instructorCount === 0 && studentCount > 0) {
+        violations.push(`No instructor assigned (${studentCount} students)`);
+        return { valid: false, violations };
+    }
+
     if (instructorCount === 0) return { valid: true, violations: [] };
 
-    // Count assistants
-    const assistantsInLevel = document.querySelectorAll(`[data-level="${level}"][data-user-id][data-role="assistant"]`);
-    const hasAssistant = assistantsInLevel.length > 0;
+    const hasAssistant = assistantCount > 0;
 
-    // Check each boat type
+    // Check each boat type against maximum allowed
+    let totalBoats = 0;
     for (const [type, count] of Object.entries(boatsByType)) {
         if (count > 0) {
+            totalBoats += count;
             const typeRatios = ratios[type];
-            const maxBoats = hasAssistant ? typeRatios.withAssistant.maxBoats : typeRatios.standard.maxBoats;
-            const allowedStudents = hasAssistant ? instructorCount * 8 : instructorCount * 6; // Simplified - should be per boat type
+            if (!typeRatios) continue;
 
-            if (count > maxBoats) {
-                violations.push(`${type} boats (${count}) exceeds max (${maxBoats})`);
+            const maxBoats = hasAssistant ? typeRatios.withAssistant.maxBoats : typeRatios.standard.maxBoats;
+
+            if (count > maxBoats * instructorCount) {
+                const typeLabel = type === 'single' ? 'Single-handed' : type === 'double' ? 'Double-handed' : 'Multi-handed';
+                violations.push(`${typeLabel}: ${count} boats exceeds max of ${maxBoats * instructorCount} (${maxBoats} per instructor × ${instructorCount})`);
             }
         }
     }
 
-    // Overall student-to-instructor check
+    // Overall student-to-instructor ratio check
     const maxStudentsPerInstructor = hasAssistant ? 8 : 6;
     const maxAllowedStudents = instructorCount * maxStudentsPerInstructor;
     if (studentCount > maxAllowedStudents) {
-        violations.push(`Students (${studentCount}) exceeds ratio ${maxAllowedStudents}:${instructorCount} instructors`);
-    }
-
-    return { valid: violations.length === 0, violations };
-}
-
-function highlightLevelRatios() {
-    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
-
+        violations.push(`${studentCount} students exceeds max of ${maxAllowedStudents} (${maxStudentsPerInstructor} per instructor × ${instructorCount})`);
     levels.forEach(level => {
         const levelElement = document.querySelector(`[data-level-id="${level}"]`);
         const { valid, violations } = validateLevelRatios(level);
@@ -2307,6 +2318,10 @@ function updateStudentTable(level, students) {
     });
     const countSpan = document.querySelector(`#count-${level} .count-num`);
     if (countSpan) countSpan.textContent = onCourseStudents.length;
+
+    // Validate ratios after student count changes
+    highlightLevelRatios();
+}
 }
 
 function getProgressButton(currentLevel, studentId, studentName) {
