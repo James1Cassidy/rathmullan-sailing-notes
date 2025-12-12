@@ -453,6 +453,32 @@ const SAILING_SKILLS = {
     }
 };
 
+// --- TEACHING RATIOS CONFIGURATION ---
+// Based on Irish Sailing Syllabi safety requirements
+// Senior instructors have same ratio as instructors
+const TEACHING_RATIOS = {
+    'taste-of-sailing': {
+        'single': { standard: { ratio: '1:6', maxBoats: 6 }, withAssistant: { ratio: '1:8', maxBoats: 8 } },
+        'double': { standard: { ratio: '1:6', maxBoats: 3 }, withAssistant: { ratio: '1:8', maxBoats: 4 } },
+        'multi': { standard: { ratio: '1:3', maxBoats: 1 }, withAssistant: { ratio: '1:6', maxBoats: 2 } }
+    },
+    'start-sailing': {
+        'single': { standard: { ratio: '1:6', maxBoats: 6 }, withAssistant: { ratio: '1:8', maxBoats: 8 } },
+        'double': { standard: { ratio: '1:6', maxBoats: 3 }, withAssistant: { ratio: '1:8', maxBoats: 4 } },
+        'multi': { standard: { ratio: '1:3', maxBoats: 1 }, withAssistant: { ratio: '1:6', maxBoats: 2 } }
+    },
+    'basic-skills': {
+        'single': { standard: { ratio: '1:6', maxBoats: 6 }, withAssistant: { ratio: '1:8', maxBoats: 8 } },
+        'double': { standard: { ratio: '1:6', maxBoats: 3 }, withAssistant: { ratio: '1:8', maxBoats: 4 } },
+        'multi': { standard: { ratio: '1:3', maxBoats: 1 }, withAssistant: { ratio: '1:6', maxBoats: 2 } }
+    },
+    'improving-skills': {
+        'single': { standard: { ratio: '1:6', maxBoats: 6 }, withAssistant: { ratio: '1:8', maxBoats: 8 } },
+        'double': { standard: { ratio: '1:6', maxBoats: 3 }, withAssistant: { ratio: '1:8', maxBoats: 4 } },
+        'multi': { standard: { ratio: '1:3', maxBoats: 1 }, withAssistant: { ratio: '1:6', maxBoats: 2 } }
+    }
+};
+
 // Assessment states for skills
 const SKILL_ASSESSMENT_STATES = {
     'not_assessed': 'Not Yet Assessed',
@@ -1050,11 +1076,15 @@ function loadBoatsFromFirebase() {
         Object.entries(boatsData).forEach(([boatId, boatData]) => {
             if (boatData && boatData.name) {
                 const div = document.createElement('div');
+                const boatType = boatData.type || 'unknown';
+                const typeLabel = boatType === 'single' ? '⛵' : boatType === 'double' ? '⛵⛵' : boatType === 'multi' ? '⛵⛵⛵' : '?';
                 div.className = `relative group draggable boat ${boatData.color || 'bg-yellow-500'} text-white px-3 py-1 rounded-md cursor-pointer`;
                 div.id = boatId;
                 div.draggable = true;
+                div.dataset.type = boatType;
+                div.title = `${boatData.name} (${boatType} handed)`;
                 div.innerHTML = `
-                    <span>${boatData.name}</span>
+                    <span>${boatData.name} ${typeLabel}</span>
                     <button onclick="deleteBoat('${boatId}')" class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 bg-red-700 text-white text-xs px-1.5 py-0.5 rounded-bl transition-opacity" title="Delete boat">✕</button>
                 `;
                 flexWrap.appendChild(div);
@@ -1199,6 +1229,7 @@ window.selectBoatColor = selectBoatColor;
 
 function addBoat() {
     const name = document.getElementById('boat-name-input').value.trim();
+    const type = document.getElementById('boat-type-select').value;
     const color = document.getElementById('selected-boat-color').value;
 
     if (!name) {
@@ -1206,9 +1237,15 @@ function addBoat() {
         return;
     }
 
+    if (!type) {
+        alert('Please select a boat type (Single, Double, or Multi-handed)');
+        return;
+    }
+
     const boatId = 'boat-' + Date.now();
-    db.ref('boats/' + boatId).set({ name, color }).then(() => {
+    db.ref('boats/' + boatId).set({ name, color, type }).then(() => {
         document.getElementById('boat-name-input').value = '';
+        document.getElementById('boat-type-select').value = '';
         document.getElementById('selected-boat-color').value = 'bg-yellow-500';
         toggleAddBoatForm();
         loadBoatsFromFirebase();
@@ -1234,6 +1271,97 @@ function deleteBoat(boatId) {
 }
 
 window.deleteBoat = deleteBoat;
+
+// --- RATIO VALIDATION FUNCTIONS ---
+function validateLevelRatios(level) {
+    // Get students for this level (counting only onCourseThisWeek)
+    const tableBody = document.getElementById('students-' + level);
+    if (!tableBody) return { valid: true, violations: [] };
+
+    const studentCount = tableBody.querySelectorAll('tr').length;
+
+    // Get boats in arrangement for this level
+    const boatsInLevel = document.querySelectorAll(`[data-level="${level}"][data-boat-id]`);
+    const boatsByType = { single: 0, double: 0, multi: 0 };
+
+    boatsInLevel.forEach(boat => {
+        const boatId = boat.getAttribute('data-boat-id');
+        // Get boat type from boats data - for now we'll need to check the arrangement data
+        const boatElement = document.querySelector(`[id="boat-${boatId}"]`);
+        if (boatElement && boatElement.dataset.type) {
+            const type = boatElement.dataset.type;
+            if (type in boatsByType) boatsByType[type]++;
+        }
+    });
+
+    const violations = [];
+    const ratios = TEACHING_RATIOS[level];
+    if (!ratios) return { valid: true, violations: [] };
+
+    // Count instructors/senior instructors in level (not assistants)
+    const instructorsInLevel = document.querySelectorAll(`[data-level="${level}"][data-user-id][data-role="instructor"], [data-level="${level}"][data-user-id][data-role="senior-instructor"]`);
+    const instructorCount = instructorsInLevel.length;
+
+    // If no instructors, no point checking
+    if (instructorCount === 0) return { valid: true, violations: [] };
+
+    // Count assistants
+    const assistantsInLevel = document.querySelectorAll(`[data-level="${level}"][data-user-id][data-role="assistant"]`);
+    const hasAssistant = assistantsInLevel.length > 0;
+
+    // Check each boat type
+    for (const [type, count] of Object.entries(boatsByType)) {
+        if (count > 0) {
+            const typeRatios = ratios[type];
+            const maxBoats = hasAssistant ? typeRatios.withAssistant.maxBoats : typeRatios.standard.maxBoats;
+            const allowedStudents = hasAssistant ? instructorCount * 8 : instructorCount * 6; // Simplified - should be per boat type
+
+            if (count > maxBoats) {
+                violations.push(`${type} boats (${count}) exceeds max (${maxBoats})`);
+            }
+        }
+    }
+
+    // Overall student-to-instructor check
+    const maxStudentsPerInstructor = hasAssistant ? 8 : 6;
+    const maxAllowedStudents = instructorCount * maxStudentsPerInstructor;
+    if (studentCount > maxAllowedStudents) {
+        violations.push(`Students (${studentCount}) exceeds ratio ${maxAllowedStudents}:${instructorCount} instructors`);
+    }
+
+    return { valid: violations.length === 0, violations };
+}
+
+function highlightLevelRatios() {
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
+
+    levels.forEach(level => {
+        const levelElement = document.querySelector(`[data-level-id="${level}"]`);
+        const { valid, violations } = validateLevelRatios(level);
+
+        if (levelElement) {
+            // Remove existing warning if present
+            const existingWarning = levelElement.querySelector('.ratio-warning');
+            if (existingWarning) existingWarning.remove();
+
+            if (!valid && violations.length > 0) {
+                // Highlight background red
+                levelElement.classList.remove('bg-white');
+                levelElement.classList.add('bg-red-100', 'border-red-400');
+
+                // Add warning message
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'ratio-warning bg-red-200 border border-red-500 text-red-800 p-2 rounded mt-2 text-sm font-medium';
+                warningDiv.innerHTML = `⚠️ Safety Ratio Violation:<br>${violations.join('<br>')}`;
+                levelElement.appendChild(warningDiv);
+            } else {
+                // Normal styling
+                levelElement.classList.add('bg-white');
+                levelElement.classList.remove('bg-red-100', 'border-red-400');
+            }
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // If not authenticated show login & enforce interactivity
@@ -2319,7 +2447,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function saveArrangementToFirebase(id, zoneId) {
     const draggable = document.getElementById(id);
     const name = draggable ? draggable.textContent.trim() : null;
-    db.ref('arrangement/' + id).set({ zoneId, name });
+    db.ref('arrangement/' + id).set({ zoneId, name }).then(() => {
+        // Validate ratios after arrangement change
+        highlightLevelRatios();
+    });
 }
 
 function loadArrangementFromFirebase(callback) {
@@ -2485,6 +2616,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const dropzone = data && data.zoneId ? document.getElementById(data.zoneId) : null;
             if (draggable && dropzone) placeInZone(dropzone, draggable);
         });
+        // Validate ratios after arrangement is loaded
+        setTimeout(() => highlightLevelRatios(), 500);
     });
 });
 
