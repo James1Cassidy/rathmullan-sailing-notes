@@ -205,6 +205,140 @@
         .undo-button:hover {
             background: #2563eb;
         }
+
+        /* Help tooltips */
+        .help-tip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9999px;
+            font-size: 12px;
+            color: #475569;
+            background: #f8fafc;
+            cursor: default;
+        }
+
+        .help-tip-content {
+            position: absolute;
+            top: 110%;
+            left: 50%;
+            transform: translate(-50%, -6px);
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+            min-width: 220px;
+            max-width: 320px;
+            font-size: 13px;
+            line-height: 1.4;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+            z-index: 60;
+        }
+
+        .help-tip:hover .help-tip-content,
+        .help-tip:focus-within .help-tip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+
+        /* Command Palette */
+        #command-palette .command-item:hover {
+            background-color: #eff6ff;
+        }
+
+        /* Filter button active state */
+        #filter-this-week-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* Sticky table headers */
+        thead.sticky {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f9fafb;
+        }
+
+        /* Bulk bar responsiveness + stickiness */
+        #bulk-actions-students {
+            position: sticky;
+            bottom: 0;
+            z-index: 25;
+        }
+
+        .bulk-actions-responsive {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+            .bulk-actions-responsive {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .bulk-actions-responsive button,
+            .bulk-actions-responsive select {
+                width: 100%;
+            }
+        }
+
+        /* Smooth transitions */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-action {
+            margin-top: 16px;
+            padding: 10px 20px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .empty-state-action:hover {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 
@@ -339,7 +473,12 @@
             </div>
         </div>
         <h1 class="text-3xl font-extrabold text-blue-800 mb-4">Instructor Dashboard</h1>
-        <p class="text-gray-700 mb-4">Manage weekly plans, student lists, instructor/boat arrangement and resources.</p>
+        <p class="text-gray-700 mb-4">
+            Manage weekly plans, student lists, instructor/boat arrangement and resources.
+            <button onclick="showCommandPalette()" class="ml-2 text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
+                ⌨️ Keyboard Shortcuts
+            </button>
+        </p>
 
         <!-- Notification banner removed (push notifications disabled) -->
 
@@ -751,12 +890,25 @@
         <!-- Instructors Table / Arrangement -->
         <section id="instructors-table"
             class="container mx-auto px-4 py-8 bg-gray-100 rounded-lg shadow-md mt-8 scroll-mt-24">
-            <h3 class="text-2xl font-semibold text-blue-800 mb-4 text-center">Draggable Instructors</h3>
-            <p class="text-lg text-gray-700 text-center mb-6">Drag and drop instructors, assistants, and boats into the
-                appropriate levels below or back to the available section.</p>
+            <div class="flex flex-col items-center gap-2 mb-2">
+                <h3 class="text-2xl font-semibold text-blue-800 text-center">Draggable Instructors</h3>
+                <div class="flex items-center gap-2 text-center">
+                    <p class="text-lg text-gray-700">Drag and drop instructors, assistants, and boats into the appropriate levels below or back to the available section.</p>
+                    <span class="help-tip" aria-label="Arrangement help" tabindex="0">
+                        ?
+                        <span class="help-tip-content">Blue dropzones mirror the class levels. Keep ratios valid by matching boat types to levels, then place instructors and assistants. Use the bulk bar or Refresh if something looks out of sync.</span>
+                    </span>
+                </div>
+            </div>
             <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-6">
                 <div class="flex items-center justify-between cursor-pointer mb-4" onclick="toggleRatiosTable()">
-                    <h4 class="text-xl font-bold text-blue-700">Irish Sailing Teaching Ratios</h4>
+                    <div class="flex items-center gap-2">
+                        <h4 class="text-xl font-bold text-blue-700">Irish Sailing Teaching Ratios</h4>
+                        <span class="help-tip" aria-label="Ratios help" tabindex="0">
+                            ?
+                            <span class="help-tip-content">Standard ratios assume one instructor per fleet; adding an assistant unlocks the higher column. Use these as safety caps when arranging boats and staff.</span>
+                        </span>
+                    </div>
                     <span id="ratios-toggle-icon" class="text-2xl text-blue-700 transition-transform duration-300">▼</span>
                 </div>
 
@@ -1117,8 +1269,8 @@
                     </div>
 
                     <div class="mt-4 flex gap-2">
-                        <button onclick="saveSessionAssessments()" class="flex-grow bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold">
-                            ✅ Save All Assessments
+                        <button id="save-session-assessments-btn" onclick="saveSessionAssessments()" class="flex-grow bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold">
+                            <span class="save-label">✅ Save All Assessments</span>
                         </button>
                         <button onclick="clearSessionForm()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
                             Clear
@@ -1132,6 +1284,10 @@
                 <div class="flex items-center gap-2 mb-2">
                     <h3 class="font-semibold text-purple-700">Weather Window & Suggestions</h3>
                     <span class="text-xs text-gray-500">Live wind-based go/no-go + drills</span>
+                    <span class="help-tip" aria-label="Weather suggestions help" tabindex="0">
+                        ?
+                        <span class="help-tip-content">We blend live wind with the selected level to flag go/hold and suggest drills. AI drills appear here too; copy any you like into session notes.</span>
+                    </span>
                 </div>
                 <div id="weather-guidance" class="text-sm text-gray-700">
                     <p class="text-gray-600 text-sm">Select a level to see go/no-go and suggested drills.</p>
@@ -1144,6 +1300,10 @@
             class="container mx-auto px-4 py-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg shadow-md mt-8 scroll-mt-24">
             <h2 class="text-2xl font-semibold text-green-800 mb-4 flex items-center gap-2">
                 👥 Student Management
+                <span class="help-tip" aria-label="Bulk actions & filters help" tabindex="0">
+                    ?
+                    <span class="help-tip-content">Select multiple students with the checkboxes to mark present/absent, move level, or delete with undo. Use search + level filter or the &ldquo;This Week Only&rdquo; toggle to narrow the list.</span>
+                </span>
             </h2>
 
             <!-- Add New Student -->
@@ -1183,8 +1343,61 @@
                         <option value="improving-skills">Improving Skills</option>
                         <option value="advanced">Advanced Boat Handling</option>
                     </select>
+                    <div class="flex items-center gap-2">
+                        <button id="filter-this-week-btn" onclick="toggleStudentsThisWeekFilter()"
+                            class="px-4 py-2 rounded border border-gray-300 hover:bg-blue-50 transition-colors">
+                            📅 This Week Only
+                        </button>
+                        <span class="help-tip" aria-label="Filter by current week" tabindex="0">
+                            ?
+                            <span class="help-tip-content">Show only students marked as attending this week. Combines with search and level filters.</span>
+                        </span>
+                    </div>
                     <button onclick="loadAllStudents()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                         🔄 Refresh
+                    </button>
+                </div>
+
+                <!-- Bulk Actions Bar -->
+                <div id="bulk-actions-students" style="display: none;"
+                    class="bulk-actions-responsive items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <span class="font-semibold text-blue-800"><span class="bulk-count">0</span> selected</span>
+                    <span class="help-tip" aria-label="Bulk actions help" tabindex="0">
+                        ?
+                        <span class="help-tip-content">Use these actions on selected students: mark present/absent, move to another level, or delete (with undo available).</span>
+                    </span>
+                    <button onclick="selectAllVisible('students')"
+                        class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Select All
+                    </button>
+                    <button onclick="deselectAll('students')"
+                        class="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600">
+                        Deselect
+                    </button>
+                    <button onclick="bulkMarkPresent(true)"
+                        class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
+                        ✓ Mark Present
+                    </button>
+                    <button onclick="bulkMarkPresent(false)"
+                        class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700">
+                        − Mark Absent
+                    </button>
+                    <select id="bulk-move-level" class="border border-gray-300 rounded px-3 py-1 text-sm">
+                        <option value="">Move to level...</option>
+                        <option value="cara-na-mara">Cara na Mara</option>
+                        <option value="taste-of-sailing">Taste of Sailing</option>
+                        <option value="start-sailing">Start Sailing</option>
+                        <option value="basic-skills">Basic Skills</option>
+                        <option value="improving-skills">Improving Skills</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                    <button onclick="bulkMoveStudents(document.getElementById('bulk-move-level').value)"
+                        class="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        → Move
+                    </button>
+                    <button onclick="bulkDeleteStudents()"
+                        class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 ml-auto">
+                        🗑 Delete
                     </button>
                 </div>
             </div>
@@ -1194,8 +1407,12 @@
                 <h3 class="font-semibold text-green-700 mb-3">All Students (<span id="student-count">0</span>)</h3>
                 <div class="overflow-x-auto max-h-64 overflow-y-auto" style="max-height: 260px;">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-50 sticky top-0">
                             <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                        onclick="this.checked ? selectAllVisible('students') : deselectAll('students')">
+                                </th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">This Week</th>
@@ -1203,7 +1420,7 @@
                             </tr>
                         </thead>
                         <tbody id="students-list" class="bg-white divide-y divide-gray-200">
-                            <tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">Loading students...</td></tr>
+                            <tr><td colspan="5" class="px-4 py-2 text-center text-gray-500">Loading students...</td></tr>
                         </tbody>
                     </table>
                 </div>

@@ -137,6 +137,18 @@ function showToast(message, type = 'info', duration = 4000, options = {}) {
 
     container.appendChild(toast);
 
+    if (options.showUndo) {
+        toast.classList.add('undo-toast');
+        const undoBtn = document.createElement('button');
+        undoBtn.className = 'undo-button';
+        undoBtn.textContent = 'Undo';
+        undoBtn.onclick = () => {
+            performUndo();
+            toast.remove();
+        };
+        toast.querySelector('.toast-message').appendChild(undoBtn);
+    }
+
     if (duration > 0) {
         setTimeout(() => {
             toast.classList.add('removing');
@@ -212,6 +224,475 @@ function hideLoading(elementId) {
 
 window.showLoading = showLoading;
 window.hideLoading = hideLoading;
+
+// --- BULK SELECTION SYSTEM ---
+const bulkSelection = {
+    students: new Set(),
+    boats: new Set()
+};
+
+function toggleBulkSelect(type, id, checked) {
+    if (checked) {
+        bulkSelection[type].add(id);
+    } else {
+        bulkSelection[type].delete(id);
+    }
+    updateBulkActionBar(type);
+}
+
+function selectAllVisible(type) {
+    const checkboxes = document.querySelectorAll(`.bulk-checkbox-${type}:not([style*="display: none"])`);
+    checkboxes.forEach(cb => {
+        cb.checked = true;
+        bulkSelection[type].add(cb.value);
+    });
+    updateBulkActionBar(type);
+}
+
+function deselectAll(type) {
+    bulkSelection[type].clear();
+    document.querySelectorAll(`.bulk-checkbox-${type}`).forEach(cb => cb.checked = false);
+    updateBulkActionBar(type);
+}
+
+function updateBulkActionBar(type) {
+    const bar = document.getElementById(`bulk-actions-${type}`);
+    const count = bulkSelection[type].size;
+    if (bar) {
+        bar.style.display = count > 0 ? 'flex' : 'none';
+        const countEl = bar.querySelector('.bulk-count');
+        if (countEl) countEl.textContent = count;
+    }
+}
+
+async function bulkDeleteStudents() {
+    if (bulkSelection.students.size === 0) return;
+
+    if (!confirm(`Delete ${bulkSelection.students.size} selected students? This will also delete their notes and skills data.`)) {
+        return;
+    }
+
+    const ids = Array.from(bulkSelection.students);
+    const backups = [];
+
+    try {
+        showLoading('students-list', `Deleting ${ids.length} students...`);
+
+        for (const studentId of ids) {
+            const student = allStudentsData.find(s => s.id === studentId);
+            if (!student) continue;
+
+            const snapshot = await db.ref('students/' + student.level).once('value');
+            const students = snapshot.val() || {};
+            const studentArray = Array.isArray(students) ? students : Object.values(students);
+
+            const notesSnapshot = await db.ref('studentNotes/' + student.level + '/' + studentId).once('value');
+            backups.push({
+                studentId,
+                level: student.level,
+                student: studentArray.find(s => s.id === studentId),
+                notes: notesSnapshot.val()
+            });
+
+            const newArray = studentArray.filter(s => s.id !== studentId);
+            await db.ref('students/' + student.level).set(newArray);
+            await db.ref('studentNotes/' + student.level + '/' + studentId).remove();
+        }
+
+        addUndoAction(`Bulk delete ${ids.length} students`, async () => {
+            for (const backup of backups) {
+                const currentSnapshot = await db.ref('students/' + backup.level).once('value');
+                const currentStudents = currentSnapshot.val() || {};
+                const currentArray = Array.isArray(currentStudents) ? currentStudents : Object.values(currentStudents);
+                currentArray.push(backup.student);
+                await db.ref('students/' + backup.level).set(currentArray);
+                if (backup.notes) {
+                    await db.ref('studentNotes/' + backup.level + '/' + backup.studentId).set(backup.notes);
+                }
+            }
+            await loadAllStudents();
+        });
+
+        bulkSelection.students.clear();
+        await loadAllStudents();
+        if (typeof updateStudentTable === 'function') {
+            const levelsTouched = [...new Set(backups.map(b => b.level))];
+            levelsTouched.forEach(lvl => {
+                const levelStudents = allStudentsData.filter(s => s.level === lvl);
+                updateStudentTable(lvl, levelStudents);
+            });
+        }
+        showToast(`${ids.length} students deleted`, 'success', 3000, { showUndo: true });
+    } catch (error) {
+        console.error('Error bulk deleting:', error);
+        showToast('Error deleting students: ' + error.message, 'error', 4000);
+        await loadAllStudents();
+        if (typeof updateStudentTable === 'function') {
+            const levelsTouched = [...new Set(backups.map(b => b.level))];
+            levelsTouched.forEach(lvl => {
+                const levelStudents = allStudentsData.filter(s => s.level === lvl);
+                updateStudentTable(lvl, levelStudents);
+            });
+        }
+    }
+}
+
+async function bulkMoveStudents(targetLevel) {
+    if (bulkSelection.students.size === 0) return;
+
+    if (!targetLevel) {
+        showToast('Select a level to move students', 'warning', 3000);
+        return;
+    }
+
+    const ids = Array.from(bulkSelection.students);
+    const moves = [];
+
+    try {
+        showLoading('students-list', `Moving ${ids.length} students...`);
+
+        for (const studentId of ids) {
+            const student = allStudentsData.find(s => s.id === studentId);
+            if (!student || student.level === targetLevel) continue;
+
+            // Check skills completion in current level before moving
+            try {
+                const skillsSnap = await db.ref(`studentNotes/${student.level}/${studentId}/skillsChecklist`).once('value');
+                const skills = skillsSnap.val() || {};
+                const hasSkills = Object.keys(skills).length > 0;
+                const allAchieved = hasSkills && Object.values(skills).every(state => state === 'achieved');
+                if (!allAchieved) {
+                    showToast(`⚠ ${student.name}: current level skills not all achieved`, 'warning', 4000);
+                    // Skip moving this student, continue with others
+                    continue;
+                }
+            } catch (e) {
+                console.warn('Skills check failed for', studentId, e);
+            }
+
+            const oldLevel = student.level;
+
+            // Get student from old level
+            const oldSnapshot = await db.ref('students/' + oldLevel).once('value');
+            const oldStudents = oldSnapshot.val() || {};
+            const oldArray = Array.isArray(oldStudents) ? oldStudents : Object.values(oldStudents);
+            const studentData = oldArray.find(s => s.id === studentId);
+
+            if (!studentData) continue;
+
+            // Remove from old level
+            const newOldArray = oldArray.filter(s => s.id !== studentId);
+            await db.ref('students/' + oldLevel).set(newOldArray);
+
+            // Add to new level
+            const newSnapshot = await db.ref('students/' + targetLevel).once('value');
+            const newStudents = newSnapshot.val() || {};
+            const newArray = Array.isArray(newStudents) ? newStudents : Object.values(newStudents);
+            newArray.push(studentData);
+            await db.ref('students/' + targetLevel).set(newArray);
+
+            // Move notes
+            const notesSnapshot = await db.ref('studentNotes/' + oldLevel + '/' + studentId).once('value');
+            if (notesSnapshot.exists()) {
+                const notes = notesSnapshot.val();
+                await db.ref('studentNotes/' + targetLevel + '/' + studentId).set(notes);
+                await db.ref('studentNotes/' + oldLevel + '/' + studentId).remove();
+                moves.push({ studentId, oldLevel, targetLevel, notes });
+            } else {
+                moves.push({ studentId, oldLevel, targetLevel, notes: null });
+            }
+        }
+
+        addUndoAction(`Bulk move ${ids.length} students to ${targetLevel}`, async () => {
+            for (const move of moves) {
+                const currentNewSnapshot = await db.ref('students/' + move.targetLevel).once('value');
+                const currentNewStudents = currentNewSnapshot.val() || {};
+                const currentNewArray = Array.isArray(currentNewStudents) ? currentNewStudents : Object.values(currentNewStudents);
+                const studentData = currentNewArray.find(s => s.id === move.studentId);
+                const revertedArray = currentNewArray.filter(s => s.id !== move.studentId);
+                await db.ref('students/' + move.targetLevel).set(revertedArray);
+
+                const currentOldSnapshot = await db.ref('students/' + move.oldLevel).once('value');
+                const currentOldStudents = currentOldSnapshot.val() || {};
+                const currentOldArray = Array.isArray(currentOldStudents) ? currentOldStudents : Object.values(currentOldStudents);
+                currentOldArray.push(studentData);
+                await db.ref('students/' + move.oldLevel).set(currentOldArray);
+
+                if (move.notes) {
+                    await db.ref('studentNotes/' + move.oldLevel + '/' + move.studentId).set(move.notes);
+                    await db.ref('studentNotes/' + move.targetLevel + '/' + move.studentId).remove();
+                }
+            }
+            await loadAllStudents();
+        });
+
+        bulkSelection.students.clear();
+        await loadAllStudents();
+        if (typeof updateStudentTable === 'function') {
+            const levelsTouched = [...new Set(moves.flatMap(m => [m.oldLevel, m.targetLevel]))];
+            levelsTouched.forEach(lvl => {
+                const levelStudents = allStudentsData.filter(s => s.level === lvl);
+                updateStudentTable(lvl, levelStudents);
+            });
+        }
+        showToast(`${ids.length} students moved to ${targetLevel}`, 'success', 3000, { showUndo: true });
+    } catch (error) {
+        console.error('Error bulk moving:', error);
+        showToast('Error moving students: ' + error.message, 'error', 4000);
+        await loadAllStudents();
+        if (typeof updateStudentTable === 'function') {
+            const levelsTouched = [...new Set(moves.flatMap(m => [m.oldLevel, m.targetLevel]))];
+            levelsTouched.forEach(lvl => {
+                const levelStudents = allStudentsData.filter(s => s.level === lvl);
+                updateStudentTable(lvl, levelStudents);
+            });
+        }
+    }
+}
+
+async function bulkMarkPresent(present) {
+    if (bulkSelection.students.size === 0) return;
+
+    const ids = Array.from(bulkSelection.students);
+
+    try {
+        showLoading('students-list', `Updating ${ids.length} students...`);
+
+        for (const studentId of ids) {
+            const student = allStudentsData.find(s => s.id === studentId);
+            if (!student) continue;
+
+            const snapshot = await db.ref('students/' + student.level).once('value');
+            const students = snapshot.val() || {};
+            const studentArray = Array.isArray(students) ? students : Object.values(students);
+
+            const updatedArray = studentArray.map(s => {
+                if (s.id === studentId) {
+                    return { ...s, onCourseThisWeek: present };
+                }
+                return s;
+            });
+
+            await db.ref('students/' + student.level).set(updatedArray);
+        }
+
+        bulkSelection.students.clear();
+        await loadAllStudents();
+        if (typeof updateStudentTable === 'function') {
+            const levelsTouched = [...new Set(ids.map(id => (allStudentsData.find(s => s.id === id)?.level)))].filter(Boolean);
+            levelsTouched.forEach(lvl => {
+                const levelStudents = allStudentsData.filter(s => s.level === lvl);
+                updateStudentTable(lvl, levelStudents);
+            });
+        }
+        showToast(`${ids.length} students marked ${present ? 'present' : 'absent'}`, 'success', 2000);
+    } catch (error) {
+        console.error('Error bulk updating:', error);
+        showToast('Error updating students: ' + error.message, 'error', 3000);
+        await loadAllStudents();
+        if (typeof updateStudentTable === 'function') {
+            const levelsTouched = [...new Set(ids.map(id => (allStudentsData.find(s => s.id === id)?.level)))].filter(Boolean);
+            levelsTouched.forEach(lvl => {
+                const levelStudents = allStudentsData.filter(s => s.level === lvl);
+                updateStudentTable(lvl, levelStudents);
+            });
+        }
+    }
+}
+
+window.toggleBulkSelect = toggleBulkSelect;
+window.selectAllVisible = selectAllVisible;
+window.deselectAll = deselectAll;
+window.bulkDeleteStudents = bulkDeleteStudents;
+window.bulkMoveStudents = bulkMoveStudents;
+window.bulkMarkPresent = bulkMarkPresent;
+
+// --- QUICK FILTERS ---
+let activeFilters = {
+    studentsThisWeek: false,
+    searchQuery: ''
+};
+
+function toggleStudentsThisWeekFilter() {
+    activeFilters.studentsThisWeek = !activeFilters.studentsThisWeek;
+    const btn = document.getElementById('filter-this-week-btn');
+    if (btn) {
+        btn.classList.toggle('active', activeFilters.studentsThisWeek);
+    }
+    applyFilters();
+}
+
+function applyFilters() {
+    let filtered = [...allStudentsData];
+
+    if (activeFilters.studentsThisWeek) {
+        filtered = filtered.filter(s => s.onCourseThisWeek === true);
+    }
+
+    if (activeFilters.searchQuery) {
+        const query = activeFilters.searchQuery.toLowerCase();
+        filtered = filtered.filter(s =>
+            s.name.toLowerCase().includes(query) ||
+            s.level.toLowerCase().includes(query)
+        );
+    }
+
+    renderStudentsList(filtered);
+}
+
+window.toggleStudentsThisWeekFilter = toggleStudentsThisWeekFilter;
+window.applyFilters = applyFilters;
+
+// --- COMMAND PALETTE ---
+function showCommandPalette() {
+    const existing = document.getElementById('command-palette');
+    if (existing) {
+        existing.remove();
+        return;
+    }
+
+    const commands = [
+        { id: 'shortcuts', name: 'Keyboard Shortcuts Help', icon: '⌨️', shortcut: '', action: () => {}, isHeader: true },
+        { id: 'undo', name: 'Undo Last Action', icon: '↶', shortcut: 'Ctrl+Z', action: performUndo },
+        { id: 'command-palette', name: 'Open Command Palette', icon: '⚡', shortcut: 'Ctrl+P', action: () => {} },
+        { id: 'navigate', name: 'Quick Navigation', icon: '🧭', shortcut: 'Ctrl+K', action: () => {} },
+        { id: 'add-boat-key', name: 'Add Boat', icon: '⛵', shortcut: 'Ctrl+B', action: () => {
+            toggleAddBoatForm();
+            document.getElementById('boat-name-input')?.focus();
+        }},
+        { id: 'save', name: 'Save Arrangement', icon: '💾', shortcut: 'Ctrl+S', action: () => {} },
+        { id: 'escape', name: 'Close Modals/Forms', icon: '✕', shortcut: 'Esc', action: () => {} },
+        { id: 'divider', name: '', icon: '', shortcut: '', action: () => {}, isDivider: true },
+        { id: 'actions', name: 'Quick Actions', icon: '⚡', shortcut: '', action: () => {}, isHeader: true },
+        { id: 'add-student', name: 'Add Student', icon: '👤', shortcut: '', action: () => {
+            document.getElementById('new-student-firstname')?.focus();
+            document.getElementById('student-management-section')?.scrollIntoView({ behavior: 'smooth' });
+        }},
+        { id: 'add-boat', name: 'Add Boat', icon: '⛵', shortcut: '', action: () => {
+            toggleAddBoatForm();
+            document.getElementById('boat-name-input')?.focus();
+        }},
+        { id: 'add-note', name: 'Add Student Note', icon: '📝', shortcut: '', action: () => {
+            document.getElementById('student-notes-section')?.scrollIntoView({ behavior: 'smooth' });
+        }},
+        { id: 'master-report', name: 'Generate Master Report', icon: '📊', shortcut: '', action: generateMasterReport },
+        { id: 'nav-announcements', name: 'Go to Announcements', icon: '📢', shortcut: '', action: () => document.getElementById('announcements-section')?.scrollIntoView({ behavior: 'smooth' }) },
+        { id: 'nav-weather', name: 'Go to Weather', icon: '🌤', shortcut: '', action: () => document.getElementById('weather-section')?.scrollIntoView({ behavior: 'smooth' }) },
+        { id: 'nav-arrangement', name: 'Go to Arrangement', icon: '🗺', shortcut: '', action: () => document.getElementById('instructors-table')?.scrollIntoView({ behavior: 'smooth' }) },
+        { id: 'nav-students', name: 'Go to Student Management', icon: '📚', shortcut: '', action: () => document.getElementById('student-management-section')?.scrollIntoView({ behavior: 'smooth' }) },
+        { id: 'clear-selection', name: 'Clear Bulk Selection', icon: '✕', shortcut: '', action: () => deselectAll('students') }
+    ];
+
+    const overlay = document.createElement('div');
+    overlay.id = 'command-palette';
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-20';
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+    const palette = document.createElement('div');
+    palette.className = 'bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4';
+    palette.onclick = (e) => e.stopPropagation();
+
+    palette.innerHTML = `
+        <div class="p-4 border-b">
+            <input type="text" id="command-search" placeholder="Type a command or search shortcuts..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                autocomplete="off">
+        </div>
+        <div id="command-list" class="max-h-96 overflow-y-auto"></div>
+    `;
+
+    overlay.appendChild(palette);
+    document.body.appendChild(overlay);
+
+    const searchInput = document.getElementById('command-search');
+    const commandList = document.getElementById('command-list');
+
+    function renderCommands(filter = '') {
+        const filtered = filter
+            ? commands.filter(c => !c.isHeader && !c.isDivider && (
+                c.name.toLowerCase().includes(filter.toLowerCase()) ||
+                c.shortcut.toLowerCase().includes(filter.toLowerCase())
+            ))
+            : commands;
+
+        commandList.innerHTML = filtered.map(cmd => {
+            if (cmd.isDivider) {
+                return '<div class="border-b border-gray-200 my-2"></div>';
+            }
+            if (cmd.isHeader) {
+                return `<div class="px-4 py-2 bg-gray-50 font-semibold text-gray-700 text-sm uppercase tracking-wide">${cmd.icon} ${cmd.name}</div>`;
+            }
+            return `
+                <div class="command-item px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 flex items-center gap-3" data-command="${cmd.id}">
+                    <span class="text-2xl">${cmd.icon}</span>
+                    <span class="flex-1 font-medium text-gray-700">${cmd.name}</span>
+                    ${cmd.shortcut ? `<kbd class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600 font-mono">${cmd.shortcut}</kbd>` : '<kbd class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">Enter</kbd>'}
+                </div>
+            `;
+        }).join('');
+
+        // Add click handlers
+        commandList.querySelectorAll('.command-item').forEach(item => {
+            item.onclick = () => {
+                const cmd = commands.find(c => c.id === item.dataset.command);
+                if (cmd && !cmd.isHeader && !cmd.isDivider) {
+                    cmd.action();
+                    overlay.remove();
+                }
+            };
+        });
+    }
+
+    searchInput.oninput = (e) => renderCommands(e.target.value);
+    searchInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            const first = commandList.querySelector('.command-item');
+            if (first) first.click();
+        }
+        if (e.key === 'Escape') {
+            overlay.remove();
+        }
+    };
+
+    renderCommands();
+    searchInput.focus();
+}
+
+window.showCommandPalette = showCommandPalette;
+
+// --- AUTO-SAVE FOR NOTES ---
+function autoSaveNote(field, value) {
+    const key = `draft_note_${field}`;
+    localStorage.setItem(key, JSON.stringify({
+        value,
+        timestamp: Date.now()
+    }));
+}
+
+function loadDraftNote(field) {
+    const key = `draft_note_${field}`;
+    const draft = localStorage.getItem(key);
+    if (!draft) return null;
+
+    try {
+        const data = JSON.parse(draft);
+        // Only load if less than 24 hours old
+        if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
+            return data.value;
+        }
+        localStorage.removeItem(key);
+    } catch (e) {}
+    return null;
+}
+
+function clearDraftNote(field) {
+    const key = `draft_note_${field}`;
+    localStorage.removeItem(key);
+}
+
+window.autoSaveNote = autoSaveNote;
+window.loadDraftNote = loadDraftNote;
+window.clearDraftNote = clearDraftNote;
 
 // --- Firebase Messaging (FCM) client integration ---
 // Note: `firebase-messaging.js` is included in pages that use messaging (instructors.html).
@@ -1349,12 +1830,17 @@ function loadBoatsFromFirebase() {
     const availableBoatsZone = document.getElementById('available-boats-zone');
     if (!availableBoatsZone) return;
 
-    const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
-    showLoading('available-boats-zone', 'Loading boats...');
+    let flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap');
+    if (!flexWrap) {
+        flexWrap = document.createElement('div');
+        flexWrap.className = 'flex flex-wrap gap-3 justify-center text-sm';
+        availableBoatsZone.appendChild(flexWrap);
+    }
+
+    flexWrap.innerHTML = '<div class="text-gray-600 italic text-sm">Loading boats...</div>';
 
     db.ref('boats').once('value').then(snap => {
         const boatsData = snap.val() || {};
-        hideLoading('available-boats-zone');
         flexWrap.innerHTML = ''; // Clear loading message
 
         Object.entries(boatsData).forEach(([boatId, boatData]) => {
@@ -1396,7 +1882,6 @@ function loadBoatsFromFirebase() {
         });
     }).catch(err => {
         console.error('Error loading boats from Firebase:', err);
-        hideLoading('available-boats-zone');
         flexWrap.innerHTML = '<div class="text-red-600 text-sm">Error loading boats</div>';
         showToast('Error loading boats: ' + err.message, 'error', 3000);
     });
@@ -2680,6 +3165,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+
+        // Ctrl+P - Command palette
+        if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            showCommandPalette();
+        }
     });
 
     const nav = document.getElementById('section-nav');
@@ -2936,6 +3427,34 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref(studentKey(level)).once('value').then(snap => {
             updateStudentTable(level, snap.val() || []);
         });
+    });
+
+    // Global Ctrl+S: smart save depending on context
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            // Prefer saving session assessments if that section is visible
+            const sessionSection = document.getElementById('current-session-section');
+            const saveBtn = document.getElementById('save-session-assessments-btn');
+            const sessionVisible = sessionSection && sessionSection.offsetParent !== null;
+            if (sessionVisible && saveBtn && !saveBtn.disabled) {
+                saveSessionAssessments();
+                return;
+            }
+
+            // If skills checklist is active, save skills
+            const notesSection = document.getElementById('student-notes-section');
+            const skillsDisplay = document.getElementById('student-skills-display');
+            const skillsVisible = notesSection && notesSection.offsetParent !== null && skillsDisplay && !skillsDisplay.classList.contains('hidden');
+            if (skillsVisible) {
+                saveStudentSkills();
+                return;
+            }
+
+            // Otherwise persist current instructor/boat arrangement (noop if unchanged)
+            highlightLevelRatios();
+            showToast('Arrangement validated · any changes auto-saved', 'info', 2000);
+        }
     });
 });
 
@@ -5935,7 +6454,7 @@ function saveStudentSkills() {
     const studentId = studentSelect.value;
 
     if (!level || !studentId) {
-        alert('Please select level and student');
+        showToast('Please select level and student', 'warning', 3000);
         return;
     }
 
@@ -5953,9 +6472,9 @@ function saveStudentSkills() {
     // Save to database
     const skillsPath = `studentNotes/${level}/${studentId}/skillsChecklist`;
     db.ref(skillsPath).set(skillsData).then(() => {
-        alert('Skills progress saved!');
+        showToast('Skills progress saved', 'success', 3000);
     }).catch(err => {
-        alert('Error saving skills: ' + err.message);
+        showToast('Error saving skills: ' + err.message, 'error', 4000);
     });
 }
 
@@ -6620,7 +7139,7 @@ async function addSessionNote(level, studentId, studentName) {
     }
 }
 
-function saveSessionAssessments() {
+async function saveSessionAssessments() {
     const buttons = document.querySelectorAll('.session-skill-cell');
 
     if (buttons.length === 0) {
@@ -6650,11 +7169,37 @@ function saveSessionAssessments() {
         return;
     }
 
-    db.ref().update(updates).then(() => {
-        alert(`✅ Saved ${count} skill assessment(s) for this session!`);
-    }).catch(err => {
-        alert('Error saving assessments: ' + err.message);
-    });
+    const saveBtn = document.getElementById('save-session-assessments-btn');
+    let originalLabel = '';
+
+    if (saveBtn) {
+        originalLabel = saveBtn.innerHTML;
+        saveBtn.innerHTML = 'Saving…';
+        saveBtn.disabled = true;
+        saveBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    }
+
+    try {
+        await db.ref().update(updates);
+        showToast(`Saved ${count} skill assessment(s)`, 'success', 3000);
+        if (saveBtn) {
+            saveBtn.innerHTML = 'Saved ✓';
+            setTimeout(() => {
+                saveBtn.innerHTML = originalLabel || '✅ Save All Assessments';
+            }, 1200);
+        }
+    } catch (err) {
+        console.error('Error saving assessments:', err);
+        showToast('Error saving assessments: ' + err.message, 'error', 4000);
+        if (saveBtn) {
+            saveBtn.innerHTML = originalLabel || '✅ Save All Assessments';
+        }
+    } finally {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+    }
 }
 
 function clearSessionForm() {
@@ -7529,16 +8074,22 @@ function renderStudentsList(students) {
     if (!studentsList) return;
 
     if (students.length === 0) {
-        studentsList.innerHTML = '<tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">No students found</td></tr>';
+        studentsList.innerHTML = '<tr><td colspan="5" class="px-4 py-2 text-center text-gray-500">No students found</td></tr>';
         return;
     }
 
     studentsList.innerHTML = students.map(student => {
         const levelDisplay = student.level.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         const onCourseChecked = student.onCourseThisWeek ? 'checked' : '';
+        const bulkChecked = bulkSelection.students.has(student.id) ? 'checked' : '';
 
         return `
             <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm">
+                    <input type="checkbox" class="bulk-checkbox-students w-4 h-4 text-blue-600 rounded"
+                        value="${student.id}" ${bulkChecked}
+                        onchange="toggleBulkSelect('students', '${student.id}', this.checked)">
+                </td>
                 <td class="px-4 py-2 text-sm">${student.name}</td>
                 <td class="px-4 py-2 text-sm">
                     <select class="border border-gray-300 rounded px-2 py-1 text-sm"
@@ -7572,10 +8123,13 @@ function searchStudents() {
     const searchTerm = document.getElementById('student-search')?.value.toLowerCase() || '';
     const levelFilter = document.getElementById('filter-level')?.value || '';
 
+    activeFilters.searchQuery = searchTerm;
+
     let filtered = allStudentsData.filter(student => {
         const matchesSearch = student.name.toLowerCase().includes(searchTerm);
         const matchesLevel = !levelFilter || student.level === levelFilter;
-        return matchesSearch && matchesLevel;
+        const matchesWeekly = !activeFilters.studentsThisWeek || student.onCourseThisWeek === true;
+        return matchesSearch && matchesLevel && matchesWeekly;
     });
 
     const studentCount = document.getElementById('student-count');
