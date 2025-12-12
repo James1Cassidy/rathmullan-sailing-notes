@@ -1023,13 +1023,10 @@ function loadInstructorsFromFirebase() {
             flexWrap.innerHTML = '<div class="text-gray-600 italic text-sm">No approved instructors yet</div>';
         }
 
-        // Attach drag listeners to newly created instructor elements
+        // Attach drag and touch listeners to newly created instructor elements
         const newDraggables = flexWrap.querySelectorAll('.draggable');
         newDraggables.forEach(item => {
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', e.target.id);
-                e.dataTransfer.effectAllowed = 'move';
-            });
+            attachDragAndTouchListeners(item);
         });
     }).catch(err => {
         console.error('Error loading instructors from Firebase:', err);
@@ -1068,13 +1065,10 @@ function loadBoatsFromFirebase() {
             flexWrap.innerHTML = '<div class="text-gray-600 italic text-sm">No boats yet - click "Add Boat" to create one</div>';
         }
 
-        // Attach drag listeners to newly created boat elements
+        // Attach drag and touch listeners to newly created boat elements
         const newDraggables = flexWrap.querySelectorAll('.draggable.boat');
         newDraggables.forEach(item => {
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', e.target.closest('.draggable').id);
-                e.dataTransfer.effectAllowed = 'move';
-            });
+            attachDragAndTouchListeners(item);
         });
     }).catch(err => {
         console.error('Error loading boats from Firebase:', err);
@@ -1084,6 +1078,102 @@ function loadBoatsFromFirebase() {
 }
 
 window.loadBoatsFromFirebase = loadBoatsFromFirebase;
+
+// Helper function to attach drag and touch listeners to draggable elements
+function attachDragAndTouchListeners(draggableElement) {
+    // Attach drag listener
+    draggableElement.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', e.target.closest('.draggable').id);
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    // Attach touch listeners
+    let offsetX, offsetY, moving = false, dragStarted = false;
+    let startX, startY, currentTouchZone = null;
+
+    draggableElement.addEventListener('touchstart', function (e) {
+        const touch = e.touches[0];
+        const itemRect = this.getBoundingClientRect();
+        offsetX = touch.clientX - itemRect.left;
+        offsetY = touch.clientY - itemRect.top;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        moving = true;
+        dragStarted = false;
+        this._origPosition = this.style.position;
+        this._origLeft = this.style.left;
+        this._origTop = this.style.top;
+        this._origZ = this.style.zIndex;
+        document.body.style.userSelect = 'none';
+        document.body.style.overflow = 'hidden';
+    });
+
+    draggableElement.addEventListener('touchmove', function (e) {
+        if (!moving) return;
+        const touch = e.touches[0];
+        if (!dragStarted && (Math.abs(touch.clientX - startX) > 5 || Math.abs(touch.clientY - startY) > 5)) {
+            dragStarted = true;
+            this.style.position = 'fixed';
+            this.style.zIndex = 1000;
+            this.classList.add('dragging');
+        }
+        if (dragStarted) {
+            this.style.left = `${touch.clientX - offsetX}px`;
+            this.style.top = `${touch.clientY - offsetY}px`;
+        }
+        const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+        let foundZone = null;
+        let el = elem;
+        while (el) {
+            if (el.classList && el.classList.contains('dropzone')) {
+                foundZone = el;
+                break;
+            }
+            el = el.parentElement;
+        }
+        if (currentTouchZone && currentTouchZone !== foundZone) {
+            currentTouchZone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+        }
+        currentTouchZone = foundZone;
+        if (foundZone) foundZone.classList.add('ring', 'ring-blue-400', 'ring-4');
+        e.preventDefault();
+    });
+
+    draggableElement.addEventListener('touchend', function (e) {
+        moving = false;
+        document.body.style.userSelect = '';
+        document.body.style.overflow = '';
+        this.classList.remove('dragging');
+        if (currentTouchZone) currentTouchZone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+        if (dragStarted) {
+            this.style.position = this._origPosition || '';
+            this.style.left = this._origLeft || '';
+            this.style.top = this._origTop || '';
+            this.style.zIndex = this._origZ || '';
+        }
+        const touch = e.changedTouches[0];
+        let dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        let zoneEl = dropTarget;
+        while (zoneEl && !(zoneEl.classList && zoneEl.classList.contains('dropzone'))) {
+            zoneEl = zoneEl.parentElement;
+        }
+        if (zoneEl && zoneEl.classList && zoneEl.classList.contains('dropzone')) {
+            const container = zoneEl.querySelector('.flex.flex-wrap') || zoneEl;
+            container.appendChild(this);
+            this.style.position = '';
+            this.style.left = '';
+            this.style.top = '';
+            saveArrangementToFirebase(this.id, zoneEl.id);
+        } else {
+            this.style.position = '';
+            this.style.left = '';
+            this.style.top = '';
+        }
+        currentTouchZone = null;
+    });
+}
+
+window.attachDragAndTouchListeners = attachDragAndTouchListeners;
 
 function toggleAddBoatForm() {
     const form = document.getElementById('add-boat-form');
