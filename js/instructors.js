@@ -4911,14 +4911,15 @@ function loadStudentNotes() {
     const studentPath = `studentNotes/${level}/${studentId}`;
     Promise.all([
         db.ref(studentPath).orderByChild('timestamp').once('value'),
-        db.ref(studentPath + '/notes').orderByChild('timestamp').once('value')
-    ]).then(([rootSnap, nestedSnap]) => {
+        db.ref(studentPath + '/notes').orderByChild('timestamp').once('value'),
+        db.ref(studentPath + '/sessionNotes').orderByChild('ts').once('value')
+    ]).then(([rootSnap, nestedSnap, sessionSnap]) => {
         historyEl.innerHTML = '';
         const notes = [];
 
         // Collect direct children notes (skip the 'notes' container itself and skillsChecklist)
         rootSnap.forEach(child => {
-            if (child.key === 'notes' || child.key === 'skillsChecklist') return;
+            if (child.key === 'notes' || child.key === 'skillsChecklist' || child.key === 'sessionNotes') return;
             const val = child.val();
             if (val && typeof val === 'object' && val.text && Number.isFinite(val.timestamp)) {
                 notes.push({ id: child.key, __path: `${studentPath}/${child.key}`, ...val });
@@ -4931,6 +4932,27 @@ function loadStudentNotes() {
                 const val = child.val();
                 if (val && typeof val === 'object' && val.text && Number.isFinite(val.timestamp)) {
                     notes.push({ id: child.key, __path: `${studentPath}/notes/${child.key}`, ...val });
+                }
+            });
+        }
+
+        // Collect session quick notes
+        if (sessionSnap && sessionSnap.exists()) {
+            sessionSnap.forEach(child => {
+                const val = child.val();
+                const text = val && typeof val === 'object' ? (val.text || val.note) : null;
+                const timestamp = val && typeof val === 'object' ? (val.timestamp || val.ts) : null;
+                if (text && Number.isFinite(timestamp)) {
+                    notes.push({
+                        id: child.key,
+                        __path: `${studentPath}/sessionNotes/${child.key}`,
+                        text,
+                        timestamp,
+                        author: val.author,
+                        authorId: val.authorId,
+                        editedAt: val.editedAt,
+                        source: 'session'
+                    });
                 }
             });
         }
@@ -4950,6 +4972,7 @@ function loadStudentNotes() {
             div.className = 'bg-gray-50 border border-gray-200 rounded p-2 text-sm';
             const canEdit = !!myUid && (note.authorId ? note.authorId === myUid : (note.author === (currentUserName || (user && user.email ? user.email.split('@')[0] : ''))));
             const editedTag = note.editedAt ? '<span class="text-[10px] text-gray-400 ml-1">(edited)</span>' : '';
+            const sourceTag = note.source === 'session' ? '<span class="ml-2 px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] uppercase">Session</span>' : '';
             const pathForAttr = (note.__path || `${studentPath}/${note.id}`).replace(/'/g, "\\'");
             const actions = canEdit ? `
                 <div class="flex gap-2">
@@ -4959,7 +4982,7 @@ function loadStudentNotes() {
             ` : '';
             div.innerHTML = `
                 <div class="flex items-start justify-between mb-1">
-                    <div class="text-xs text-gray-500">${new Date(note.timestamp).toLocaleString()}</div>
+                    <div class="text-xs text-gray-500">${new Date(note.timestamp).toLocaleString()}${sourceTag}</div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-blue-600">${escapeHtml(note.author || 'Instructor')}</span>
                         ${actions}
@@ -6079,12 +6102,24 @@ function cycleSessionSkillState(button) {
 // Quick note entry from current session (double-click on student header)
 async function addSessionNote(level, studentId, studentName) {
     const note = prompt(`Add note for ${studentName}:`);
-    if (!note || !note.trim()) return;
+    const trimmed = note ? note.trim() : '';
+    if (!trimmed) return;
+
+    const user = auth.currentUser;
+    const userName = currentUserName || (user && user.email ? user.email.split('@')[0] : 'Instructor');
+    const authorId = user ? user.uid : null;
+    const now = Date.now();
     const path = `studentNotes/${level}/${studentId}/sessionNotes`;
+
     try {
         await db.ref(path).push({
-            note: note.trim(),
-            ts: Date.now()
+            text: trimmed,
+            note: trimmed, // legacy field so older readers still work if present
+            timestamp: now,
+            ts: now, // legacy field for existing reads
+            author: userName,
+            authorId: authorId,
+            source: 'session'
         });
         alert('Note saved');
     } catch (e) {
