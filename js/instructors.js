@@ -5054,13 +5054,54 @@ function generateMasterReport() {
             // Filter to only include students on course this week
             const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
 
-            // Merge skill assessments into student data
+            // Merge skill assessments and notes into student data
             const studentsWithSkills = onCourseStudents.map(student => {
                 const studentNotes = notes[student.id] || {};
                 const skillsChecklist = studentNotes.skillsChecklist || {};
+
+                // Collect all notes (direct, nested, session)
+                const allNotes = [];
+                Object.keys(studentNotes).forEach(key => {
+                    if (key === 'skillsChecklist' || key === 'notes' || key === 'sessionNotes') return;
+                    const note = studentNotes[key];
+                    if (note && note.text && Number.isFinite(note.timestamp)) {
+                        allNotes.push({ ...note });
+                    }
+                });
+
+                // Add nested notes
+                if (studentNotes.notes) {
+                    Object.keys(studentNotes.notes).forEach(key => {
+                        const note = studentNotes.notes[key];
+                        if (note && note.text && Number.isFinite(note.timestamp)) {
+                            allNotes.push({ ...note });
+                        }
+                    });
+                }
+
+                // Add session notes
+                if (studentNotes.sessionNotes) {
+                    Object.keys(studentNotes.sessionNotes).forEach(key => {
+                        const note = studentNotes.sessionNotes[key];
+                        const text = note && typeof note === 'object' ? (note.text || note.note) : null;
+                        const timestamp = note && typeof note === 'object' ? (note.timestamp || note.ts) : null;
+                        if (text && Number.isFinite(timestamp)) {
+                            allNotes.push({
+                                text,
+                                timestamp,
+                                author: note.author,
+                                source: 'session'
+                            });
+                        }
+                    });
+                }
+
+                allNotes.sort((a, b) => b.timestamp - a.timestamp);
+
                 return {
                     ...student,
-                    skillsChecklist
+                    skillsChecklist,
+                    notes: allNotes
                 };
             });
 
@@ -5090,6 +5131,12 @@ function generateMasterReport() {
                     .summary { background: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3b82f6; }
                     .summary-stat { display: inline-block; margin-right: 20px; font-weight: bold; }
                     .no-students { color: #6b7280; font-style: italic; padding: 10px; }
+                    .notes-section { margin-top: 12px; padding: 10px; background: #fefce8; border-left: 3px solid #facc15; border-radius: 4px; }
+                    .notes-section h4 { margin: 0 0 8px 0; color: #854d0e; font-size: 0.95em; }
+                    .note-item { background: white; padding: 8px; margin-bottom: 6px; border-radius: 3px; font-size: 0.85em; border-left: 2px solid #3b82f6; }
+                    .note-meta { color: #64748b; font-size: 0.75em; margin-bottom: 4px; }
+                    .note-text { color: #1e293b; line-height: 1.4; }
+                    .session-badge { background: #eef2ff; color: #4338ca; padding: 1px 4px; border-radius: 2px; font-size: 0.7em; font-weight: 600; margin-left: 4px; }
                     @media print {
                         body { background: white; }
                         .container { box-shadow: none; }
@@ -5172,6 +5219,35 @@ function generateMasterReport() {
                             <span style="color: #1e40af; font-weight: bold;">| Progress: ${progressPercent}%</span>
                         </div>
                     `);
+
+                    // Add instructor notes if available
+                    if (student.notes && student.notes.length > 0) {
+                        reportWindow.document.write(`
+                            <div class="notes-section">
+                                <h4>📝 Instructor Notes (${student.notes.length})</h4>
+                        `);
+
+                        student.notes.forEach(note => {
+                            const noteDate = new Date(note.timestamp).toLocaleDateString('en-IE', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            const sourceBadge = note.source === 'session' ? '<span class="session-badge">SESSION</span>' : '';
+                            const escText = (note.text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            const escAuthor = (note.author || 'Instructor').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                            reportWindow.document.write(`
+                                <div class="note-item">
+                                    <div class="note-meta"><strong>${escAuthor}</strong>${sourceBadge} • ${noteDate}</div>
+                                    <div class="note-text">${escText}</div>
+                                </div>
+                            `);
+                        });
+
+                        reportWindow.document.write(`</div>`);
+                    }
                 } else {
                     reportWindow.document.write(`<div class="no-students">No skills defined for this level</div>`);
                 }
@@ -5524,20 +5600,56 @@ function buildReportCardHtml(levelKey, studentId, studentName) {
     // Fetch student notes for the report card
     const notesPath = `studentNotes/${levelKey}/${studentId}`;
 
-    return db.ref(notesPath).once('value').then(notesSnap => {
-        const notesData = notesSnap.val();
+    return Promise.all([
+        db.ref(notesPath).once('value'),
+        db.ref(`${notesPath}/notes`).once('value'),
+        db.ref(`${notesPath}/sessionNotes`).once('value')
+    ]).then(([rootSnap, nestedSnap, sessionSnap]) => {
         const notes = [];
+        const notesData = rootSnap.val();
+
+        // Collect direct children notes (skip containers)
         if (notesData) {
             Object.keys(notesData).forEach(noteId => {
-                if (noteId === 'skillsChecklist' || noteId === 'notes') return;
+                if (noteId === 'skillsChecklist' || noteId === 'notes' || noteId === 'sessionNotes') return;
                 const note = notesData[noteId];
                 if (note && note.text && Number.isFinite(note.timestamp)) {
-                    note.id = noteId;
-                    notes.push(note);
+                    notes.push({ id: noteId, ...note });
                 }
             });
-            notes.sort((a, b) => b.timestamp - a.timestamp);
         }
+
+        // Collect nested /notes children
+        if (nestedSnap && nestedSnap.exists()) {
+            nestedSnap.forEach(child => {
+                const val = child.val();
+                if (val && val.text && Number.isFinite(val.timestamp)) {
+                    notes.push({ id: child.key, ...val });
+                }
+            });
+        }
+
+        // Collect session quick notes
+        if (sessionSnap && sessionSnap.exists()) {
+            sessionSnap.forEach(child => {
+                const val = child.val();
+                const text = val && typeof val === 'object' ? (val.text || val.note) : null;
+                const timestamp = val && typeof val === 'object' ? (val.timestamp || val.ts) : null;
+                if (text && Number.isFinite(timestamp)) {
+                    notes.push({
+                        id: child.key,
+                        text,
+                        timestamp,
+                        author: val.author,
+                        authorId: val.authorId,
+                        editedAt: val.editedAt,
+                        source: 'session'
+                    });
+                }
+            });
+        }
+
+        notes.sort((a, b) => b.timestamp - a.timestamp);
 
         // Build HTML for print/email
         let html = `
@@ -5702,11 +5814,12 @@ function buildReportCardHtml(levelKey, studentId, studentName) {
                     minute: '2-digit'
                 });
                 const editedTag = note.editedAt ? ' <em>(edited)</em>' : '';
+                const sourceTag = note.source === 'session' ? ' <span style="background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; margin-left: 6px;">SESSION</span>' : '';
 
                 html += `
                     <div class="note-item">
                         <div class="note-meta">
-                            <span><strong>${escapeHtml(note.author || 'Instructor')}</strong></span>
+                            <span><strong>${escapeHtml(note.author || 'Instructor')}</strong>${sourceTag}</span>
                             <span>${noteDate}${editedTag}</span>
                         </div>
                         <div class="note-text">${escapeHtml(note.text)}</div>
