@@ -6617,17 +6617,35 @@ async function callGemini(systemPrompt, userQuery, model = 'gemini-2.5-flash-pre
 }
 
 function extractJson(text) {
-    const fence = text.match(/```json[\s\S]*?```/i);
-    if (fence) {
-        const inner = fence[0].replace(/```json/i, '').replace(/```/, '');
-        try { return JSON.parse(inner); } catch { }
+    if (!text) return null;
+
+    // Fenced JSON or array
+    const fence = text.match(/```(?:json)?([\s\S]*?)```/i);
+    if (fence && fence[1]) {
+        const inner = fence[1];
+        try { return JSON.parse(inner); } catch { /* continue */ }
     }
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
-    if (start !== -1 && end !== -1 && end > start) {
-        const maybe = text.slice(start, end + 1);
-        try { return JSON.parse(maybe); } catch { }
+
+    // Array extraction
+    const arrStart = text.indexOf('[');
+    const arrEnd = text.lastIndexOf(']');
+    if (arrStart !== -1 && arrEnd !== -1 && arrEnd > arrStart) {
+        const maybe = text.slice(arrStart, arrEnd + 1);
+        try { return JSON.parse(maybe); } catch { /* continue */ }
     }
+
+    // Object extraction
+    const objStart = text.indexOf('{');
+    const objEnd = text.lastIndexOf('}');
+    if (objStart !== -1 && objEnd !== -1 && objEnd > objStart) {
+        const maybe = text.slice(objStart, objEnd + 1);
+        try { return JSON.parse(maybe); } catch { /* continue */ }
+    }
+
+    // Bulleted lines fallback -> array of strings
+    const bulletLines = text.split('\n').map(l => l.trim()).filter(l => l.startsWith('- ')).map(l => l.replace(/^-\s*/, ''));
+    if (bulletLines.length) return bulletLines;
+
     return null;
 }
 
