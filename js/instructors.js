@@ -1438,6 +1438,7 @@ function initNotificationPreferencesUI() {
     const saveBtn = document.getElementById('save-prefs-btn');
     const disableAllBtn = document.getElementById('disable-all-notifs-btn');
     const testBtn = document.getElementById('test-notification-btn');
+    const testWeatherBtn = document.getElementById('test-weather-alert-btn');
     const enabledEl = document.getElementById('pref-enabled');
     const flashEl = document.getElementById('prefs-flash');
     if (!toggleBtn || !panel) return;
@@ -1519,6 +1520,47 @@ function initNotificationPreferencesUI() {
         } catch (e) {
             console.error('[TestNotification] Failed', e);
             showToast('Failed to show test notification', 'error', 4000);
+        }
+    });
+
+    // Test Weather Alert (respects prefs)
+    testWeatherBtn?.addEventListener('click', async () => {
+        if (!window.notificationPrefs.enabled || !window.notificationPrefs.weather) {
+            showToast('Enable Notifications and Weather alerts in Preferences', 'warning', 4000);
+            return;
+        }
+        if (typeof Notification === 'undefined') {
+            showToast('Notifications not supported in this browser', 'warning', 4000);
+            return;
+        }
+        if (Notification.permission === 'default') {
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+                showToast('Permission denied. Cannot show notifications.', 'error', 4000);
+                return;
+            }
+        }
+        try {
+            const reg = await navigator.serviceWorker.getRegistration();
+            const level = document.getElementById('session-level-select')?.value || 'start-sailing';
+            const opts = {
+                body: `High gusts – hold for ${level.replace('-', ' ')}`,
+                icon: '/images/logo.png',
+                badge: '/images/logo.png',
+                tag: 'weather-danger',
+                requireInteraction: true,
+                data: { type: 'weather-danger', level }
+            };
+            if (reg && reg.showNotification) {
+                await reg.showNotification('⚠ Weather Danger', opts);
+                showToast('Weather alert sent (via Service Worker)', 'success', 3000);
+            } else {
+                await showNotification('⚠ Weather Danger', opts);
+                showToast('Weather alert sent', 'success', 3000);
+            }
+        } catch (e) {
+            console.error('[TestWeatherAlert] Failed', e);
+            showToast('Failed to show weather alert', 'error', 4000);
         }
     });
 }
