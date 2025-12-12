@@ -1346,6 +1346,14 @@ function validateLevelRatios(level) {
     const maxAllowedStudents = instructorCount * maxStudentsPerInstructor;
     if (studentCount > maxAllowedStudents) {
         violations.push(`${studentCount} students exceeds max of ${maxAllowedStudents} (${maxStudentsPerInstructor} per instructor × ${instructorCount})`);
+    }
+
+    return { valid: violations.length === 0, violations };
+}
+
+function highlightLevelRatios() {
+    const levels = ['cara-na-mara', 'taste-of-sailing', 'start-sailing', 'basic-skills', 'improving-skills'];
+
     levels.forEach(level => {
         const levelElement = document.querySelector(`[data-level-id="${level}"]`);
         const { valid, violations } = validateLevelRatios(level);
