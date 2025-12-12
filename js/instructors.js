@@ -8127,17 +8127,10 @@ async function registerForPush() {
 if (messaging) {
     messaging.onMessage((payload) => {
         console.log('[FCM] Message received in foreground:', payload);
-        const { notification, data } = payload;
-        // Only show foreground notifications if app is installed
-        const isInstalled = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-            || (window.navigator && 'standalone' in window.navigator && window.navigator.standalone === true);
-        if (notification && window.notificationPrefs?.enabled && isInstalled) {
-            showNotification(notification.title || 'Sailing School', {
-                body: notification.body || '',
-                tag: data?.type || 'message',
-                requireInteraction: data?.type === 'urgent'
-            }).catch(e => console.warn('[FCM] Notification show failed:', e));
-        }
+        // When app is open, FCM automatically shows notification from payload.notification
+        // Don't manually show another one to avoid duplicates
+        // Just log it for debugging
+        console.log('[FCM] Foreground notification handled by system');
     });
 }
 

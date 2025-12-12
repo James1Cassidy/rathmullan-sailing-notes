@@ -18,6 +18,8 @@ export async function onRequestPost(context) {
       const payload = {
         to: token,
         priority: 'high',
+        content_available: true,
+        time_to_live: 86400,
         notification: {
           title: title || 'Sailing School',
           body: msgBody || 'New notification',
@@ -25,7 +27,7 @@ export async function onRequestPost(context) {
           badge: '/images/logo.png',
           click_action: url,
           sound: 'default',
-          vibrate: [200, 100, 200]
+          tag: 'urgent-announcement'
         },
         data: {
           type: 'urgent-announcement',

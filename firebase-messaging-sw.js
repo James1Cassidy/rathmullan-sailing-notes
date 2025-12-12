@@ -55,3 +55,28 @@ messaging.setBackgroundMessageHandler(function(payload) {
   console.info('[FCM SW] Showing notification:', title, options);
   return self.registration.showNotification(title, options);
 });
+
+// Handle notification clicks for Firebase messages
+self.addEventListener('notificationclick', function(event) {
+  console.log('[FCM SW] Notification clicked:', event.notification.tag);
+  event.notification.close();
+
+  if (event.action === 'close') return;
+
+  const urlToOpen = (event.notification.data && event.notification.data.url) || '/instructors.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Focus existing window if found
+      for (let client of clientList) {
+        if (client.url.includes('instructors.html') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open new window
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
