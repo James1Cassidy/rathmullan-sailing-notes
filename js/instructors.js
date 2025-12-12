@@ -54,19 +54,48 @@ function renderWeatherGuidance() {
     };
     const badgeText = status === 'go' ? 'GO' : status === 'caution' ? 'CAUTION' : 'NO-GO';
 
-    const drills = getDrillSuggestions(wind).map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
-
-    container.innerHTML = `
+        // Show initial state with loading spinner for drills
+        container.innerHTML = `
         <div class="flex items-center gap-3 mb-2">
             <div class="px-3 py-1 rounded border ${badgeColors[status]} text-sm font-semibold">${badgeText}</div>
             <div class="text-sm text-gray-700">Wind ${wind.toFixed(1)} kts · Gust ${gust.toFixed(1)} kts</div>
         </div>
         <div class="text-xs text-gray-600 mb-3">Limits for this level: ${limits.maxWind} kts (wind) / ${limits.maxGust} kts (gust)</div>
         <div>
-            <div class="text-sm font-semibold text-purple-700 mb-1">Suggested drills</div>
-            <ul>${drills}</ul>
+                <div class="text-sm font-semibold text-purple-700 mb-1 flex items-center gap-2">
+                    <span>AI-Suggested Drills</span>
+                    <span class="text-xs text-gray-500" id="drill-loading-spinner">⏳ Generating...</span>
+                </div>
+                <ul id="drills-list">
+                    <li class="list-disc ml-4 text-sm text-gray-600 italic">Loading AI suggestions...</li>
+                </ul>
         </div>
     `;
+
+        // Generate AI drills asynchronously
+        generateAIDrills(level, wind, gust, sessionSelectedSkills).then(drills => {
+            const drillsList = document.getElementById('drills-list');
+            const loadingSpinner = document.getElementById('drill-loading-spinner');
+            if (drillsList) {
+                const drillsHtml = drills.map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
+                drillsList.innerHTML = drillsHtml;
+            }
+            if (loadingSpinner) {
+                loadingSpinner.remove();
+            }
+        }).catch(err => {
+            console.error('Failed to generate drills:', err);
+            const drillsList = document.getElementById('drills-list');
+            const loadingSpinner = document.getElementById('drill-loading-spinner');
+            if (drillsList) {
+                const fallbackDrills = getDrillSuggestions(wind);
+                const drillsHtml = fallbackDrills.map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
+                drillsList.innerHTML = drillsHtml;
+            }
+            if (loadingSpinner) {
+                loadingSpinner.textContent = '⚠️ Using fallback';
+            }
+        });
 }
 const db = firebase.database();
 window.db = db; // Expose db globally for inline scripts
@@ -570,6 +599,56 @@ function getDrillSuggestions(windKnots) {
         'Rig checks and heavy-weather equipment review'
     ];
 }
+
+    // AI-powered drill suggestions using Gemini
+    async function generateAIDrills(levelKey, windKnots, gustKnots, selectedSkills = []) {
+        try {
+            const levelNames = {
+                'cara-na-mara': 'Cara na Mara (Introductory)',
+                'taste-of-sailing': 'Taste of Sailing',
+                'start-sailing': 'Start Sailing',
+                'basic-skills': 'Basic Skills',
+                'improving-skills': 'Improving Skills',
+                'advanced': 'Advanced Boat Handling'
+            };
+
+            const levelName = levelNames[levelKey] || levelKey;
+            const limits = LEVEL_CONDITIONS[levelKey];
+
+            const systemPrompt = `You are an expert sailing instructor at Rathmullan Sailing School. Generate practical, age-appropriate sailing drills and activities based on current conditions and student level.
+
+    Rules:
+    - Provide 3-4 specific, actionable drills
+    - Each drill should be concise (one short sentence)
+    - Consider safety first - if conditions are marginal, include safety-focused drills
+    - Drills should be appropriate for the skill level
+    - If specific skills are being taught, prioritize drills for those skills
+    - Format as a simple array of strings`;
+
+            const skillsList = selectedSkills.length > 0
+                ? `\n\nToday's focus skills:\n${selectedSkills.map(s => `- ${s.skillName}`).join('\n')}`
+                : '';
+
+            const userQuery = `Level: ${levelName}
+    Wind: ${windKnots.toFixed(1)} knots (gusting ${gustKnots.toFixed(1)} knots)
+    Level limits: ${limits.maxWind} kts wind / ${limits.maxGust} kts gust${skillsList}
+
+    Generate 3-4 practical sailing drills for this session. Return ONLY a JSON array of strings, like: ["drill 1", "drill 2", "drill 3"]`;
+
+            const response = await callGemini(systemPrompt, userQuery);
+            const drills = extractJson(response);
+
+            if (Array.isArray(drills) && drills.length > 0) {
+                return drills.slice(0, 4); // Max 4 drills
+            }
+
+            // Fallback to static drills
+            return getDrillSuggestions(windKnots);
+        } catch (err) {
+            console.warn('AI drill generation failed, using fallback:', err.message);
+            return getDrillSuggestions(windKnots);
+        }
+    }
 
 // Assessment states for skills
 const SKILL_ASSESSMENT_STATES = {
