@@ -103,6 +103,116 @@ window.firebase = firebase; // Ensure firebase is globally accessible
 const auth = firebase.auth();
 const storage = firebase.storage();
 
+// --- TOAST NOTIFICATION SYSTEM ---
+function showToast(message, type = 'info', duration = 4000, options = {}) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+    };
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || 'ℹ'}</div>
+        <div class="toast-message">${message}</div>
+        ${options.showClose !== false ? '<div class="toast-close" onclick="this.parentElement.remove()">×</div>' : ''}
+    `;
+
+    if (options.action) {
+        const actionBtn = document.createElement('button');
+        actionBtn.className = 'undo-button';
+        actionBtn.textContent = options.action.text;
+        actionBtn.onclick = () => {
+            options.action.callback();
+            toast.remove();
+        };
+        toast.querySelector('.toast-message').appendChild(actionBtn);
+    }
+
+    container.appendChild(toast);
+
+    if (duration > 0) {
+        setTimeout(() => {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    return toast;
+}
+
+// --- UNDO SYSTEM ---
+const undoStack = [];
+const MAX_UNDO = 5;
+
+function addUndoAction(description, undoFn) {
+    undoStack.push({ description, undoFn, timestamp: Date.now() });
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+
+    // Store in localStorage for persistence
+    try {
+        localStorage.setItem('undoStack', JSON.stringify(undoStack.map(a => ({
+            description: a.description,
+            timestamp: a.timestamp
+        }))));
+    } catch (e) {}
+}
+
+function performUndo() {
+    if (undoStack.length === 0) {
+        showToast('Nothing to undo', 'info', 2000);
+        return;
+    }
+
+    const action = undoStack.pop();
+    try {
+        action.undoFn();
+        showToast(`Undone: ${action.description}`, 'success', 2000);
+        localStorage.setItem('undoStack', JSON.stringify(undoStack.map(a => ({
+            description: a.description,
+            timestamp: a.timestamp
+        }))));
+    } catch (e) {
+        showToast('Undo failed: ' + e.message, 'error', 3000);
+    }
+}
+
+window.showToast = showToast;
+window.performUndo = performUndo;
+
+// --- LOADING STATE UTILITY ---
+function showLoading(elementId, message = 'Loading...') {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'flex items-center justify-center gap-2 py-4';
+    loadingDiv.innerHTML = `
+        <div class="spinner"></div>
+        <span class="text-gray-600 text-sm">${message}</span>
+    `;
+    loadingDiv.dataset.loading = 'true';
+    el.innerHTML = '';
+    el.appendChild(loadingDiv);
+}
+
+function hideLoading(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const loading = el.querySelector('[data-loading="true"]');
+    if (loading) loading.remove();
+}
+
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
+
 // --- Firebase Messaging (FCM) client integration ---
 // Note: `firebase-messaging.js` is included in pages that use messaging (instructors.html).
 let messaging = null;
@@ -1239,9 +1349,12 @@ function loadBoatsFromFirebase() {
     const availableBoatsZone = document.getElementById('available-boats-zone');
     if (!availableBoatsZone) return;
 
+    const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
+    showLoading('available-boats-zone', 'Loading boats...');
+
     db.ref('boats').once('value').then(snap => {
         const boatsData = snap.val() || {};
-        const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
+        hideLoading('available-boats-zone');
         flexWrap.innerHTML = ''; // Clear loading message
 
         Object.entries(boatsData).forEach(([boatId, boatData]) => {
@@ -1283,8 +1396,9 @@ function loadBoatsFromFirebase() {
         });
     }).catch(err => {
         console.error('Error loading boats from Firebase:', err);
-        const flexWrap = availableBoatsZone.querySelector('.flex.flex-wrap') || availableBoatsZone;
+        hideLoading('available-boats-zone');
         flexWrap.innerHTML = '<div class="text-red-600 text-sm">Error loading boats</div>';
+        showToast('Error loading boats: ' + err.message, 'error', 3000);
     });
 }
 
@@ -1292,10 +1406,23 @@ window.loadBoatsFromFirebase = loadBoatsFromFirebase;
 
 // Helper function to attach drag and touch listeners to draggable elements
 function attachDragAndTouchListeners(draggableElement) {
-    // Attach drag listener
+    // Attach drag listener with visual feedback
     draggableElement.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', e.target.closest('.draggable').id);
         e.dataTransfer.effectAllowed = 'move';
+        e.target.closest('.draggable').classList.add('dragging');
+
+        // Highlight all drop zones
+        document.querySelectorAll('.dropzone').forEach(zone => {
+            zone.classList.add('drag-over');
+        });
+    });
+
+    draggableElement.addEventListener('dragend', e => {
+        e.target.closest('.draggable')?.classList.remove('dragging');
+        document.querySelectorAll('.dropzone').forEach(zone => {
+            zone.classList.remove('drag-over');
+        });
     });
 
     // Attach touch listeners
@@ -1414,12 +1541,12 @@ function addBoat() {
     const color = document.getElementById('selected-boat-color').value;
 
     if (!name) {
-        alert('Please enter a boat name');
+        showToast('Please enter a boat name', 'warning', 3000);
         return;
     }
 
     if (!type) {
-        alert('Please select a boat type (Single, Double, or Multi-handed)');
+        showToast('Please select a boat type (Single, Double, or Multi-handed)', 'warning', 3000);
         return;
     }
 
@@ -1430,9 +1557,17 @@ function addBoat() {
         document.getElementById('selected-boat-color').value = 'bg-yellow-500';
         toggleAddBoatForm();
         loadBoatsFromFirebase();
+
+        // Store undo action
+        addUndoAction(`Add boat ${name}`, async () => {
+            await db.ref('boats/' + boatId).remove();
+            loadBoatsFromFirebase();
+        });
+
+        showToast(`Boat "${name}" added`, 'success', 2000, { showUndo: true });
     }).catch(err => {
         console.error('Error adding boat:', err);
-        alert('Error creating boat: ' + err.message);
+        showToast('Error creating boat: ' + err.message, 'error', 3000);
     });
 }
 
@@ -1447,38 +1582,50 @@ async function addBoatsBulk() {
     const count = parseInt(countVal, 10);
 
     if (!className) {
-        alert('Please enter a boat class name');
+        showToast('Please enter a boat class name', 'warning', 3000);
         return;
     }
 
     if (!type) {
-        alert('Please select a boat type (Single, Double, or Multi-handed)');
+        showToast('Please select a boat type (Single, Double, or Multi-handed)', 'warning', 3000);
         return;
     }
 
     if (!Number.isFinite(count) || count <= 0 || count > 50) {
-        alert('Please enter a quantity between 1 and 50');
+        showToast('Please enter a quantity between 1 and 50', 'warning', 3000);
         return;
     }
 
     const updates = {};
+    const boatIds = [];
     for (let i = 1; i <= count; i++) {
         const boatId = 'boat-' + Date.now() + '-' + i;
         const name = `${className}-${i}`;
         updates[boatId] = { name, color, type };
+        boatIds.push(boatId);
     }
 
     try {
         await db.ref('boats').update(updates);
+
+        // Store undo action
+        addUndoAction(`Add ${count} ${className} boats`, async () => {
+            const removeUpdates = {};
+            boatIds.forEach(id => removeUpdates[id] = null);
+            await db.ref('boats').update(removeUpdates);
+            loadBoatsFromFirebase();
+        });
+
         document.getElementById('boat-class-input').value = '';
         document.getElementById('boat-count-input').value = '3';
         document.getElementById('boat-type-select').value = '';
         document.getElementById('selected-boat-color').value = 'bg-yellow-500';
         toggleAddBoatForm();
         loadBoatsFromFirebase();
+        showToast(`${count} ${className} boats added`, 'success', 2000, { showUndo: true });
     } catch (err) {
         console.error('Error bulk-adding boats:', err);
-        alert('Error creating boats: ' + err.message);
+        showToast('Error creating boats: ' + err.message, 'error', 3000);
     }
 }
 
@@ -1490,19 +1637,32 @@ function deleteBoat(boatId) {
     const availableZone = document.getElementById('available-boats-zone');
 
     if (!boatElement || !availableZone || !availableZone.contains(boatElement)) {
-        alert('Boats can only be deleted when they are in the Available Boats section. Please move the boat back first.');
+        showToast('Boats can only be deleted when they are in the Available Boats section. Please move the boat back first.', 'warning', 4000);
         return;
     }
 
     if (!confirm('Are you sure you want to delete this boat?')) return;
 
-    db.ref('boats/' + boatId).remove().then(() => {
-        // Also remove from arrangement if it's placed
-        db.ref('arrangement/' + boatId).remove().catch(() => {});
-        loadBoatsFromFirebase();
-    }).catch(err => {
-        console.error('Error deleting boat:', err);
-        alert('Error deleting boat: ' + err.message);
+    // Backup boat data for undo
+    db.ref('boats/' + boatId).once('value').then(snapshot => {
+        const boatData = snapshot.val();
+
+        db.ref('boats/' + boatId).remove().then(() => {
+            // Also remove from arrangement if it's placed
+            db.ref('arrangement/' + boatId).remove().catch(() => {});
+
+            // Store undo action
+            addUndoAction(`Delete boat ${boatData?.name || boatId}`, async () => {
+                await db.ref('boats/' + boatId).set(boatData);
+                loadBoatsFromFirebase();
+            });
+
+            loadBoatsFromFirebase();
+            showToast(`Boat "${boatData?.name || boatId}" deleted`, 'success', 3000, { showUndo: true });
+        }).catch(err => {
+            console.error('Error deleting boat:', err);
+            showToast('Error deleting boat: ' + err.message, 'error', 3000);
+        });
     });
 }
 
@@ -2467,6 +2627,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Section Navigation UX (Quick Nav + Scrollspy + Back-to-top) ---
 document.addEventListener('DOMContentLoaded', () => {
+    // --- KEYBOARD SHORTCUTS ---
+    document.addEventListener('keydown', (e) => {
+        // Ignore if user is typing in input/textarea
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+            // Allow Ctrl+S to save even in inputs
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                const saveBtn = document.querySelector('button[onclick*="save"]');
+                if (saveBtn) {
+                    saveBtn.click();
+                    showToast('Saved!', 'success', 1500);
+                }
+            }
+            return;
+        }
+
+        // Ctrl+Z - Undo
+        if (e.ctrlKey && e.key === 'z') {
+            e.preventDefault();
+            performUndo();
+        }
+
+        // Escape - Close modals/forms
+        if (e.key === 'Escape') {
+            const addBoatForm = document.getElementById('add-boat-form');
+            if (addBoatForm && !addBoatForm.classList.contains('hidden')) {
+                toggleAddBoatForm();
+            }
+        }
+
+        // Ctrl+K - Quick navigation
+        if (e.ctrlKey && e.key === 'k') {
+            e.preventDefault();
+            const sections = ['announcements-section', 'weather-section', 'availability-section', 'instructor-chat', 'interactive-map', 'instructors-table', 'current-session-section', 'student-management-section', 'student-notes-section', 'templates-section', 'weekly-planning', 'instructors-resources'];
+            const sectionNames = ['Announcements', 'Weather', 'Availability', 'Chat', 'Map', 'Arrangement', 'Current Session', 'Student Management', 'Student Notes', 'Templates', 'Weekly Plan', 'Resources'];
+            const choice = prompt('Navigate to:\n' + sectionNames.map((n, i) => `${i+1}. ${n}`).join('\n'));
+            const idx = parseInt(choice) - 1;
+            if (idx >= 0 && idx < sections.length) {
+                document.getElementById(sections[idx])?.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Ctrl+B - Add boat
+        if (e.ctrlKey && e.key === 'b') {
+            e.preventDefault();
+            const addBoatForm = document.getElementById('add-boat-form');
+            if (addBoatForm) {
+                toggleAddBoatForm();
+                if (!addBoatForm.classList.contains('hidden')) {
+                    document.getElementById('boat-name-input')?.focus();
+                }
+            }
+        }
+    });
+
     const nav = document.getElementById('section-nav');
     const backToTop = document.getElementById('back-to-top');
     if (!nav) return;
@@ -2863,10 +3078,13 @@ document.addEventListener('DOMContentLoaded', () => {
         zone.addEventListener('dragover', e => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            zone.classList.add('ring', 'ring-blue-400', 'ring-4');
+            zone.classList.add('drag-over');
         });
-        zone.addEventListener('dragleave', () => {
-            zone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+        zone.addEventListener('dragleave', (e) => {
+            // Only remove if we're truly leaving the zone (not entering a child)
+            if (!zone.contains(e.relatedTarget)) {
+                zone.classList.remove('drag-over');
+            }
         });
         zone.addEventListener('drop', e => {
             e.preventDefault();
@@ -2875,9 +3093,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (draggable) {
                 const container = zone.querySelector('.flex.flex-wrap') || zone;
                 container.appendChild(draggable);
-                zone.classList.remove('ring', 'ring-blue-400', 'ring-4');
+                zone.classList.remove('drag-over');
                 saveArrangementToFirebase(id, zone.id);
             }
+            // Remove drag-over from all zones
+            document.querySelectorAll('.dropzone').forEach(z => z.classList.remove('drag-over'));
         });
     });
     const draggables = document.querySelectorAll('.draggable');
@@ -5186,6 +5406,9 @@ function generateMasterReport() {
         'advanced': 'Advanced Boat Handling'
     };
 
+    // Show loading toast
+    const loadingToastId = showToast('Generating master report...', 'info', 0);
+
     // Fetch both students and their skill assessments
     Promise.all(levels.map(level => {
         return Promise.all([
@@ -5410,9 +5633,21 @@ function generateMasterReport() {
             </html>
         `);
         reportWindow.document.close();
+
+        // Hide loading toast
+        if (loadingToastId) {
+            const toast = document.querySelector(`[data-toast-id="${loadingToastId}"]`);
+            if (toast) toast.remove();
+        }
+        showToast('Master report generated', 'success', 2000);
     }).catch(err => {
         console.error('Error generating master report:', err);
-        alert('Error generating report: ' + err.message);
+        // Hide loading toast
+        if (loadingToastId) {
+            const toast = document.querySelector(`[data-toast-id="${loadingToastId}"]`);
+            if (toast) toast.remove();
+        }
+        showToast('Error generating report: ' + err.message, 'error', 4000);
     });
 }
 
@@ -7249,7 +7484,7 @@ async function loadAllStudents() {
 
     if (!studentsList) return;
 
-    studentsList.innerHTML = '<tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">Loading students...</td></tr>';
+    showLoading('students-list', 'Loading students...');
 
     try {
         const snapshot = await db.ref('students').once('value');
@@ -7278,10 +7513,13 @@ async function loadAllStudents() {
 
         if (studentCount) studentCount.textContent = allStudentsData.length;
 
+        hideLoading('students-list');
         renderStudentsList(allStudentsData);
     } catch (error) {
         console.error('Error loading students:', error);
+        hideLoading('students-list');
         studentsList.innerHTML = '<tr><td colspan="4" class="px-4 py-2 text-center text-red-600">Error loading students</td></tr>';
+        showToast('Error loading students: ' + error.message, 'error', 3000);
     }
 }
 
@@ -7353,12 +7591,12 @@ async function addNewStudent() {
     const level = document.getElementById('new-student-level')?.value;
 
     if (!firstname || !lastname) {
-        alert('Please enter both first and last name');
+        showToast('Please enter both first and last name', 'warning', 3000);
         return;
     }
 
     if (!level) {
-        alert('Please select a level');
+        showToast('Please select a level', 'warning', 3000);
         return;
     }
 
@@ -7366,6 +7604,8 @@ async function addNewStudent() {
     const studentId = 'student-' + Date.now();
 
     try {
+        showLoading('students-list', 'Adding student...');
+
         // Get existing students for this level
         const snapshot = await db.ref('students/' + level).once('value');
         const students = snapshot.val() || {};
@@ -7381,6 +7621,11 @@ async function addNewStudent() {
 
         await db.ref('students/' + level).set(studentArray);
 
+        // Store undo action
+        addUndoAction(`Add student ${fullName}`, async () => {
+            await deleteStudent(studentId, level);
+        });
+
         // Clear inputs
         document.getElementById('new-student-firstname').value = '';
         document.getElementById('new-student-lastname').value = '';
@@ -7389,10 +7634,11 @@ async function addNewStudent() {
         // Reload list
         await loadAllStudents();
 
-        alert(`Student "${fullName}" added to ${level}`);
+        showToast(`Student "${fullName}" added to ${level}`, 'success', 3000);
     } catch (error) {
         console.error('Error adding student:', error);
-        alert('Error adding student: ' + error.message);
+        showToast('Error adding student: ' + error.message, 'error', 4000);
+        await loadAllStudents();
     }
 }
 
@@ -7407,6 +7653,8 @@ async function changeStudentLevel(studentId, oldLevel, newLevel) {
     }
 
     try {
+        showLoading('students-list', 'Moving student...');
+
         // Get student from old level
         const oldSnapshot = await db.ref('students/' + oldLevel).once('value');
         const oldStudents = oldSnapshot.val() || {};
@@ -7414,7 +7662,7 @@ async function changeStudentLevel(studentId, oldLevel, newLevel) {
 
         const student = oldArray.find(s => s.id === studentId);
         if (!student) {
-            alert('Student not found');
+            showToast('Student not found', 'error', 3000);
             return;
         }
 
@@ -7432,17 +7680,41 @@ async function changeStudentLevel(studentId, oldLevel, newLevel) {
 
         // Also move student notes if they exist
         const notesSnapshot = await db.ref('studentNotes/' + oldLevel + '/' + studentId).once('value');
-        if (notesSnapshot.exists()) {
-            const notes = notesSnapshot.val();
-            await db.ref('studentNotes/' + newLevel + '/' + studentId).set(notes);
+        const backupNotes = notesSnapshot.exists() ? notesSnapshot.val() : null;
+
+        if (backupNotes) {
+            await db.ref('studentNotes/' + newLevel + '/' + studentId).set(backupNotes);
             await db.ref('studentNotes/' + oldLevel + '/' + studentId).remove();
         }
 
+        // Store undo action
+        addUndoAction(`Move ${student.name} to ${newLevel}`, async () => {
+            // Move back to old level
+            const currentNewSnapshot = await db.ref('students/' + newLevel).once('value');
+            const currentNewStudents = currentNewSnapshot.val() || {};
+            const currentNewArray = Array.isArray(currentNewStudents) ? currentNewStudents : Object.values(currentNewStudents);
+            const revertedArray = currentNewArray.filter(s => s.id !== studentId);
+            await db.ref('students/' + newLevel).set(revertedArray);
+
+            const currentOldSnapshot = await db.ref('students/' + oldLevel).once('value');
+            const currentOldStudents = currentOldSnapshot.val() || {};
+            const currentOldArray = Array.isArray(currentOldStudents) ? currentOldStudents : Object.values(currentOldStudents);
+            currentOldArray.push(student);
+            await db.ref('students/' + oldLevel).set(currentOldArray);
+
+            if (backupNotes) {
+                await db.ref('studentNotes/' + oldLevel + '/' + studentId).set(backupNotes);
+                await db.ref('studentNotes/' + newLevel + '/' + studentId).remove();
+            }
+
+            await loadAllStudents();
+        });
+
         await loadAllStudents();
-        alert(`Student moved to ${newLevel}`);
+        showToast(`${student.name} moved to ${newLevel}`, 'success', 3000, { showUndo: true });
     } catch (error) {
         console.error('Error changing level:', error);
-        alert('Error changing level: ' + error.message);
+        showToast('Error changing level: ' + error.message, 'error', 4000);
         await loadAllStudents();
     }
 }
@@ -7453,6 +7725,9 @@ async function toggleStudentWeekly(studentId, level, isOnCourse) {
         const snapshot = await db.ref('students/' + level).once('value');
         const students = snapshot.val() || {};
         const studentArray = Array.isArray(students) ? students : Object.values(students);
+
+        const student = studentArray.find(s => s.id === studentId);
+        const studentName = student?.name || 'Student';
 
         const updatedArray = studentArray.map(s => {
             if (s.id === studentId) {
@@ -7468,9 +7743,17 @@ async function toggleStudentWeekly(studentId, level, isOnCourse) {
         if (studentIndex !== -1) {
             allStudentsData[studentIndex].onCourseThisWeek = isOnCourse;
         }
+
+        // Update arrangement section to reflect changes
+        if (typeof updateStudentTable === 'function') {
+            updateStudentTable(level, updatedArray);
+        }
+
+        const message = isOnCourse ? `${studentName} marked as on course this week` : `${studentName} removed from this week`;
+        showToast(message, 'success', 2000);
     } catch (error) {
         console.error('Error updating weekly status:', error);
-        alert('Error updating weekly status: ' + error.message);
+        showToast('Error updating weekly status: ' + error.message, 'error', 3000);
     }
 }
 
@@ -7489,17 +7772,35 @@ async function deleteStudent(studentId, level) {
         const students = snapshot.val() || {};
         const studentArray = Array.isArray(students) ? students : Object.values(students);
 
+        // Backup notes for undo
+        const notesSnapshot = await db.ref('studentNotes/' + level + '/' + studentId).once('value');
+        const backupNotes = notesSnapshot.val();
+
         const newArray = studentArray.filter(s => s.id !== studentId);
         await db.ref('students/' + level).set(newArray);
 
         // Remove notes
         await db.ref('studentNotes/' + level + '/' + studentId).remove();
 
+        // Store undo action
+        const deletedStudent = studentArray.find(s => s.id === studentId);
+        addUndoAction(`Delete student ${student.name}`, async () => {
+            const currentSnapshot = await db.ref('students/' + level).once('value');
+            const currentStudents = currentSnapshot.val() || {};
+            const currentArray = Array.isArray(currentStudents) ? currentStudents : Object.values(currentStudents);
+            currentArray.push(deletedStudent);
+            await db.ref('students/' + level).set(currentArray);
+            if (backupNotes) {
+                await db.ref('studentNotes/' + level + '/' + studentId).set(backupNotes);
+            }
+            await loadAllStudents();
+        });
+
         await loadAllStudents();
-        alert('Student deleted');
+        showToast(`Student "${student.name}" deleted`, 'success', 3000, { showUndo: true });
     } catch (error) {
         console.error('Error deleting student:', error);
-        alert('Error deleting student: ' + error.message);
+        showToast('Error deleting student: ' + error.message, 'error', 4000);
     }
 }
 
