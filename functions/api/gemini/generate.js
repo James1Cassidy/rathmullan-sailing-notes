@@ -1,5 +1,38 @@
 // Cloudflare Pages Function: /api/gemini/generate
-// Proxy for Gemini text generation API
+// Proxy for Gemini text generation API with fallback to alternative models
+
+// Fallback models to use if Gemini hits rate limits
+const FALLBACK_MODELS = [
+  'gamma-3-1b',
+  'gamma-3-2b',
+  'gamma-3-4b'
+];
+
+async function callGeminiAPI(model, systemPrompt, userQuery, isSearchGrounded, apiKey) {
+  const isGemini = model.startsWith('gemini');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+  const payload = isGemini
+    ? {
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        ...(isSearchGrounded && { tools: [{ google_search: {} }] })
+      }
+    : {
+        contents: [{ parts: [{ text: `${systemPrompt}\n\n${userQuery}` }] }]
+      };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return response;
+}
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -28,24 +61,47 @@ export async function onRequest(context) {
       });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-    const payload = {
-      contents: [{ parts: [{ text: userQuery }] }],
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-    };
+    // Try primary model first, then fallback models
+    const modelsToTry = [model, ...FALLBACK_MODELS];
+    let lastError = null;
+    let response = null;
 
-    if (isSearchGrounded) {
-      payload.tools = [{ google_search: {} }];
+    for (const tryModel of modelsToTry) {
+      try {
+        response = await callGeminiAPI(tryModel, systemPrompt, userQuery, isSearchGrounded, GEMINI_KEY);
+
+        // If successful or client error (not rate limit), use this response
+        if (response.ok || response.status === 400 || response.status === 403) {
+          console.log(`[Generate] Using model: ${tryModel}`);
+          break;
+        }
+
+        // If rate limited (429), try next model
+        if (response.status === 429) {
+          console.warn(`[Generate] Model ${tryModel} rate limited, trying next...`);
+          lastError = `Model ${tryModel} rate limited`;
+          continue;
+        }
+
+        // Other server errors, try next
+        if (response.status >= 500) {
+          console.warn(`[Generate] Model ${tryModel} server error ${response.status}, trying next...`);
+          lastError = `Model ${tryModel} server error`;
+          continue;
+        }
+      } catch (e) {
+        console.warn(`[Generate] Model ${tryModel} failed:`, e.message);
+        lastError = e.message;
+        continue;
+      }
     }
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': GEMINI_KEY,
-      },
-      body: JSON.stringify(payload),
-    });
+    if (!response) {
+      return new Response(JSON.stringify({ error: 'All models exhausted', details: lastError }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     const textBody = await response.text();
 

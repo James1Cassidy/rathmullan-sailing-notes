@@ -54,7 +54,7 @@ function renderWeatherGuidance() {
     };
     const badgeText = status === 'go' ? 'GO' : status === 'caution' ? 'CAUTION' : 'NO-GO';
 
-        // Show initial state with loading spinner for drills
+        // Show initial state without auto-generating drills (wait for button click)
         container.innerHTML = `
         <div class="flex items-center gap-3 mb-2">
             <div class="px-3 py-1 rounded border ${badgeColors[status]} text-sm font-semibold">${badgeText}</div>
@@ -64,38 +64,54 @@ function renderWeatherGuidance() {
         <div>
                 <div class="text-sm font-semibold text-purple-700 mb-1 flex items-center gap-2">
                     <span>AI-Suggested Drills</span>
-                    <span class="text-xs text-gray-500" id="drill-loading-spinner">⏳ Generating...</span>
                 </div>
-                <ul id="drills-list">
-                    <li class="list-disc ml-4 text-sm text-gray-600 italic">Loading AI suggestions...</li>
+                <button id="generate-drills-btn" class="px-3 py-1 mb-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+                    Generate Drills
+                </button>
+                <ul id="drills-list" style="display: none;">
                 </ul>
+                <div id="drill-loading-state" style="display: none;">
+                    <span class="text-xs text-gray-500">⏳ Generating...</span>
+                </div>
         </div>
     `;
 
-        // Generate AI drills asynchronously
-        generateAIDrills(level, wind, gust, sessionSelectedSkills).then(drills => {
-            const drillsList = document.getElementById('drills-list');
-            const loadingSpinner = document.getElementById('drill-loading-spinner');
-            if (drillsList) {
-                const drillsHtml = drills.map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
-                drillsList.innerHTML = drillsHtml;
-            }
-            if (loadingSpinner) {
-                loadingSpinner.remove();
-            }
-        }).catch(err => {
-            console.error('Failed to generate drills:', err);
-            const drillsList = document.getElementById('drills-list');
-            const loadingSpinner = document.getElementById('drill-loading-spinner');
-            if (drillsList) {
-                const fallbackDrills = getDrillSuggestions(wind);
-                const drillsHtml = fallbackDrills.map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
-                drillsList.innerHTML = drillsHtml;
-            }
-            if (loadingSpinner) {
-                loadingSpinner.textContent = '⚠️ Using fallback';
-            }
-        });
+        // Attach click handler to generate button
+        const generateBtn = document.getElementById('generate-drills-btn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', async () => {
+                const drillsList = document.getElementById('drills-list');
+                const loadingState = document.getElementById('drill-loading-state');
+
+                generateBtn.disabled = true;
+                generateBtn.textContent = '⏳ Generating...';
+                if (loadingState) loadingState.style.display = 'block';
+                if (drillsList) drillsList.style.display = 'none';
+
+                try {
+                    const drills = await generateAIDrills(level, wind, gust, sessionSelectedSkills);
+                    if (drillsList) {
+                        const drillsHtml = drills.map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
+                        drillsList.innerHTML = drillsHtml;
+                        drillsList.style.display = 'block';
+                    }
+                    if (loadingState) loadingState.style.display = 'none';
+                    generateBtn.textContent = 'Regenerate Drills';
+                } catch (err) {
+                    console.error('Failed to generate drills:', err);
+                    const fallbackDrills = getDrillSuggestions(wind);
+                    if (drillsList) {
+                        const drillsHtml = fallbackDrills.map(d => `<li class="list-disc ml-4 text-sm text-gray-800">${escapeHtml(d)}</li>`).join('');
+                        drillsList.innerHTML = drillsHtml;
+                        drillsList.style.display = 'block';
+                    }
+                    if (loadingState) loadingState.innerHTML = '<span class="text-xs text-yellow-600">⚠️ Using fallback drills</span>';
+                    generateBtn.textContent = 'Regenerate Drills';
+                } finally {
+                    generateBtn.disabled = false;
+                }
+            });
+        }
 }
 const db = firebase.database();
 window.db = db; // Expose db globally for inline scripts
