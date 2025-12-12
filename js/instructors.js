@@ -1253,10 +1253,21 @@ function loadBoatsFromFirebase() {
                 div.draggable = true;
                 div.dataset.type = boatType;
                 div.title = `${boatData.name} (${boatType} handed)`;
-                div.innerHTML = `
-                    <span>${boatData.name}</span>
-                    <button onclick="deleteBoat('${boatId}')" class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 bg-red-700 text-white text-xs px-1.5 py-0.5 rounded-bl transition-opacity" title="Delete boat">✕</button>
-                `;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = boatData.name;
+                div.appendChild(nameSpan);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteBoat(boatId);
+                };
+                deleteBtn.className = 'absolute top-0 right-0 opacity-0 group-hover:opacity-100 bg-red-700 text-white text-xs px-1.5 py-0.5 rounded-bl transition-opacity';
+                deleteBtn.title = 'Delete boat';
+                deleteBtn.textContent = '✕';
+                div.appendChild(deleteBtn);
+
                 flexWrap.appendChild(div);
             }
         });
@@ -1474,6 +1485,15 @@ async function addBoatsBulk() {
 window.addBoatsBulk = addBoatsBulk;
 
 function deleteBoat(boatId) {
+    // Only allow deletion if boat is in available-boats-zone
+    const boatElement = document.getElementById(boatId);
+    const availableZone = document.getElementById('available-boats-zone');
+
+    if (!boatElement || !availableZone || !availableZone.contains(boatElement)) {
+        alert('Boats can only be deleted when they are in the Available Boats section. Please move the boat back first.');
+        return;
+    }
+
     if (!confirm('Are you sure you want to delete this boat?')) return;
 
     db.ref('boats/' + boatId).remove().then(() => {
