@@ -1263,6 +1263,8 @@ function showMainContent() {
     if (adminPanel) adminPanel.classList.add('hidden'); // Hide admin panel if not admin
     // Apply saved arrangement once content is visible
     try { if (typeof applySavedArrangement === 'function') applySavedArrangement(); } catch (_) { }
+    // Load all students when main content is shown
+    try { if (typeof loadAllStudents === 'function') loadAllStudents(); } catch (_) { }
 }
 
 function showPendingApproval() {
@@ -2017,20 +2019,18 @@ function updateStudentTable(level, students) {
     const tableBody = document.getElementById('students-' + level);
     if (!tableBody) return;
     tableBody.innerHTML = '';
-    students.forEach(student => {
+    // Filter to only show students on course this week
+    const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
+    onCourseStudents.forEach(student => {
         const row = document.createElement('tr');
-        const progressBtn = getProgressButton(level, student.id, student.name);
+        // Only show student name, no management buttons (managed in Student Management section)
         row.innerHTML = `
             <td class="p-2 border-b text-left">${student.name}</td>
-            <td class="p-2 border-b text-center space-x-2">
-                ${progressBtn}
-                <button class="text-red-500 hover:underline text-sm" onclick="removeStudent('${level}', '${student.id}')">Remove</button>
-            </td>
         `;
         tableBody.appendChild(row);
     });
     const countSpan = document.querySelector(`#count-${level} .count-num`);
-    if (countSpan) countSpan.textContent = students.length;
+    if (countSpan) countSpan.textContent = onCourseStudents.length;
 }
 
 function getProgressButton(currentLevel, studentId, studentName) {
@@ -4399,8 +4399,10 @@ function populateStudentSelector() {
 
     db.ref('students/' + level).once('value').then(snap => {
         const students = snap.val() || [];
+        // Filter to only show students on course this week
+        const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
         studentSelect.innerHTML = '<option value="">Select student...</option>';
-        students.forEach(student => {
+        onCourseStudents.forEach(student => {
             const option = document.createElement('option');
             option.value = student.id;
             option.textContent = student.name;
@@ -4565,8 +4567,11 @@ function generateMasterReport() {
             const students = studentsSnap.val() || [];
             const notes = notesSnap.val() || {};
 
+            // Filter to only include students on course this week
+            const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
+
             // Merge skill assessments into student data
-            const studentsWithSkills = students.map(student => {
+            const studentsWithSkills = onCourseStudents.map(student => {
                 const studentNotes = notes[student.id] || {};
                 const skillsChecklist = studentNotes.skillsChecklist || {};
                 return {
@@ -5463,9 +5468,11 @@ function loadSessionStudentsList() {
 
     db.ref('students/' + level).once('value').then(snap => {
         const students = snap.val() || [];
+        // Filter to only show students on course this week
+        const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
 
-        if (students.length === 0) {
-            studentsList.innerHTML = '<p class="text-gray-500 text-sm">No students in this level</p>';
+        if (onCourseStudents.length === 0) {
+            studentsList.innerHTML = '<p class="text-gray-500 text-sm">No students on course this week</p>';
             return;
         }
 
@@ -5497,7 +5504,7 @@ function loadSessionStudentsList() {
             `;
 
             // Add student headers
-            students.forEach((student, idx) => {
+            onCourseStudents.forEach((student, idx) => {
                 const studentName = student.name || student;
                 html += `<th class="border border-gray-200 px-2 py-2 text-center font-semibold text-gray-800 min-w-[120px]">${escapeHtml(studentName)}</th>`;
             });
@@ -5515,7 +5522,7 @@ function loadSessionStudentsList() {
                         <td class="border border-gray-200 px-3 py-2 text-left text-gray-700 font-medium max-w-xs">${escapeHtml(skill.skillName)}</td>
                 `;
 
-                students.forEach((student, idx) => {
+                onCourseStudents.forEach((student, idx) => {
                     const studentId = student.id || `student-${idx}`;
                     const existingChecklist = (notesData[studentId] && notesData[studentId].skillsChecklist) || {};
                     const currentState = existingChecklist[skill.id] || 'not_assessed';
@@ -6435,6 +6442,281 @@ if (messaging) {
         }
     });
 }
+
+// ============================================
+// STUDENT MANAGEMENT FUNCTIONS
+// ============================================
+
+let allStudentsData = []; // Cache for all students
+
+// Load all students from Firebase
+async function loadAllStudents() {
+    const studentsList = document.getElementById('students-list');
+    const studentCount = document.getElementById('student-count');
+
+    if (!studentsList) return;
+
+    studentsList.innerHTML = '<tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">Loading students...</td></tr>';
+
+    try {
+        const snapshot = await db.ref('students').once('value');
+        const studentsData = snapshot.val() || {};
+
+        allStudentsData = [];
+
+        // Flatten students from all levels
+        for (const [level, students] of Object.entries(studentsData)) {
+            const studentArray = Array.isArray(students) ? students : Object.values(students);
+            studentArray.forEach(student => {
+                if (student && student.name) {
+                    allStudentsData.push({
+                        id: student.id,
+                        name: student.name,
+                        level: level,
+                        timestamp: student.timestamp || Date.now(),
+                        onCourseThisWeek: student.onCourseThisWeek || false
+                    });
+                }
+            });
+        }
+
+        // Sort by name
+        allStudentsData.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (studentCount) studentCount.textContent = allStudentsData.length;
+
+        renderStudentsList(allStudentsData);
+    } catch (error) {
+        console.error('Error loading students:', error);
+        studentsList.innerHTML = '<tr><td colspan="4" class="px-4 py-2 text-center text-red-600">Error loading students</td></tr>';
+    }
+}
+
+// Render students list
+function renderStudentsList(students) {
+    const studentsList = document.getElementById('students-list');
+    if (!studentsList) return;
+
+    if (students.length === 0) {
+        studentsList.innerHTML = '<tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">No students found</td></tr>';
+        return;
+    }
+
+    studentsList.innerHTML = students.map(student => {
+        const levelDisplay = student.level.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const onCourseChecked = student.onCourseThisWeek ? 'checked' : '';
+
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm">${student.name}</td>
+                <td class="px-4 py-2 text-sm">
+                    <select class="border border-gray-300 rounded px-2 py-1 text-sm"
+                        onchange="changeStudentLevel('${student.id}', '${student.level}', this.value)">
+                        <option value="cara-na-mara" ${student.level === 'cara-na-mara' ? 'selected' : ''}>Cara na Mara</option>
+                        <option value="taste-of-sailing" ${student.level === 'taste-of-sailing' ? 'selected' : ''}>Taste of Sailing</option>
+                        <option value="start-sailing" ${student.level === 'start-sailing' ? 'selected' : ''}>Start Sailing</option>
+                        <option value="basic-skills" ${student.level === 'basic-skills' ? 'selected' : ''}>Basic Skills</option>
+                        <option value="improving-skills" ${student.level === 'improving-skills' ? 'selected' : ''}>Improving Skills</option>
+                        <option value="advanced" ${student.level === 'advanced' ? 'selected' : ''}>Advanced Boat Handling</option>
+                    </select>
+                </td>
+                <td class="px-4 py-2 text-sm">
+                    <input type="checkbox" ${onCourseChecked}
+                        onchange="toggleStudentWeekly('${student.id}', '${student.level}', this.checked)"
+                        class="w-4 h-4 text-blue-600 rounded">
+                </td>
+                <td class="px-4 py-2 text-sm">
+                    <button onclick="deleteStudent('${student.id}', '${student.level}')"
+                        class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                        🗑️ Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Search and filter students
+function searchStudents() {
+    const searchTerm = document.getElementById('student-search')?.value.toLowerCase() || '';
+    const levelFilter = document.getElementById('filter-level')?.value || '';
+
+    let filtered = allStudentsData.filter(student => {
+        const matchesSearch = student.name.toLowerCase().includes(searchTerm);
+        const matchesLevel = !levelFilter || student.level === levelFilter;
+        return matchesSearch && matchesLevel;
+    });
+
+    const studentCount = document.getElementById('student-count');
+    if (studentCount) studentCount.textContent = filtered.length;
+
+    renderStudentsList(filtered);
+}
+
+// Add new student
+async function addNewStudent() {
+    const firstname = document.getElementById('new-student-firstname')?.value.trim();
+    const lastname = document.getElementById('new-student-lastname')?.value.trim();
+    const level = document.getElementById('new-student-level')?.value;
+
+    if (!firstname || !lastname) {
+        alert('Please enter both first and last name');
+        return;
+    }
+
+    if (!level) {
+        alert('Please select a level');
+        return;
+    }
+
+    const fullName = `${firstname} ${lastname}`;
+    const studentId = 'student-' + Date.now();
+
+    try {
+        // Get existing students for this level
+        const snapshot = await db.ref('students/' + level).once('value');
+        const students = snapshot.val() || {};
+        const studentArray = Array.isArray(students) ? students : Object.values(students);
+
+        // Add new student
+        studentArray.push({
+            id: studentId,
+            name: fullName,
+            timestamp: Date.now(),
+            onCourseThisWeek: false
+        });
+
+        await db.ref('students/' + level).set(studentArray);
+
+        // Clear inputs
+        document.getElementById('new-student-firstname').value = '';
+        document.getElementById('new-student-lastname').value = '';
+        document.getElementById('new-student-level').value = '';
+
+        // Reload list
+        await loadAllStudents();
+
+        alert(`Student "${fullName}" added to ${level}`);
+    } catch (error) {
+        console.error('Error adding student:', error);
+        alert('Error adding student: ' + error.message);
+    }
+}
+
+// Change student level
+async function changeStudentLevel(studentId, oldLevel, newLevel) {
+    if (oldLevel === newLevel) return;
+
+    if (!confirm(`Move this student from ${oldLevel} to ${newLevel}?`)) {
+        // Reset select if cancelled
+        await loadAllStudents();
+        return;
+    }
+
+    try {
+        // Get student from old level
+        const oldSnapshot = await db.ref('students/' + oldLevel).once('value');
+        const oldStudents = oldSnapshot.val() || {};
+        const oldArray = Array.isArray(oldStudents) ? oldStudents : Object.values(oldStudents);
+
+        const student = oldArray.find(s => s.id === studentId);
+        if (!student) {
+            alert('Student not found');
+            return;
+        }
+
+        // Remove from old level
+        const newOldArray = oldArray.filter(s => s.id !== studentId);
+        await db.ref('students/' + oldLevel).set(newOldArray);
+
+        // Add to new level
+        const newSnapshot = await db.ref('students/' + newLevel).once('value');
+        const newStudents = newSnapshot.val() || {};
+        const newArray = Array.isArray(newStudents) ? newStudents : Object.values(newStudents);
+
+        newArray.push(student);
+        await db.ref('students/' + newLevel).set(newArray);
+
+        // Also move student notes if they exist
+        const notesSnapshot = await db.ref('studentNotes/' + oldLevel + '/' + studentId).once('value');
+        if (notesSnapshot.exists()) {
+            const notes = notesSnapshot.val();
+            await db.ref('studentNotes/' + newLevel + '/' + studentId).set(notes);
+            await db.ref('studentNotes/' + oldLevel + '/' + studentId).remove();
+        }
+
+        await loadAllStudents();
+        alert(`Student moved to ${newLevel}`);
+    } catch (error) {
+        console.error('Error changing level:', error);
+        alert('Error changing level: ' + error.message);
+        await loadAllStudents();
+    }
+}
+
+// Toggle student weekly attendance
+async function toggleStudentWeekly(studentId, level, isOnCourse) {
+    try {
+        const snapshot = await db.ref('students/' + level).once('value');
+        const students = snapshot.val() || {};
+        const studentArray = Array.isArray(students) ? students : Object.values(students);
+
+        const updatedArray = studentArray.map(s => {
+            if (s.id === studentId) {
+                return { ...s, onCourseThisWeek: isOnCourse };
+            }
+            return s;
+        });
+
+        await db.ref('students/' + level).set(updatedArray);
+
+        // Update local cache
+        const studentIndex = allStudentsData.findIndex(s => s.id === studentId);
+        if (studentIndex !== -1) {
+            allStudentsData[studentIndex].onCourseThisWeek = isOnCourse;
+        }
+    } catch (error) {
+        console.error('Error updating weekly status:', error);
+        alert('Error updating weekly status: ' + error.message);
+    }
+}
+
+// Delete student
+async function deleteStudent(studentId, level) {
+    const student = allStudentsData.find(s => s.id === studentId);
+    if (!student) return;
+
+    if (!confirm(`Delete student "${student.name}"? This will also delete their notes and skills data.`)) {
+        return;
+    }
+
+    try {
+        // Remove from students list
+        const snapshot = await db.ref('students/' + level).once('value');
+        const students = snapshot.val() || {};
+        const studentArray = Array.isArray(students) ? students : Object.values(students);
+
+        const newArray = studentArray.filter(s => s.id !== studentId);
+        await db.ref('students/' + level).set(newArray);
+
+        // Remove notes
+        await db.ref('studentNotes/' + level + '/' + studentId).remove();
+
+        await loadAllStudents();
+        alert('Student deleted');
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        alert('Error deleting student: ' + error.message);
+    }
+}
+
+// Export functions to window
+window.loadAllStudents = loadAllStudents;
+window.searchStudents = searchStudents;
+window.addNewStudent = addNewStudent;
+window.changeStudentLevel = changeStudentLevel;
+window.toggleStudentWeekly = toggleStudentWeekly;
+window.deleteStudent = deleteStudent;
 
 // Handle foreground message arrival for real-time updates
 if (messaging) {

@@ -173,6 +173,7 @@
                     <a href="basic_skills.html" class="hover:underline">Basic Skills</a>
                     <a href="improving_skills.html" class="hover:underline">Improving Skills</a>
                     <a href="advanced.html" class="hover:underline">Advanced</a>
+                    <a href="search.html" class="hover:underline">Search</a>
                     <a href="instructors.html" class="font-semibold underline">Instructors</a>
                 </nav>
                 <span id="current-user-display" class="hidden text-xs sm:text-sm text-white bg-white/15 px-3 py-1 rounded-full border border-white/20"></span>
@@ -228,6 +229,8 @@
                     <li><a href="#current-session-section" data-target="current-session-section"
                             class="inline-block px-4 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 border-b-2 border-transparent hover:border-blue-600 transition-colors">Current Session</a>
                     </li>
+                    <li><a href="#student-management-section" data-target="student-management-section"
+                            class="inline-block px-4 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 border-b-2 border-transparent hover:border-blue-600 transition-colors">Student Management</a></li>
                     <li><a href="#student-notes-section" data-target="student-notes-section"
                             class="inline-block px-4 py-2.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 border-b-2 border-transparent hover:border-blue-600 transition-colors">Student Notes</a></li>
                     <li><a href="#templates-section" data-target="templates-section"
@@ -771,14 +774,7 @@
                         <p class="text-gray-500 text-sm">Drop here</p>
                     </div>
                     <div class="mt-4">
-                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
-                        <form class="flex mb-2" onsubmit="return addStudent(event, 'cara-na-mara')">
-                            <input type="text"
-                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                                placeholder="Add name" id="input-student-cara-na-mara" autocomplete="off">
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form>
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students on Course This Week</h5>
                         <table class="w-full text-xs bg-white rounded border border-blue-100">
                             <tbody id="students-cara-na-mara"></tbody>
                         </table>
@@ -794,14 +790,7 @@
                         <p class="text-gray-500 text-sm">Drop here</p>
                     </div>
                     <div class="mt-4">
-                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students</h5>
-                        <form class="flex mb-2" onsubmit="return addStudent(event, 'taste-of-sailing')">
-                            <input type="text"
-                                class="flex-grow border border-blue-200 rounded-l px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                                placeholder="Add name" id="input-student-taste-of-sailing" autocomplete="off">
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form>
+                        <h5 class="text-sm font-semibold text-blue-700 mb-2">Students on Course This Week</h5>
                         <table class="w-full text-xs bg-white rounded border border-blue-100">
                             <tbody id="students-taste-of-sailing"></tbody>
                         </table>
@@ -824,14 +813,7 @@
                                 placeholder="Add name" id="input-student-start-sailing" autocomplete="off">
                             <button type="submit"
                                 class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form>
-                        <table class="w-full text-xs bg-white rounded border border-blue-100">
-                            <tbody id="students-start-sailing"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+                        </form> on Course This Week</h5
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Basic Skills -->
                 <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
@@ -850,14 +832,7 @@
                                 placeholder="Add name" id="input-student-basic-skills" autocomplete="off">
                             <button type="submit"
                                 class="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600">Add</button>
-                        </form>
-                        <table class="w-full text-xs bg-white rounded border border-blue-100">
-                            <tbody id="students-basic-skills"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- Improving Skills -->
-                <div class="level-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
+                        </form> on Course This Week</h5vel-table bg-white p-6 rounded-lg shadow border border-gray-200 relative">
                     <span id="count-improving-skills"
                         class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Students:
                         <span class="count-num">0</span></span>
@@ -880,14 +855,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="mt-8 flex flex-col md:flex-row gap-8 justify-center items-stretch">
-                <div class="flex-1">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-xl font-bold text-blue-700 text-center flex-1">Available Boats</h4>
-                        <button onclick="toggleAddBoatForm()" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm font-medium">+ Add Boat</button>
-                    </div>
-                    <div id="add-boat-form" class="hidden mb-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+ on Course This Week</h5dd-boat-form" class="hidden mb-4 p-4 bg-blue-50 rounded-md border border-blue-200">
                         <div class="mb-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Boat Name:</label>
                             <input type="text" id="boat-name-input" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter boat name">
@@ -999,6 +967,77 @@
                             Clear
                         </button>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Student Management Section -->
+        <section id="student-management-section"
+            class="container mx-auto px-4 py-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg shadow-md mt-8 scroll-mt-24">
+            <h2 class="text-2xl font-semibold text-green-800 mb-4 flex items-center gap-2">
+                👥 Student Management
+            </h2>
+
+            <!-- Add New Student -->
+            <div class="bg-white rounded-lg p-4 border border-green-200 mb-4">
+                <h3 class="font-semibold text-green-700 mb-3">Add New Student</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <input type="text" id="new-student-firstname" placeholder="First Name"
+                        class="border border-gray-300 rounded px-3 py-2">
+                    <input type="text" id="new-student-lastname" placeholder="Last Name"
+                        class="border border-gray-300 rounded px-3 py-2">
+                    <select id="new-student-level" class="border border-gray-300 rounded px-3 py-2">
+                        <option value="">Select Level</option>
+                        <option value="cara-na-mara">Cara na Mara</option>
+                        <option value="taste-of-sailing">Taste of Sailing</option>
+                        <option value="start-sailing">Start Sailing</option>
+                        <option value="basic-skills">Basic Skills</option>
+                        <option value="improving-skills">Improving Skills</option>
+                        <option value="advanced">Advanced Boat Handling</option>
+                    </select>
+                    <button onclick="addNewStudent()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        ➕ Add Student
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="bg-white rounded-lg p-4 border border-green-200 mb-4">
+                <div class="flex gap-2 flex-wrap mb-3">
+                    <input type="text" id="student-search" placeholder="Search by name..."
+                        class="flex-grow border border-gray-300 rounded px-3 py-2" oninput="searchStudents()">
+                    <select id="filter-level" class="border border-gray-300 rounded px-3 py-2" onchange="searchStudents()">
+                        <option value="">All Levels</option>
+                        <option value="cara-na-mara">Cara na Mara</option>
+                        <option value="taste-of-sailing">Taste of Sailing</option>
+                        <option value="start-sailing">Start Sailing</option>
+                        <option value="basic-skills">Basic Skills</option>
+                        <option value="improving-skills">Improving Skills</option>
+                        <option value="advanced">Advanced Boat Handling</option>
+                    </select>
+                    <button onclick="loadAllStudents()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student List -->
+            <div class="bg-white rounded-lg p-4 border border-green-200">
+                <h3 class="font-semibold text-green-700 mb-3">All Students (<span id="student-count">0</span>)</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">This Week</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-list" class="bg-white divide-y divide-gray-200">
+                            <tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">Loading students...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
