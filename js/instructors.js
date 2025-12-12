@@ -947,6 +947,21 @@ function ensureLoginInteractivity() {
 function applyRoleBasedVisibility(userRole) {
     const isAssistant = userRole === 'assistant';
 
+    // Hide Student Management section from assistants
+    const studentMgmtSection = document.getElementById('student-management-section');
+    if (studentMgmtSection) {
+        studentMgmtSection.style.display = isAssistant ? 'none' : 'block';
+    }
+
+    // Hide Student Management nav link from assistants
+    const studentMgmtNavLink = document.querySelector('a[data-target="student-management-section"]');
+    if (studentMgmtNavLink) {
+        const listItem = studentMgmtNavLink.parentElement;
+        if (listItem) {
+            listItem.style.display = isAssistant ? 'none' : 'list-item';
+        }
+    }
+
     // Hide Current Session section from assistants
     const currentSessionSection = document.getElementById('current-session-section');
     if (currentSessionSection) {
@@ -2478,7 +2493,10 @@ function showLevelInfoModal(levelKey) {
         });
         instructorsList.innerHTML = instructorNames.length ? instructorNames.map(n => `<li>${n}</li>`).join('') : '<li class="text-gray-400 italic">None assigned</li>';
         boatsList.innerHTML = boatNames.length ? boatNames.map(n => `<li>${n}</li>`).join('') : '<li class="text-gray-400 italic">None</li>';
-        studentsList.innerHTML = students.length ? students.map(s => `<li>${s.name}</li>`).join('') : '<li class="text-gray-400 italic">None</li>';
+
+        // Filter to only show students on course this week
+        const onCourseStudents = students.filter(s => s.onCourseThisWeek === true);
+        studentsList.innerHTML = onCourseStudents.length ? onCourseStudents.map(s => `<li>${s.name}</li>`).join('') : '<li class="text-gray-400 italic">None on course this week</li>';
     });
     modal.style.display = 'flex';
 }
