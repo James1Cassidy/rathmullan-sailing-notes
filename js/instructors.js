@@ -2330,7 +2330,6 @@ function updateStudentTable(level, students) {
     // Validate ratios after student count changes
     highlightLevelRatios();
 }
-}
 
 function getProgressButton(currentLevel, studentId, studentName) {
     // Ordered list of levels to compute previous/next
