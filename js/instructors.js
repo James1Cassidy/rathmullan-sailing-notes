@@ -3066,7 +3066,8 @@ async function fetchWeather() {
 
     // Use Ireland timezone explicitly so times match local expectations
     const TZ = 'Europe/Dublin';
-    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_gusts_10m&wind_speed_unit=ms&timezone=${encodeURIComponent(TZ)}&past_days=1`;
+    // Note: parameter is windspeed_unit (no underscore after wind)
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_gusts_10m&windspeed_unit=ms&timezone=${encodeURIComponent(TZ)}&past_days=1`;
     console.info('Fetching Open-Meteo for Rathmullan at', { lat, lon, TZ, apiUrl });
 
     try {
@@ -3087,17 +3088,38 @@ async function fetchWeather() {
             if (humidityEl) humidityEl.textContent = `${data.current.relative_humidity_2m}%`;
             if (pressureEl) pressureEl.textContent = `${Math.round(data.current.pressure_msl)}`;
 
-            // Convert wind speed from m/s to knots and update wind display
-            if (data.current.wind_speed_10m !== undefined) {
-                const windSpeedKnots = Math.round(data.current.wind_speed_10m * 1.94384 * 10) / 10;
-                const windGustKnots = data.current.wind_gusts_10m ? Math.round(data.current.wind_gusts_10m * 1.94384 * 10) / 10 : windSpeedKnots;
-                const windDirection = data.current.wind_direction_10m || 0;
+            // Convert wind speed from m/s to knots and update wind display (robust fallbacks)
+            const rawWindMs = (data.current.wind_speed_10m !== undefined)
+                ? data.current.wind_speed_10m
+                : (data.current_weather && data.current_weather.windspeed !== undefined)
+                    ? data.current_weather.windspeed
+                    : (data.hourly && data.hourly.wind_speed_10m && data.hourly.wind_speed_10m.length > 0)
+                        ? data.hourly.wind_speed_10m[0]
+                        : null;
+
+            const rawGustMs = (data.current.wind_gusts_10m !== undefined)
+                ? data.current.wind_gusts_10m
+                : (data.current_weather && data.current_weather.windgusts !== undefined)
+                    ? data.current_weather.windgusts
+                    : (data.hourly && data.hourly.wind_gusts_10m && data.hourly.wind_gusts_10m.length > 0)
+                        ? data.hourly.wind_gusts_10m[0]
+                        : null;
+
+            const windDirection = data.current.wind_direction_10m !== undefined
+                ? data.current.wind_direction_10m
+                : (data.current_weather && data.current_weather.winddirection !== undefined)
+                    ? data.current_weather.winddirection
+                    : 0;
+
+            if (rawWindMs !== null) {
+                const windSpeedKnots = Math.round(rawWindMs * 1.94384 * 10) / 10;
+                const windGustKnots = rawGustMs !== null ? Math.round(rawGustMs * 1.94384 * 10) / 10 : windSpeedKnots;
 
                 // Store for suggestions/alerts
                 window.currentWind = {
                     speed: windSpeedKnots,
                     gust: windGustKnots,
-                    direction
+                    direction: windDirection
                 };
 
                 if (windEl) windEl.textContent = windSpeedKnots;
@@ -3124,6 +3146,8 @@ async function fetchWeather() {
 
                 // Re-render weather guidance if a level is selected
                 renderWeatherGuidance();
+            } else {
+                console.warn('Wind data missing from Open-Meteo response', data.current);
             }
         }
 
