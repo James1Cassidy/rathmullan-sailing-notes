@@ -19,30 +19,37 @@ const messaging = firebase.messaging();
 messaging.setBackgroundMessageHandler(function(payload) {
   console.info('[FCM SW] Background message received', payload);
 
-  // Handle data-only messages (for background delivery)
+  // Extract from notification payload (sent by server)
   let title = 'Sailing School';
   let body = 'New message';
-  let data = { url: '/instructors.html' };
+  let icon = '/images/logo.png';
+  let badge = '/images/logo.png';
+  let url = '/instructors.html';
 
+  if (payload.notification) {
+    title = payload.notification.title || title;
+    body = payload.notification.body || body;
+    icon = payload.notification.icon || icon;
+    badge = payload.notification.badge || badge;
+  }
+
+  // Also check data payload
   if (payload.data) {
     title = payload.data.title || title;
     body = payload.data.body || body;
-    data = payload.data;
-  } else if (payload.notification) {
-    title = payload.notification.title || title;
-    body = payload.notification.body || body;
+    url = payload.data.url || url;
   }
 
   const options = {
     body,
-    icon: '/images/logo.png',
-    badge: '/images/logo.png',
-    data: data,
+    icon,
+    badge,
+    data: { url, ...payload.data },
     requireInteraction: false,
     vibrate: [200, 100, 200],
     silent: false,
     renotify: true,
-    tag: (payload.data && payload.data.type) || 'default'
+    tag: 'urgent-announcement'
   };
 
   console.info('[FCM SW] Showing notification:', title, options);
