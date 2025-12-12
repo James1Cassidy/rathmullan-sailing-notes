@@ -4934,10 +4934,18 @@ function postAnnouncement() {
         urgent,
         timestamp: Date.now(),
         views: {}
-    }).then(() => {
+    }).then(async () => {
         if (input) input.value = '';
         if (pinnedCheckbox) pinnedCheckbox.checked = false;
         if (urgentCheckbox) urgentCheckbox.checked = false;
+        // Server-delivered push for urgent announcements; only if app-installed devices are registered
+        if (urgent) {
+            try {
+                await broadcastUrgentAnnouncement(text);
+            } catch (e) {
+                console.warn('[Announcements] Broadcast failed', e);
+            }
+        }
         loadAnnouncements();
     }).catch(err => alert('Error posting announcement: ' + err.message));
 }
@@ -4991,11 +4999,14 @@ function loadAnnouncements() {
                 <p class="text-gray-800">${escapeHtml(ann.text)}</p>
             `;
             list.appendChild(div);
-            // Single local notification for recent urgent announcements (deduped)
+            // Single local notification for recent urgent announcements (deduped) — only when app is installed
             if (ann.urgent && window.notificationPrefs.enabled && window.notificationPrefs.urgent && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 const recent = Date.now() - ann.timestamp < 5 * 60 * 1000;
                 const authorIsSelf = (user && ann.authorId === user.uid);
+                const isInstalled = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                    || (window.navigator && 'standalone' in window.navigator && window.navigator.standalone === true);
                 if (recent && !window.__urgentNotifiedIds.has(ann.id) && (window.notificationPrefs.own || !authorIsSelf)) {
+                    if (!isInstalled) return;
                     const body = ann.text.slice(0,120) + (ann.text.length>120?'...':'');
                     navigator.serviceWorker.getRegistration().then(reg => {
                         const opts = { body, icon: '/images/logo.png', badge: '/images/logo.png', tag: 'urgent-announcement', requireInteraction: true, data: { type: 'urgent', id: ann.id } };
@@ -5049,6 +5060,40 @@ window.togglePin = function (id, shouldPin) {
         alert('Error updating pin status: ' + err.message);
     });
 };
+
+// Broadcast urgent announcement via Cloudflare send-fcm function to installed app devices
+async function broadcastUrgentAnnouncement(text) {
+    try {
+        const snap = await db.ref('users').once('value');
+        const users = snap.val() || {};
+        const tokens = Object.values(users)
+            .map(u => u && u.pushToken)
+            .filter(t => typeof t === 'string' && t.length > 20);
+        if (!tokens.length) {
+            console.warn('[Broadcast] No device tokens found');
+            return;
+        }
+        const body = {
+            title: 'Urgent Announcement',
+            body: text.slice(0, 180),
+            tokens,
+            url: '/instructors.html'
+        };
+        const res = await fetch('/send-fcm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(err);
+        }
+        console.log('[Broadcast] FCM send ok');
+    } catch (e) {
+        console.warn('[Broadcast] Failed', e);
+        throw e;
+    }
+}
 
 // Windy-related integrations removed from instructors page. Weather UI still present but uses cached/tides data.
 
@@ -8052,6 +8097,13 @@ function showNotification(title, options = {}) {
 
 // Register device for push notifications via Firebase Messaging
 async function registerForPush() {
+    // Only register for push if app is installed (standalone display-mode or iOS standalone)
+    const isInstalled = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+        || (window.navigator && 'standalone' in window.navigator && window.navigator.standalone === true);
+    if (!isInstalled) {
+        console.warn('[Push] Skipping registration: app not installed');
+        return;
+    }
     if (!messaging || !auth.currentUser) {
         console.warn('[Push] Messaging or user not available');
         return;
@@ -8076,7 +8128,10 @@ if (messaging) {
     messaging.onMessage((payload) => {
         console.log('[FCM] Message received in foreground:', payload);
         const { notification, data } = payload;
-        if (notification && window.notificationPrefs?.enabled) {
+        // Only show foreground notifications if app is installed
+        const isInstalled = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+            || (window.navigator && 'standalone' in window.navigator && window.navigator.standalone === true);
+        if (notification && window.notificationPrefs?.enabled && isInstalled) {
             showNotification(notification.title || 'Sailing School', {
                 body: notification.body || '',
                 tag: data?.type || 'message',
