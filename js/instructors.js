@@ -1278,7 +1278,14 @@ function validateLevelRatios(level) {
     const tableBody = document.getElementById('students-' + level);
     if (!tableBody) return { valid: true, violations: [] };
 
-    const studentCount = tableBody.querySelectorAll('tr').length;
+    // Count actual students (2 per row, but check td cells with content)
+    const studentCells = tableBody.querySelectorAll('td');
+    let studentCount = 0;
+    studentCells.forEach(td => {
+        if (td.textContent.trim() !== '') {
+            studentCount++;
+        }
+    });
 
     // Get dropzone for this level
     const dropzone = document.getElementById(level + '-zone');
