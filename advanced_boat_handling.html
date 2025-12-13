@@ -146,46 +146,37 @@
                 throw new Error('Gemini proxy call failed after all retries.');
             }
 
-            // --- Gemini API TTS Caller ---
-            async function callGeminiTts(text, retries = 3) {
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        const response = await fetch(geminiProxyTts, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ text })
-                        });
-                        if (!response.ok) {
-                            const errorBody = await response.text();
-                            console.error(`TTS proxy call failed: ${response.status}`, errorBody);
-                            if (response.status === 429 && i < retries - 1) {
-                                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-                                continue;
-                            }
-                            throw new Error(`TTS API call failed with status: ${response.status}`);
-                        }
-                        const result = await response.json();
-                        const audioData = result?.data;
-                        const mimeType = result?.mimeType;
-                        if (audioData && mimeType && mimeType.startsWith('audio/')) {
-                            const sampleRateMatch = mimeType.match(/rate=(\d+)/);
-                            const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
-                            const pcmData = base64ToArrayBuffer(audioData);
-                            const pcm16 = new Int16Array(pcmData);
-                            const wavBlob = pcmToWav(pcm16, sampleRate);
-                            return URL.createObjectURL(wavBlob);
-                        } else {
-                            throw new Error('No valid audio data in response.');
-                        }
-                    } catch (error) {
-                        if (i === retries - 1) {
-                            console.error('TTS proxy call failed after retries:', error);
-                            throw error;
-                        }
-                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            // --- Client-side TTS using Web Speech API ---
+            // TTS state & controls
+            let currentUtterance = null;
+            async function playTermAudio(term) {
+                const statusSpan = document.getElementById('term-status');
+                const listenBtn = document.getElementById('term-listen-btn');
+                const controls = document.getElementById('tts-controls');
+
+                listenBtn.disabled = true;
+                statusSpan.textContent = 'Speaking...';
+
+                try {
+                    const definition = termCache[term]?.definition;
+                    if (!definition) {
+                        statusSpan.textContent = 'Error: No definition found to read.';
+                        return;
                     }
+                    await callGeminiTts(definition);
+                    if (controls) controls.style.display = 'flex';
+                    statusSpan.textContent = 'Playing audio...';
+                } catch (error) {
+                    console.error('TTS error:', error);
+                    statusSpan.textContent = 'Error generating audio.';
+                } finally {
+                    listenBtn.disabled = false;
                 }
-                throw new Error('Gemini TTS call failed after all retries.');
+            }
+                    currentUtterance = null;
+                    const controls = document.getElementById('tts-controls');
+                    if (controls) controls.style.display = 'none';
+                } catch (_) {}
             }
 
 
@@ -292,7 +283,9 @@
                             statusSpan.textContent = 'Error: No definition found to read.';
                             return;
                         }
-                        audioUrl = await callGeminiTts(definition);
+                        // Play audio via Web Speech API (no audio URL returned)
+                        await callGeminiTts(definition);
+                        audioUrl = null;
                         termCache[term].audioUrl = audioUrl;
                     }
 
@@ -478,6 +471,11 @@
                                     ▶️ Listen
                                 </button>
                                 <span id="term-status" class="ml-3 text-xs font-semibold text-blue-600"></span>
+                                <div id="tts-controls" class="ml-3 hidden items-center gap-2">
+                                    <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="pauseTTS()">Pause</button>
+                                    <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="resumeTTS()">Resume</button>
+                                    <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="stopTTS()">Stop</button>
+                                </div>
                             </div>
                         </div>
                     </div>

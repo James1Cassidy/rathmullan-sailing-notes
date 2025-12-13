@@ -1,38 +1,30 @@
 // Cloudflare Pages Function: /api/gemini/generate
-// Proxy for Gemini text generation API with fallback to alternative models
+// Proxy for local Ollama text generation API
+// Ollama should be running at http://localhost:11434
 
-// Fallback models to use if Gemini hits rate limits
-// Available models: gamma-3-1b, gamma-3-2b, gamma-3-12b, gamma-3-27b
-const FALLBACK_MODELS = [
-  'gamma-3-1b',
-  'gamma-3-2b',
-  'gamma-3-12b'
-];
+const OLLAMA_ENDPOINT = 'http://localhost:11434/api/generate';
+const OLLAMA_MODEL = 'mistral'; // Change to 'llama2', 'neural-chat', etc. as needed
 
-async function callGeminiAPI(model, systemPrompt, userQuery, isSearchGrounded, apiKey) {
-  const isGemini = model.startsWith('gemini');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+async function callOllamaAPI(model, systemPrompt, userQuery) {
+  const prompt = systemPrompt ? `${systemPrompt}\n\n${userQuery}` : userQuery;
 
-  const payload = isGemini
-    ? {
-        contents: [{ parts: [{ text: userQuery }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        ...(isSearchGrounded && { tools: [{ google_search: {} }] })
-      }
-    : {
-        contents: [{ parts: [{ text: `${systemPrompt}\n\n${userQuery}` }] }]
-      };
+  try {
+    const response = await fetch(OLLAMA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        prompt: prompt,
+        stream: false,
+        temperature: 0.7,
+      }),
+    });
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  return response;
+    return response;
+  } catch (e) {
+    console.error('[Ollama] Connection error:', e.message);
+    throw new Error(`Ollama unavailable: ${e.message}`);
+  }
 }
 
 export async function onRequest(context) {
@@ -45,15 +37,7 @@ export async function onRequest(context) {
 
   try {
     const body = await request.json();
-    const { systemPrompt = '', userQuery = '', model = 'gemini-2.5-flash-preview-09-2025', isSearchGrounded = false } = body;
-
-    const GEMINI_KEY = env.GEMINI_API_KEY;
-    if (!GEMINI_KEY) {
-      return new Response(JSON.stringify({ error: 'Server not configured with GEMINI_API_KEY' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    const { systemPrompt = '', userQuery = '', model = OLLAMA_MODEL } = body;
 
     if (!userQuery) {
       return new Response(JSON.stringify({ error: 'userQuery is required' }), {
@@ -62,42 +46,52 @@ export async function onRequest(context) {
       });
     }
 
-    // Try primary model first, then fallback models
-    const modelsToTry = [model, ...FALLBACK_MODELS];
-    let lastError = null;
-    let response = null;
+    console.log(`[Ollama] Generating with model: ${model}`);
 
-    for (const tryModel of modelsToTry) {
-      try {
-        response = await callGeminiAPI(tryModel, systemPrompt, userQuery, isSearchGrounded, GEMINI_KEY);
+    const response = await callOllamaAPI(model, systemPrompt, userQuery);
 
-        // If successful or client error (not rate limit), use this response
-        if (response.ok || response.status === 400 || response.status === 403) {
-          console.log(`[Generate] Using model: ${tryModel}`);
-          break;
-        }
-
-        // If rate limited (429), try next model
-        if (response.status === 429) {
-          console.warn(`[Generate] Model ${tryModel} rate limited, trying next...`);
-          lastError = `Model ${tryModel} rate limited`;
-          continue;
-        }
-
-        // Other server errors, try next
-        if (response.status >= 500) {
-          console.warn(`[Generate] Model ${tryModel} server error ${response.status}, trying next...`);
-          lastError = `Model ${tryModel} server error`;
-          continue;
-        }
-      } catch (e) {
-        console.warn(`[Generate] Model ${tryModel} failed:`, e.message);
-        lastError = e.message;
-        continue;
-      }
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Ollama] Error:', response.status, errorText);
+      return new Response(JSON.stringify({
+        error: 'Ollama error',
+        status: response.status,
+        details: errorText
+      }), {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    if (!response) {
+    const data = await response.json();
+    const text = data?.response || '';
+
+    return new Response(JSON.stringify({ text, raw: data }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (err) {
+    console.error('[Ollama Proxy] Exception:', err);
+    return new Response(JSON.stringify({
+      error: 'Proxy error - ensure Ollama is running on localhost:11434',
+      details: String(err?.message || err)
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
+}
       return new Response(JSON.stringify({ error: 'All models exhausted', details: lastError }), {
         status: 503,
         headers: { 'Content-Type': 'application/json' }

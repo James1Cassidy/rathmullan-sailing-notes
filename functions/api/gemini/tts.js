@@ -1,37 +1,7 @@
 // Cloudflare Pages Function: /api/gemini/tts
-// Proxy for Gemini TTS API with fallback to alternative models
-
-// Fallback models to use if Gemini TTS hits rate limits
-// Available models: gamma-3-1b, gamma-3-2b, gamma-3-12b, gamma-3-27b
-const TTS_FALLBACK_MODELS = [
-  'gamma-3-2b',
-  'gamma-3-12b'
-];
-
-async function callTTSAPI(model, text, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-  const payload = {
-    contents: [{ parts: [{ text: `Say clearly: ${text}` }] }],
-    generationConfig: {
-      responseModalities: ['AUDIO'],
-      speechConfig: {
-        voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } },
-      },
-    },
-    model: model,
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  return response;
-}
+// Proxy for TTS - uses browser native Web Speech API as fallback
+// (Ollama does not support TTS natively)
+// For production TTS, consider: ElevenLabs, Voiceover, or Web Speech API
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -45,20 +15,35 @@ export async function onRequest(context) {
     const body = await request.json();
     const { text = '' } = body;
 
-    const GEMINI_KEY = env.GEMINI_API_KEY;
-    if (!GEMINI_KEY) {
-      return new Response(JSON.stringify({ error: 'Server not configured with GEMINI_API_KEY' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     if (!text) {
       return new Response(JSON.stringify({ error: 'text is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
+
+    // Since Ollama doesn't support TTS, return a message indicating
+    // client should use Web Speech API or skip TTS for now
+    return new Response(JSON.stringify({
+      error: 'TTS not available with Ollama backend',
+      message: 'Use browser Web Speech API instead or integrate ElevenLabs for TTS',
+      text: text
+    }), {
+      status: 501,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (err) {
+    console.error('[TTS Proxy] Exception:', err);
+    return new Response(JSON.stringify({
+      error: 'Proxy error',
+      details: String(err?.message || err)
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}    }
 
     // Try primary TTS model first, then fallback models
     const modelsToTry = ['gemini-2.5-flash-preview-tts', ...TTS_FALLBACK_MODELS];
