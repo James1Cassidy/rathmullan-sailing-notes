@@ -12,12 +12,13 @@ function resolveOllamaEndpoint(env) {
   return `${trimmed}/api/generate`;
 }
 
-async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs = 15000) {
+async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs = 30000) {
   const prompt = systemPrompt ? `${systemPrompt}\n\n${userQuery}` : userQuery;
 
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    console.log(`[Ollama] Calling endpoint: ${endpoint} (timeout: ${timeoutMs}ms)`);
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,6 +60,7 @@ export async function onRequest(context) {
     }
 
     console.log(`[Ollama] Generating with model: ${model}`);
+    console.log(`[Ollama] OLLAMA_BASE_URL from env: ${env?.OLLAMA_BASE_URL || '(not set, using default)'}`);
 
     const endpoint = resolveOllamaEndpoint(env);
     const response = await callOllamaAPI(endpoint, model, systemPrompt, userQuery);
