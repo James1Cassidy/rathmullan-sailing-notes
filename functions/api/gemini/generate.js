@@ -1,15 +1,22 @@
 // Cloudflare Pages Function: /api/gemini/generate
-// Proxy for local Ollama text generation API
-// Ollama should be running at http://localhost:11434
+// Proxy for Ollama text generation API
+// Configure endpoint via env: OLLAMA_BASE_URL (e.g., http://PUBLIC_IP:11434)
 
-const OLLAMA_ENDPOINT = 'http://localhost:11434/api/generate';
-const OLLAMA_MODEL = 'mistral'; // Change to 'llama2', 'neural-chat', etc. as needed
+const OLLAMA_MODEL = 'tinyllama'; // Default to tinyllama to fit current VM size
 
-async function callOllamaAPI(model, systemPrompt, userQuery) {
+function resolveOllamaEndpoint(env) {
+  const base = (env && env.OLLAMA_BASE_URL) ||
+               (typeof process !== 'undefined' && process.env && process.env.OLLAMA_BASE_URL) ||
+               'http://localhost:11434';
+  const trimmed = base.endsWith('/') ? base.slice(0, -1) : base;
+  return `${trimmed}/api/generate`;
+}
+
+async function callOllamaAPI(endpoint, model, systemPrompt, userQuery) {
   const prompt = systemPrompt ? `${systemPrompt}\n\n${userQuery}` : userQuery;
 
   try {
-    const response = await fetch(OLLAMA_ENDPOINT, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -48,7 +55,8 @@ export async function onRequest(context) {
 
     console.log(`[Ollama] Generating with model: ${model}`);
 
-    const response = await callOllamaAPI(model, systemPrompt, userQuery);
+    const endpoint = resolveOllamaEndpoint(env);
+    const response = await callOllamaAPI(endpoint, model, systemPrompt, userQuery);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -91,39 +99,4 @@ export async function onRequestOptions() {
       'Access-Control-Allow-Headers': 'Content-Type'
     }
   });
-}
-      return new Response(JSON.stringify({ error: 'All models exhausted', details: lastError }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const textBody = await response.text();
-
-    if (!response.ok) {
-      console.error('[Gemini Proxy] Error', response.status, textBody);
-      return new Response(textBody, {
-        status: response.status,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const data = JSON.parse(textBody);
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    return new Response(JSON.stringify({ text, raw: data }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (err) {
-    console.error('[Gemini Proxy] Exception', err);
-    return new Response(JSON.stringify({
-      error: 'Proxy error',
-      details: String(err?.message || err)
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
 }
