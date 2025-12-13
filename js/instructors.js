@@ -7598,7 +7598,7 @@ function getGeminiApiKey() {
     return '';
 }
 
-async function callGemini(systemPrompt, userQuery, model = 'gemini-2.5-flash-preview-09-2025') {
+async function callGemini(systemPrompt, userQuery, model = 'tinyllama') {
     const res = await fetch('/api/gemini/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
