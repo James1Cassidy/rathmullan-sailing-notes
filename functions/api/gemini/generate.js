@@ -60,11 +60,12 @@ export async function onRequest(context) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[Ollama] Error:', response.status, errorText);
+      console.error('[Ollama] Error:', response.status, errorText, 'endpoint:', endpoint);
       return new Response(JSON.stringify({
         error: 'Ollama error',
         status: response.status,
-        details: errorText
+        details: errorText,
+        endpoint
       }), {
         status: response.status,
         headers: { 'Content-Type': 'application/json' }
