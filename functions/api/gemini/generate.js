@@ -12,10 +12,12 @@ function resolveOllamaEndpoint(env) {
   return `${trimmed}/api/generate`;
 }
 
-async function callOllamaAPI(endpoint, model, systemPrompt, userQuery) {
+async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs = 15000) {
   const prompt = systemPrompt ? `${systemPrompt}\n\n${userQuery}` : userQuery;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,12 +27,15 @@ async function callOllamaAPI(endpoint, model, systemPrompt, userQuery) {
         stream: false,
         temperature: 0.7,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     return response;
   } catch (e) {
     console.error('[Ollama] Connection error:', e.message);
-    throw new Error(`Ollama unavailable: ${e.message}`);
+    const reason = e.name === 'AbortError' ? `timeout after ${timeoutMs}ms` : e.message;
+    throw new Error(`Ollama unavailable: ${reason}`);
   }
 }
 
@@ -75,7 +80,7 @@ export async function onRequest(context) {
     const data = await response.json();
     const text = data?.response || '';
 
-    return new Response(JSON.stringify({ text, raw: data }), {
+    return new Response(JSON.stringify({ text, raw: data, endpoint }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
