@@ -12,7 +12,7 @@ function resolveOllamaEndpoint(env) {
   return `${trimmed}/api/generate`;
 }
 
-async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs = 30000) {
+async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs = 60000) {
   const prompt = systemPrompt ? `${systemPrompt}\n\n${userQuery}` : userQuery;
 
   try {
@@ -21,7 +21,10 @@ async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs
     console.log(`[Ollama] Calling endpoint: ${endpoint} (timeout: ${timeoutMs}ms)`);
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Connection': 'keep-alive'
+      },
       body: JSON.stringify({
         model: model,
         prompt: prompt,
@@ -29,6 +32,7 @@ async function callOllamaAPI(endpoint, model, systemPrompt, userQuery, timeoutMs
         temperature: 0.7,
       }),
       signal: controller.signal,
+      keepalive: true,
     });
     clearTimeout(timeout);
 
